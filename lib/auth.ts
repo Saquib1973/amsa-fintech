@@ -46,7 +46,6 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async session({ session }: { session: Session }) {
-      // ✅ Explicitly typed session
       if (session.user?.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: session.user.email },
@@ -58,7 +57,10 @@ export const authOptions: AuthOptions = {
       return session
     },
   },
-  session: { strategy: 'jwt' },
+  session: {
+    strategy: 'jwt',
+    maxAge: 1 * 24 * 60 * 60,
+  },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: '/auth/signin',

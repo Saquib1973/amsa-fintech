@@ -5,7 +5,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import PrimaryButton from '../button/primary-button'
 import RightArrow from './../../public/svg/right-arrow'
-
+import { useSession } from 'next-auth/react'
+import UserSvg from '@/public/svg/user-svg'
 interface MenuItem {
   title: string
   href?: string
@@ -96,6 +97,8 @@ const MobileNavbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
 
+  const { data: session } = useSession()
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
@@ -170,21 +173,32 @@ const MobileNavbar = () => {
 
           <div className="border-t border-gray-200 p-4">
             <div className="flex flex-col gap-1">
-              <Link
-                href="/auth/signin"
-                className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
-              >
-                <SecondaryButton>Log in</SecondaryButton>
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
-              >
-                <PrimaryButton className="w-full">
-                  Get started
-                  <RightArrow />
-                </PrimaryButton>
-              </Link>
+              {session ? (
+                <Link
+                  href="/dashboard"
+                  className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
+                >
+                  <PrimaryButton className='w-full' prefixIcon={<UserSvg />}>Dashboard</PrimaryButton>
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/signin"
+                    className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
+                  >
+                    <SecondaryButton>Log in</SecondaryButton>
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
+                  >
+                    <PrimaryButton className="w-full">
+                      Get started
+                      <RightArrow />
+                    </PrimaryButton>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

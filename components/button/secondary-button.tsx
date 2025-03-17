@@ -19,7 +19,7 @@ const SecondaryButton = ({
   return (
     <button
       className={cn(
-        'rounded-2xl border-b-4 md:text-lg tracking-wide flex items-center justify-center gap-2 border-gray-400 bg-gray-100 p-3 font-bold uppercase text-black transition-all cursor-pointer w-full',
+        'rounded-full text-base tracking-wide flex items-center justify-center gap-2 bg-gray-100 p-3 px-6 text-black transition-all cursor-pointer w-full',
         className
       )}
       onClick={onClick}
