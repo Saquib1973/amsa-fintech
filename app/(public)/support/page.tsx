@@ -10,6 +10,7 @@ import {
 } from '@/public/svg'
 import FAQComponent from '@/components/support/faq-component'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
+import BlueHeadingContainer from '@/components/containers/blue-heading-container'
 
 const faqData = [
   {
@@ -67,90 +68,98 @@ const faqData = [
 const SupportPage = () => {
   return (
     <AnimateWrapper>
-
-    <div className="w-full">
-      <div className="page-header px-4 bg-blue-400 text-white">
-        <div className="max-w-[1600px] flex-col mx-auto flex gap-4 justify-center">
-          <h1 className="text-5xl">How can we help?</h1>
+      <div className="w-full">
+        <BlueHeadingContainer className="">
+          <h1 className="text-6xl font-light">How can we help?</h1>
           <input
             type="text"
             placeholder="Search..."
             className="input-field text-black placeholder:text-gray-500 md:min-w-3xl max-md:max-w-3xl"
           />
+        </BlueHeadingContainer>
+        <div className="w-full">
+          <HeaderSection />
+          <FAQComponent faqData={faqData} />
+          <ContactSection />
         </div>
       </div>
-      <div className="max-w-[1600px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 py-10">
-          <div className="bg-white flex items-center gap-2 border transition-all border-gray-100 justify-center flex-col rounded-lg p-4 py-12 hover:shadow-lg hover:border-blue-200">
-            <Info className="text-blue-500 size-10" />
-            <h2 className="text-3xl">Learn Crypto Trading</h2>
-            <p className="text-gray-500">
-              Master the basics of cryptocurrency trading with our comprehensive
-              guides.
-            </p>
-          </div>
-          <div className="bg-white flex items-center gap-2 border transition-all border-gray-100 justify-center flex-col rounded-lg p-4 py-12 hover:shadow-lg hover:border-blue-200">
-            <Wallet className="text-blue-500 size-10" />
-            <h2 className="text-3xl">Account & Wallet</h2>
-            <p className="text-gray-500">
-              Manage your account settings and wallet preferences.
-            </p>
-          </div>
-          <div className="bg-white flex items-center gap-2 border transition-all border-gray-100 justify-center flex-col rounded-lg p-4 py-12 hover:shadow-lg hover:border-blue-200">
-            <Shield className="text-blue-500 size-10" />
-            <h2 className="text-3xl">Security</h2>
-            <p className="text-gray-500">
-              Learn about our security measures and how to protect your account.
-            </p>
-          </div>
-          <div className="bg-white flex items-center gap-2 border transition-all border-gray-100 justify-center flex-col rounded-lg p-4 py-12 hover:shadow-lg hover:border-blue-200">
-            <HelpCircle className="text-blue-500 size-10" />
-            <h2 className="text-3xl">FAQs</h2>
-            <p className="text-gray-500">
-              Find answers to commonly asked questions.
-            </p>
-          </div>
-          <div className="bg-white flex items-center gap-2 border transition-all border-gray-100 justify-center flex-col rounded-lg p-4 py-12 hover:shadow-lg hover:border-blue-200">
-            <MessageSquare className="text-blue-500 size-10" />
-            <h2 className="text-3xl">Live Chat</h2>
-            <p className="text-gray-500">
-              Chat with our support team in real-time.
-            </p>
-          </div>
-        </div>
-
-        <FAQComponent faqData={faqData} />
-
-        <div className="p-8 m-4">
-          <h2 className="text-4xl mb-6 font-bold text-gray-800">Contact Us</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-              <Phone className="text-blue-500 size-6" />
-              <div>
-                <h3 className="font-semibold text-gray-800">Phone Support</h3>
-                <p className="text-gray-500">+1 (555) 123-4567</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-              <Mail className="text-blue-500 size-6" />
-              <div>
-                <h3 className="font-semibold text-gray-800">Email Support</h3>
-                <p className="text-gray-500">support@Amsafintech.com</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-              <MessageSquare className="text-blue-500 size-6" />
-              <div>
-                <h3 className="font-semibold text-gray-800">Live Chat</h3>
-                <p className="text-gray-500">Available 24/7</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     </AnimateWrapper>
   )
 }
 
 export default SupportPage
+
+
+const HeaderSection = () => {
+  return (
+    <div className="width-1600 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6 py-16">
+      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
+        <Info className="text-blue-500 size-10" />
+        <h2 className="text-3xl font-light">Learn Crypto Trading</h2>
+        <p className="text-gray-500 text-center">
+          Master the basics of cryptocurrency trading with our comprehensive
+          guides.
+        </p>
+      </div>
+      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
+        <Wallet className="text-blue-500 size-10" />
+        <h2 className="text-3xl font-light">Account & Wallet</h2>
+        <p className="text-gray-500 text-center">
+          Manage your account settings and wallet preferences.
+        </p>
+      </div>
+      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
+        <Shield className="text-blue-500 size-10" />
+        <h2 className="text-3xl font-light">Security</h2>
+        <p className="text-gray-500 text-center">
+          Learn about our security measures and how to protect your account.
+        </p>
+      </div>
+      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
+        <HelpCircle className="text-blue-500 size-10" />
+        <h2 className="text-3xl font-light">FAQs</h2>
+        <p className="text-gray-500 text-center">
+          Find answers to commonly asked questions.
+        </p>
+      </div>
+      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
+        <MessageSquare className="text-blue-500 size-10" />
+        <h2 className="text-3xl font-light">Live Chat</h2>
+        <p className="text-gray-500 text-center">
+          Chat with our support team in real-time.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+const ContactSection = () => {
+  return (
+    <div className="p-6 py-16 flex items-center justify-center flex-col width-1600">
+      <h2 className="text-6xl mb-6 font-light text-gray-800">Contact Us</h2>
+      <div className="flex max-md:flex-col w-full items-center md:justify-around gap-6">
+        <div className="flex items-center gap-3 p-4">
+          <Phone className="text-blue-500 size-6" />
+          <div>
+            <h3 className="text-xl">Phone Support</h3>
+            <p className="text-sm text-gray-400">+1 (555) 123-4567</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-4">
+          <Mail className="text-blue-500 size-6" />
+          <div>
+            <h3 className="text-xl">Email Support</h3>
+            <p className="text-sm text-gray-400">support@Amsafintech.com</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-4">
+          <MessageSquare className="text-blue-500 size-6" />
+          <div>
+            <h3 className="text-xl">Live Chat</h3>
+            <p className="text-sm text-gray-400">Available 24/7</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

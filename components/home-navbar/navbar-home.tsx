@@ -5,35 +5,9 @@ import NavbarHomeCta from './navbar-home-cta'
 import MobileNavbar from './mobile-navbar'
 import NavbarDropdown from './navbar-dropdown'
 import { useState, useRef, useEffect } from 'react'
+import { menuItems } from '@/lib/data'
 
-const menuItems = [
-  {
-    title: 'Assets',
-    children: [
-      { title: 'Discover all assets', href: '/assets' },
-      { title: 'Bitcoin', href: '/assets/bitcoin' },
-      { title: 'Ethereum', href: '/assets/ethereum' },
-      { title: 'Solana', href: '/assets/solana' },
-      { title: 'USDT', href: '/assets/usdt' },
-    ],
-  },
-  {
-    title: 'Resources',
-    children: [
-      { title: 'Learn & Earn', href: '/learn-earn',  },
-      { title: 'Research & analysis', href: '/research-analysis',  },
-    ],
-  },
-  {
-    title: 'About',
-    children: [
-      { title: 'About us', href: '/about-us',  },
-      { title: 'Blog', href: '/blog',  },
-      { title: 'Fees', href: '/fees',  },
-      { title: 'Security', href: '/security',  },
-    ],
-  },
-]
+
 
 
 const mainLinks = menuItems.map((item) => item.title)
@@ -65,13 +39,13 @@ const NavbarHome = () => {
 
   return (
     <div
-      className="w-full py-6 max-xl:px-4 px-6 bg-white border border-gray-200 flex-1 relative"
+      className="w-full py-3 md:py-5 max-xl:px-4 px-6 bg-white border border-gray-200 flex-1 relative"
       ref={navbarRef}
     >
       <div className="w-full xl:max-w-[1400px] text-lg mx-auto flex items-center justify-between xl:justify-around">
         <Link
           href={'/'}
-          className="text-3xl tracking-tighter font-bold text-center flex flex-col items-center"
+          className="text-4xl tracking-tighter text-center flex flex-col items-center"
           onClick={() => setActiveDropdown(null)}
         >
           AMSA

@@ -41,7 +41,7 @@ export default function SignUpPage() {
 
   return (
     <AnimateWrapper>
-      <div className="flex flex-col max-w-lg mx-auto items-center justify-center h-screen">
+      <div className="flex flex-col p-8 py-16 max-w-lg mx-auto items-center justify-center h-screen">
         <h2 className="text-4xl mb-8">Sign Up</h2>
         <form
           onSubmit={handleSubmit}
@@ -76,16 +76,14 @@ export default function SignUpPage() {
             Sign Up
           </SecondaryButton>
         </form>
-        <div className="flex items-center w-full mt-6 justify-center gap-2">
-          <div className="h-0.5 w-full bg-gray-200" />
-          <span className="text-gray-500 text-lg md:text-xl font-semibold">
-            Or
-          </span>
-          <div className="h-0.5 w-full bg-gray-200" />
+        <div className="flex items-center w-full my-6 justify-center gap-2">
+          <div className="h-px w-full bg-gray-200" />
+          <span className="text-gray-500 text-sm font-medium px-2">OR</span>
+          <div className="h-px w-full bg-gray-200" />
         </div>
         <SecondaryButton
           onClick={() => signIn('google')}
-          className="bg-red-500 border-red-800 hover:bg-red-500 text-white p-2 px-6 mt-4"
+          className="flex items-center justify-center w-full gap-2 bg-blue-400 text-white"
         >
           Sign up with Google
         </SecondaryButton>

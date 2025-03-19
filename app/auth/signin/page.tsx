@@ -4,112 +4,163 @@ import SecondaryButton from '@/components/button/secondary-button'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+
+  const error = searchParams.get('error')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    toast.promise(
-      new Promise((resolve, reject) => {
-        signIn('credentials', {
-          email,
-          password,
-          redirect: false,
-        }).then((res) => {
-          if (res?.error) {
-            setError('Invalid email or password')
-            reject(res.error)
-          } else if (res?.ok) {
-            resolve(res)
-            router.push('/dashboard')
-          }
-        })
-      }),
-      {
-        loading: 'Signing in...',
-        success: 'Signed in successfully',
-        error: 'Failed to sign in',
+    setIsLoading(true)
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        toast.error('Invalid email or password')
+      } else {
+        toast.success('Signed in successfully')
+        router.push(callbackUrl)
+        router.refresh()
       }
-    )
+    } catch (error) {
+      console.error('Sign in error:', error)
+      toast.error('An error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleGoogleSignIn = async () => {
-    setError('')
-    const response = await signIn('google', { redirect: false })
-    if (response?.error) {
-      setError('Failed to sign in with Google')
-    } else {
-      router.push('/dashboard')
+    setIsLoading(true)
+    try {
+      await signIn('google', { callbackUrl })
+    } catch (error) {
+      console.error('Google sign in error:', error)
+      toast.error('Failed to sign in with Google')
+      setIsLoading(false)
     }
   }
 
   const testCredentials = {
-    email: 'saquibali353@gmail.com',
-    password: 'saban1973',
+    email: 'testuser@gmail.com',
+    password: 'testuser',
   }
 
   return (
     <AnimateWrapper>
-    <div className="flex flex-col max-w-lg mx-auto items-center justify-center h-screen">
-      <h2 className="text-4xl mb-8">Sign In</h2>
-      {error && (
-        <div className="text-center text-lg text-red-500 mb-4 w-full">
-          {error}
-        </div>
-      )}
-      <form onSubmit={handleSubmit} className="flex w-full flex-col space-y-3">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="input-field"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          className="input-field"
-        />
+      <div className="flex flex-col max-w-lg mx-auto items-center justify-center min-h-screen p-6 py-16">
+        <h2 className="text-4xl font-bold mb-8">Sign In</h2>
 
-        <SecondaryButton type="submit" className="w-full text-center flex items-center justify-center mt-6">
-          Sign In
+        {error && (
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 w-full"
+            role="alert"
+          >
+            {error === 'CredentialsSignin'
+              ? 'Invalid email or password'
+              : 'An error occurred. Please try again.'}
+          </div>
+        )}
+
+        <form
+          onSubmit={handleSubmit}
+          className="flex w-full flex-col space-y-4"
+        >
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="input-field w-full"
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="input-field w-full"
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <SecondaryButton
+            type="submit"
+            className="w-full text-center flex items-center justify-center mt-6"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </SecondaryButton>
 
-          <button className='lowercase text-blue-500 ml-auto text-lg hover:underline cursor-pointer' onClick={(e) => {
-            e.preventDefault()
-            setEmail(testCredentials.email)
-            setPassword(testCredentials.password)
-          }}
-          >Use Test Credentials</button>
-      </form>
-      <div className='flex items-center w-full mt-6 justify-center gap-2'>
-        <div className='h-0.5 w-full bg-gray-200' />
-        <span className='text-gray-500 text-lg md:text-xl font-semibold'>Or</span>
-        <div className='h-0.5 w-full bg-gray-200' />
+          <button
+            type="button"
+            className="text-blue-500 ml-auto text-sm hover:underline cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault()
+              setEmail(testCredentials.email)
+              setPassword(testCredentials.password)
+            }}
+            disabled={isLoading}
+          >
+            Use Test Credentials
+          </button>
+        </form>
+
+        <div className="flex items-center w-full my-6 justify-center gap-2">
+          <div className="h-px w-full bg-gray-200" />
+          <span className="text-gray-500 text-sm font-medium px-2">OR</span>
+          <div className="h-px w-full bg-gray-200" />
+        </div>
+
+        <SecondaryButton
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+          className="flex items-center justify-center w-full gap-2 bg-blue-400 text-white"
+        >
+          <span>Sign in with Google</span>
+        </SecondaryButton>
+
+        <p className="mt-6 text-center text-gray-600">
+          Don&apos;t have an account?{' '}
+          <Link href="/auth/signup" className="text-blue-600 hover:underline">
+            Sign Up
+          </Link>
+        </p>
       </div>
-      <SecondaryButton
-        onClick={handleGoogleSignIn}
-        className="bg-red-500 border-red-800 hover:bg-red-500 text-white p-2 px-6 mt-4"
-      >
-        Sign in with Google
-      </SecondaryButton>
-      <p className="mt-4">
-        Don&apos;t have an account?{' '}
-        <Link href="/auth/signup" className="hover:underline text-blue-500">
-          Sign Up
-        </Link>
-      </p>
-    </div>
     </AnimateWrapper>
   )
 }

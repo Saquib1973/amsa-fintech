@@ -6,13 +6,28 @@ export async function POST(req: Request) {
   try {
     const { name, email, password } = await req.json()
 
-    const existingUser = await prisma.user.findUnique({ where: { email } })
-    if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 })
+    // Validate input
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
     }
 
-    // Create user with credentials provider
-    const newUser = await prisma.user.create({
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } })
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'User already exists' },
+        { status: 400 }
+      )
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Create user
+    const user = await prisma.user.create({
       data: {
         name,
         email,
@@ -21,22 +36,27 @@ export async function POST(req: Request) {
             type: 'credentials',
             provider: 'credentials',
             providerAccountId: email,
-            password: await bcrypt.hash(password, 10),
+            password: hashedPassword,
+          },
+        },
+        wallet: {
+          create: {
+            balance: 100,
           },
         },
       },
     })
 
-    return NextResponse.json({
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email
-    })
+    return NextResponse.json(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+      { status: 201 }
+    )
   } catch (error) {
     console.error('Signup error:', error)
-    return NextResponse.json(
-      { error: 'Error creating user' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Error creating user' }, { status: 500 })
   }
 }

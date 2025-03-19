@@ -5,10 +5,8 @@ import Link from 'next/link'
 const Footer = () => {
   const footerLinks = {
     company: [
-      { href: '/about', label: 'About us' },
-      { href: '/careers', label: 'Careers' },
-      { href: '/legal', label: 'Legal' },
-      { href: '/press', label: 'Media & Press' },
+      { href: '/about-us', label: 'About us' },
+      { href: '/blog', label: 'Blog' },
     ],
     platform: [
       { href: '/features', label: 'Features' },
@@ -16,7 +14,7 @@ const Footer = () => {
       { href: '/networks', label: 'Network fees' },
     ],
     learn: [
-      { href: '/learn', label: 'Learning Center' },
+      { href: '/learn-earn', label: 'Learning Center' },
       { href: '/courses', label: 'Courses' },
       { href: '/guides', label: 'Guides' },
     ],
@@ -25,14 +23,16 @@ const Footer = () => {
       { href: '/api', label: 'API Documentation' },
     ],
     more: [
-      { href: '/terms', label: 'Terms of Use' },
-      { href: '/sitemap', label: 'Sitemap' },
+      { href: '/terms-of-use', label: 'Terms of Use' },
+      { href: '/support', label: 'Support' },
       { href: '/privacy', label: 'Privacy Policy' },
     ],
     assets: [
-      { href: '/all-assets', label: 'All Assets' },
-      { href: '/buy-bitcoins', label: 'Buy Bitcoins' },
-      { href: '/buy-ethereum', label: 'Buy Ethereum' },
+      { href: '/assets', label: 'All Assets' },
+      { href: '/assets/bitcoin', label: 'Buy Bitcoins' },
+      { href: '/assets/ethereum', label: 'Buy Ethereum' },
+      { href: '/assets/solana', label: 'Buy Solana' },
+      { href: '/assets/usdt', label: 'Buy USDT' },
 
     ],
   }

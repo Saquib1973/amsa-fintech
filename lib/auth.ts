@@ -1,11 +1,14 @@
+// auth.ts
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { getServerSession, Session } from 'next-auth'
-import type { AuthOptions } from 'next-auth'
+import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
+import { getServerSession } from 'next-auth/next'
 
-export const authOptions: AuthOptions = {
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -22,9 +25,9 @@ export const authOptions: AuthOptions = {
             accounts: {
               where: {
                 provider: 'credentials',
-                providerAccountId: credentials.email,
               },
             },
+            wallet: true,
           },
         })
 
@@ -34,9 +37,15 @@ export const authOptions: AuthOptions = {
           credentials.password,
           user.accounts[0].password
         )
+
         if (!isValidPassword) return null
 
-        return user
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        }
       },
     }),
     GoogleProvider({
@@ -45,16 +54,42 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async session({ session }: { session: Session }) {
-      if (session.user?.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: session.user.email },
-        })
-        if (dbUser) {
-          session.user.id = dbUser.id
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (account && user) {
+        return {
+          ...token,
+          id: user.id,
         }
       }
+      return token
+    },
+    async session({ session, token }) {
+      if (token?.id && session.user) {
+        session.user.id = token.id as string
+      }
       return session
+    },
+  },
+  events: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        console.log(`User ${user.email} signed in with Google`)
+
+        const customer = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: { wallet: true },
+        })
+
+        if (!customer?.wallet) {
+          await prisma.wallet.create({
+            data: {
+              balance: 100,
+              userId: user.id,
+            },
+          })
+        }
+      }
     },
   },
   session: {
@@ -65,7 +100,9 @@ export const authOptions: AuthOptions = {
   pages: {
     signIn: '/auth/signin',
     signOut: '/auth/signout',
+    error: '/auth/error',
   },
+  debug: process.env.NODE_ENV === 'development',
 }
 
 export const getSession = async () => {

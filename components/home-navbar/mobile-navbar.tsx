@@ -7,6 +7,7 @@ import PrimaryButton from '../button/primary-button'
 import RightArrow from './../../public/svg/right-arrow'
 import { useSession } from 'next-auth/react'
 import UserSvg from '@/public/svg/user-svg'
+import { menuItems } from '@/lib/data'
 interface MenuItem {
   title: string
   href?: string
@@ -14,47 +15,19 @@ interface MenuItem {
   children?: MenuItem[]
 }
 
-const menuItems: MenuItem[] = [
-  {
-    title: 'Assets',
-    children: [
-      { title: 'Discover all assets', href: '/au/buy/' },
-      { title: 'Bitcoin', href: '/au/buy/bitcoin/' },
-      { title: 'Ethereum', href: '/au/buy/ethereum/' },
-      { title: 'Solana', href: '/au/buy/solana/' },
-      { title: 'USDT', href: '/au/buy/usd-tether/' },
-    ],
-  },
-  {
-    title: 'Resources',
-    children: [
-      { title: 'Learn & Earn', href: '#', target: '_blank' },
-      { title: 'Research & analysis', href: '#', target: '_blank' },
-    ],
-  },
-  {
-    title: 'About',
-    children: [
-      { title: 'About us', href: '#', target: '_blank' },
-      { title: 'Blog', href: '#', target: '_blank' },
-      { title: 'Fees', href: '#', target: '_blank' },
-      { title: 'Security', href: '#', target: '_blank' },
-    ],
-  },
-]
 
 const MenuItem: React.FC<{ item: MenuItem }> = ({ item }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   if (item.href) {
     return (
-      <a
+      <Link
         href={item.href}
         target={item.target}
         className="block py-2 no-underline pl-6 pr-3 text-base leading-7 hover:bg-gray-50"
       >
         {item.title}
-      </a>
+      </Link>
     )
   }
 
@@ -120,17 +93,16 @@ const MobileNavbar = () => {
   return (
     <div className="xl:hidden relative">
       <div className="flex items-center">
-        <SecondaryButton
-          className="px-4 py-2"
+        <button
           onClick={() => setIsOpen(!isOpen)}
           aria-label={isOpen ? 'Close menu' : 'Open menu'}
         >
           {isOpen ? (
-            <Close className="size-6 cursor-pointer" />
+            <Close className="size-7 cursor-pointer" />
           ) : (
-            <HamburgerMenu className="size-6 cursor-pointer" />
+            <HamburgerMenu className="size-7 cursor-pointer" />
           )}
-        </SecondaryButton>
+        </button>
       </div>
 
       {isOpen && (
@@ -186,7 +158,7 @@ const MobileNavbar = () => {
                     href="/auth/signin"
                     className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
                   >
-                    <SecondaryButton>Log in</SecondaryButton>
+                    <SecondaryButton className='w-full'>Log in</SecondaryButton>
                   </Link>
                   <Link
                     href="/auth/signup"

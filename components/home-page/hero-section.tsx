@@ -4,7 +4,7 @@ import { Check, Fast, Safe } from '@/public/svg'
 const HeroSection = () => {
   return (
     <div className="w-full h-full relative border bg-gradient-to-t from-blue-50 via-white to-white border-gray-200 p-2 md:p-6">
-      <div className="flex justify-between p-6 md:p-10 py-10 md:py-16 max-w-[1400px] mx-auto w-full ">
+      <div className="flex justify-between p-6 md:p-10 py-10 md:py-16 max-w-[1200px] mx-auto w-full ">
         <div className="flex items-start justify-start flex-col gap-4 z-10">
           <h1 className="text-7xl md:text-8xl max-w-[80%] font-semibold">
             The

@@ -2,7 +2,7 @@ import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import React from 'react'
 import Image from 'next/image'
 import TrustSection from '@/components/home-page/trust-section'
-import ContainerOne from '@/components/containers/container-one'
+import BlueHeadingContainer from '@/components/containers/blue-heading-container'
 const AboutUsPage = () => {
   const content = [
     {
@@ -29,9 +29,9 @@ const AboutUsPage = () => {
   return (
     <AnimateWrapper>
       <div className="page-container">
-        <ContainerOne>About Us</ContainerOne>
-          <div className="flex max-md:flex-col items-start gap-10 max-w-[1400px] p-16 mx-auto">
-          <div className="w-1/2 flex gap-4 flex-col space-y-8 justify-end">
+        <BlueHeadingContainer>About Us</BlueHeadingContainer>
+          <div className="flex max-md:flex-col-reverse items-start gap-10 w-full max-w-[1400px] max-md:px-8 p-16 mx-auto">
+          <div className="md:w-1/2 flex gap-4 flex-col space-y-8 justify-end">
             {content.map((item) => (
               <div className="flex flex-col gap-4" key={item.title}>
                 <h1 className="text-4xl text-blue-400 mb-2 underline underline-offset-4 font-light">
@@ -41,7 +41,7 @@ const AboutUsPage = () => {
               </div>
             ))}
           </div>
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2">
             <Image
               src="/images/about-us.png"
               className="bg-gray-100 h-[500px] w-[500px] object-cover"
