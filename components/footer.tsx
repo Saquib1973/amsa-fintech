@@ -39,7 +39,7 @@ const Footer = () => {
 
   return (
     <footer className="border-t border-gray-200">
-      <div className="max-w-[1600px] mx-auto flex gap-4 justify-center py-16">
+      <div className="width-1240 flex gap-4 justify-center py-16">
         <div className="flex max-md:flex-col md:justify-center w-full px-6 gap-6">
           <div className=" flex flex-col max-w-[300px]">
             <Link href="/" className="mb-5">
@@ -79,9 +79,9 @@ const Footer = () => {
 
       <div className="border-t border-gray-200" />
 
-      <div className="max-w-[1600px] px-4 text-gray-800 text-lg mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-6 py-6">
+      <div className="width-1240 px-4 text-gray-500 text-lg mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-6 py-6">
         <div className="copyright">
-          © {new Date().getFullYear()} 2025 AMSA Fintech and IT solutions - All
+          © {new Date().getFullYear()} AMSA Fintech and IT solutions - All
           Rights Reserved.
         </div>
         <nav className="global-links footer-links">

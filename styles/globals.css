@@ -12,7 +12,7 @@
   }
 
   .page-container {
-    @apply min-h-[calc(100vh-110px)];
+    @apply min-h-[calc(100vh-var(--exclude-header-height))];
   }
 
   .b-200{
@@ -21,10 +21,17 @@
   .width-1600{
     @apply max-w-[1600px] mx-auto;
   }
+  .width-1240{
+    @apply max-w-[1240px] mx-auto;
+  }
+  .light-text{
+    @apply text-gray-500;
+  }
 
 }
 
 @theme{
   --color-off-white: #F8F8F5;
+  --exclude-header-height: 110px;
 }
 

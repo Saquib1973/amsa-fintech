@@ -4,15 +4,19 @@ import React, { useState, useEffect } from 'react'
 const features = [
   {
     title: 'Sign up for free',
-    image: '/images/buy-crypto-in-minutes.png',
+    image: '/images/cta-two.png',
   },
   {
     title: 'Verify your account',
-    image: '/images/buy-crypto-in-minutes.png',
+    image: '/images/navbar-image.png',
   },
   {
     title: 'Start investing',
-    image: '/images/buy-crypto-in-minutes.png',
+    image: '/images/cta-two.png',
+  },
+  {
+    title: 'API Documentation',
+    image: '/images/assets-search.png',
   },
 ]
 

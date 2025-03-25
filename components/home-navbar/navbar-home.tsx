@@ -8,15 +8,12 @@ import { useState, useRef, useEffect } from 'react'
 import { menuItems } from '@/lib/data'
 
 
-
-
-const mainLinks = menuItems.map((item) => item.title)
-
 const NavbarHome = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [navbarHeight, setNavbarHeight] = useState(0)
   const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({})
   const navbarRef = useRef<HTMLDivElement>(null)
+  const mainLinks = menuItems.map((item) => item.title)
 
   useEffect(() => {
     const updateNavbarHeight = () => {

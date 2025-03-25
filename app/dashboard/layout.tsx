@@ -1,4 +1,4 @@
-import AuthCheckWrapper from '@/components/auth-check-wrapper'
+import AuthCheckWrapper from '@/components/wrapper/auth-check-wrapper'
 export default async function DashboardLayout({
   children,
 }: {
