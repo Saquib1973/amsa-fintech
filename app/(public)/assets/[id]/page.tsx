@@ -6,7 +6,6 @@ const AssetsByIdPage = async ({
   params: Promise<{ id: string }>
 }) => {
   const { id } = await params
-  console.log(id)
   return <AssetDetails id={id} />
 }
 

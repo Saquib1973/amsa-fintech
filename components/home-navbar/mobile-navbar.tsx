@@ -8,6 +8,7 @@ import RightArrow from './../../public/svg/right-arrow'
 import { useSession } from 'next-auth/react'
 import UserSvg from '@/public/svg/user-svg'
 import { menuItems } from '@/lib/data'
+
 interface MenuItem {
   title: string
   href?: string
@@ -15,8 +16,12 @@ interface MenuItem {
   children?: MenuItem[]
 }
 
+interface MenuItemProps {
+  item: MenuItem
+  onLinkClick: () => void
+}
 
-const MenuItem: React.FC<{ item: MenuItem }> = ({ item }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   if (item.href) {
@@ -24,6 +29,7 @@ const MenuItem: React.FC<{ item: MenuItem }> = ({ item }) => {
       <Link
         href={item.href}
         target={item.target}
+        onClick={onLinkClick}
         className="block py-2 no-underline pl-6 pr-3 text-base leading-7 hover:bg-gray-50"
       >
         {item.title}
@@ -58,7 +64,7 @@ const MenuItem: React.FC<{ item: MenuItem }> = ({ item }) => {
       {isOpen && item.children && (
         <div className="mt-2 space-y-2">
           {item.children.map((child, index) => (
-            <MenuItem key={index + 'mobile-menu-item-child'} item={child} />
+            <MenuItem key={index + 'mobile-menu-item-child'} item={child} onLinkClick={onLinkClick} />
           ))}
         </div>
       )}
@@ -132,10 +138,11 @@ const MobileNavbar = () => {
           <div className="flex-1 overflow-y-auto">
             <div className="px-4 py-4 space-y-4">
               {menuItems.map((item, index) => (
-                <MenuItem key={index + 'mobile-menu-item'} item={item} />
+                <MenuItem key={index + 'mobile-menu-item'} item={item} onLinkClick={() => setIsOpen(false)} />
               ))}
               <Link
                 href="/support"
+                onClick={() => setIsOpen(false)}
                 className="underline block py-2 text-base leading-7"
               >
                 Support
@@ -148,6 +155,7 @@ const MobileNavbar = () => {
               {session ? (
                 <Link
                   href="/dashboard"
+                  onClick={() => setIsOpen(false)}
                   className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
                 >
                   <PrimaryButton className='w-full' prefixIcon={<UserSvg />}>Dashboard</PrimaryButton>
@@ -156,12 +164,14 @@ const MobileNavbar = () => {
                 <>
                   <Link
                     href="/auth/signin"
+                    onClick={() => setIsOpen(false)}
                     className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
                   >
                     <SecondaryButton className='w-full'>Log in</SecondaryButton>
                   </Link>
                   <Link
                     href="/auth/signup"
+                    onClick={() => setIsOpen(false)}
                     className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
                   >
                     <PrimaryButton className="w-full">

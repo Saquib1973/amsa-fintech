@@ -9,7 +9,7 @@ const SectionWrapper = ({ children,className }: { children: React.ReactNode,clas
         className
       )}
     >
-      <div className="width-1240 w-full">{children}</div>
+      <div className={cn("width-1240 w-full", className)}>{children}</div>
     </div>
   )
 }

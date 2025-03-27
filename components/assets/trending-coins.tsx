@@ -1,6 +1,8 @@
 'use client'
 import useCoingecko from '@/context/coingecko-context'
 import Loader from '../loader-component'
+import Link from 'next/link'
+
 const TrendingCoins = () => {
   const { loadingTrendingCoinsData, trendingCoinsData } = useCoingecko()
   if (loadingTrendingCoinsData) {
@@ -34,8 +36,9 @@ const TrendingCoins = () => {
           <h2 className="text-3xl font-light mb-4">Trending Coins</h2>
           <div className="flex flex-col divide-y divide-gray-100">
             {trendingCoinsData[0].coins.map((coin) => (
-              <div
+              <Link
                 key={coin.item.id}
+                href={`/assets/${coin.item.id}`}
                 className="py-2 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">
@@ -80,7 +83,7 @@ const TrendingCoins = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

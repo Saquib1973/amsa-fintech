@@ -1,13 +1,12 @@
-import HeroSection from '@/components/home-page/hero-section'
-import TrustSection from '@/components/home-page/trust-section'
 import AboutUsSection from '@/components/home-page/about-us-section'
 import CtaSectionOne from '@/components/home-page/cta-section-one'
-import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import CtaSectionTwo from '@/components/home-page/cta-section-two'
+import HeroSection from '@/components/home-page/hero-section'
+import TrustSection from '@/components/home-page/trust-section'
 import UtilityPricePlay from '@/components/home-page/utility-price-play'
+import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import SecondaryButton from './../../components/button/secondary-button'
-import Link from 'next/link'
 const page = () => {
   return (
     <AnimateWrapper>
@@ -27,9 +26,7 @@ const page = () => {
             </span>
           </h1>
           <div className="flex justify-center mt-8">
-            <Link href="/assets">
-              <SecondaryButton>Explore Assets</SecondaryButton>
-            </Link>
+              <SecondaryButton link="/assets">Explore Assets</SecondaryButton>
           </div>
         </SectionWrapper>
         <CtaSectionTwo />

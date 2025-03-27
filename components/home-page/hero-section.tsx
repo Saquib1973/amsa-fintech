@@ -12,7 +12,7 @@ const HeroSection = () => {
             of financial freedom.
           </h1>
           <p className="text-xl text-gray-500">Less cryptic, more crypto</p>
-          <PrimaryButton className="mt-4">Get Started</PrimaryButton>
+          <PrimaryButton className="mt-4" link="/auth/signup">Get Started</PrimaryButton>
           <div className="mt-16 flex gap-5 xl:gap-10 justify-center items-center">
             <div className="flex flex-col items-center gap-2">
               <Fast className="size-10 lg:size-20 text-gray-400" />

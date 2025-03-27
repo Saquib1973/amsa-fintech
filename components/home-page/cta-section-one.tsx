@@ -12,7 +12,7 @@ const CtaSectionOne = () => {
             Buy, sell, swap, track and analyse hundreds of cryptocurrencies on
             Australia’s most trusted crypto exchange
           </h1>
-          <PrimaryButton className='mt-4'>View All Assets</PrimaryButton>
+          <PrimaryButton className='mt-4' link="/assets">View All Assets</PrimaryButton>
         </div>
       </div>
     </div>

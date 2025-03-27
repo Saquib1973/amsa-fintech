@@ -6,6 +6,7 @@ import MobileNavbar from './mobile-navbar'
 import NavbarDropdown from './navbar-dropdown'
 import { useState, useRef, useEffect } from 'react'
 import { menuItems } from '@/lib/data'
+import { AnimatePresence } from 'framer-motion'
 
 
 const NavbarHome = () => {
@@ -35,6 +36,7 @@ const NavbarHome = () => {
   }
 
   return (
+    <AnimatePresence>
     <div
       className="w-full py-3 md:py-5 max-xl:px-4 px-6 bg-white border border-gray-200 flex-1 relative"
       ref={navbarRef}
@@ -101,6 +103,7 @@ const NavbarHome = () => {
         />
       </div>
     </div>
+    </AnimatePresence>
   )
 }
 
