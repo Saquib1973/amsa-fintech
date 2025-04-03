@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import useCoingecko from '@/context/coingecko-context'
 import Loader from '../loader-component'
 import SectionWrapper from '../wrapper/section-wrapper'
-
+import Image from 'next/image'
 interface TrendingItem {
   id: string
   name: string
@@ -78,7 +78,9 @@ const UtilityPricePlay = () => {
               className="inline-flex items-center mx-2 min-w-[200px] p-4"
             >
               <div className="flex items-center justify-center gap-2">
-                <img
+                <Image
+                  width={32}
+                  height={32}
                   src={item.image}
                   alt={item.name}
                   className="w-8 h-8 rounded-full"

@@ -1,6 +1,7 @@
 "use client"
 import React from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 const AnimateWrapper = ({ children,animateVertical = false,duration = 0.7,delay = 0,className = '' }: { children: React.ReactNode,animateVertical?: boolean,duration?: number,delay?: number,className?: string }) => {
   return (
     <AnimatePresence>
@@ -9,7 +10,7 @@ const AnimateWrapper = ({ children,animateVertical = false,duration = 0.7,delay 
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: duration, delay: delay }}
         exit={{ opacity: 0, y: animateVertical ? -10 : 0 }}
-        className={className}
+        className={cn('w-full',className)}
       >
         {children}
       </motion.div>

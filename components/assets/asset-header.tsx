@@ -1,7 +1,7 @@
 import { CoinData } from '@/types/coingecko-types'
 import CurrencyDropdown from '@/components/dropdown/currency-dropdown'
 import { formatLargeNumber } from '@/utils/format-large-number'
-
+import Image from 'next/image'
 interface AssetHeaderProps {
   coinData: CoinData
   selectedCurrency: string
@@ -26,10 +26,10 @@ const AssetHeader = ({ coinData, selectedCurrency, setSelectedCurrency, activeTa
   }
 
   return (
-    <div className="flex flex-col items-center w-full gap-4 p-4 pb-0">
+    <div className="flex flex-col items-center justify-between w-full gap-4 p-4 pb-0">
       <div className="flex items-center justify-between gap-4 py-4 border-gray-200 w-full border-b">
         <div className="flex items-center gap-4">
-          <img
+          <Image
             src={coinData.image.large}
             alt={coinData.name}
             width={64}

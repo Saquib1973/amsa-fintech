@@ -3,12 +3,13 @@ import Loader from '@/components/loader-component'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import useCoingecko from '@/context/coingecko-context'
 import { useEffect, useState } from 'react'
-import PrimaryButton from '../button/primary-button'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import AssetHeader from './asset-header'
 import AssetOverview from './asset-overview'
 import AssetChart from './asset-chart'
 import TrendingCoins from './trending-coins'
+import AssetCalculator from './asset-calculator'
+
 interface AssetDetailsProps {
   id: string
 }
@@ -58,12 +59,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
-          <div className="md:border-l border-gray-200 flex gap-4 justify-center flex-col p-10 md:p-20">
-            <h1 className="text-2xl font-light">
-              Buy {coinData.name} in minutes
-            </h1>
-            <PrimaryButton>Buy Now</PrimaryButton>
-          </div>
+          <AssetCalculator coinData={coinData} selectedCurrency={selectedCurrency} />
         </div>
       </SectionWrapper>
       <SectionWrapper className="flex max-md:flex-col gap-4">
@@ -77,9 +73,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
             />
           )}
         </div>
-        <div className="md:w-1/3 p-4 bg-white">
-          <TrendingCoins />
-        </div>
+        <TrendingCoins />
       </SectionWrapper>
     </AnimateWrapper>
   )

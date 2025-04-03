@@ -1,8 +1,14 @@
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import Link from 'next/link'
+import { blogPosts } from '@/content/blog'
 
 const BlogPage = () => {
+  const posts = Object.entries(blogPosts).map(([id, post]) => ({
+    id,
+    name: post.title,
+  }));
+
   return (
     <AnimateWrapper>
       <div className="page-container">
@@ -13,26 +19,13 @@ const BlogPage = () => {
             {` / Blog`}
           </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <BlogCard
-              name="Trump Announces Bitcoin Reserve as Economic Fears Deepen "
-              link="https://www.google.com"
-            />
-            <BlogCard
-              name="Crypto Suffers Biggest-Ever Hack as Bitcoin Tumbles Below US $90k "
-              link="https://www.google.com"
-            />
-            <BlogCard
-              name="Bitcoin Hits All-Time High as Trump Wins 2024 US Election "
-              link="https://www.google.com"
-            />
-            <BlogCard
-              name="Crypto Market Bounces Back As the Industry Ticks Off Several All-Time Highs "
-              link="https://www.google.com"
-            />
-            <BlogCard
-              name="XRP Flies High as Veteran Altcoins Make a Comeback"
-              link="https://www.google.com"
-            />
+            {posts.map((post) => (
+              <BlogCard
+                key={post.id}
+                name={post.name}
+                link={`/blog/${post.id}`}
+              />
+            ))}
           </div>
         </div>
       </div>

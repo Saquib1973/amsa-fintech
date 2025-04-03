@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="overflow-x-hidden">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
+        className={`${geistSans.variable} flex flex-col ${geistMono.variable} antialiased overflow-x-hidden`}
       >
         <ClientWrapper>{children}</ClientWrapper>
       </body>

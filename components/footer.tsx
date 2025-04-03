@@ -20,7 +20,7 @@ const Footer = () => {
     ],
     support: [
       { href: '/help', label: 'Help Center' },
-      { href: '/api', label: 'API Documentation' },
+      { href: '/docs', label: 'API Documentation' },
     ],
     more: [
       { href: '/terms-of-use', label: 'Terms of Use' },
@@ -32,7 +32,6 @@ const Footer = () => {
       { href: '/assets/bitcoin', label: 'Buy Bitcoins' },
       { href: '/assets/ethereum', label: 'Buy Ethereum' },
       { href: '/assets/solana', label: 'Buy Solana' },
-      { href: '/assets/usdt', label: 'Buy USDT' },
 
     ],
   }

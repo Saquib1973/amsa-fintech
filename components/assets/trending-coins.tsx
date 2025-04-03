@@ -2,17 +2,28 @@
 import useCoingecko from '@/context/coingecko-context'
 import Loader from '../loader-component'
 import Link from 'next/link'
-
+import Image from 'next/image'
 const TrendingCoins = () => {
   const { loadingTrendingCoinsData, trendingCoinsData } = useCoingecko()
   if (loadingTrendingCoinsData) {
     return (
-      <div className="flex items-center flex-col gap-2">
-        <h2 className="text-3xl font-light mb-4">Trending Assets</h2>
-        <Loader />
-        <div className="h-20" />
-        <h2 className="text-3xl font-light mb-4">Trending NFTs</h2>
-        <Loader />
+      <div className="w-full md:w-1/3 gap-6 h-full flex flex-col items-center justify-center">
+        <div className="bg-white w-full flex items-center flex-col gap-6 h-fit">
+          <h2 className="text-3xl font-light mb-4 p-3 border-b border-gray-200 w-full">
+            Trending Assets
+          </h2>
+          <div className="flex flex-col items-center justify-center min-h-[400px]">
+            <Loader />
+          </div>
+        </div>
+        <div className="bg-white w-full flex items-center flex-col gap-6 h-fit">
+          <h2 className="text-3xl font-light mb-4 p-3 border-b border-gray-200 w-full">
+            Trending NFTs
+          </h2>
+          <div className="flex flex-col items-center justify-center min-h-[400px]">
+            <Loader />
+          </div>
+        </div>
       </div>
     )
   }
@@ -22,7 +33,7 @@ const TrendingCoins = () => {
     !trendingCoinsData?.[0]?.nfts?.length
   ) {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="w-full md:w-1/3 flex flex-col gap-2">
         <h2 className="text-3xl font-light">Trending Assets</h2>
         <div className="text-sm text-gray-500">No data available</div>
       </div>
@@ -30,11 +41,14 @@ const TrendingCoins = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="w-full md:w-1/3 flex flex-col gap-6">
+
       {trendingCoinsData[0]?.coins?.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <h2 className="text-3xl font-light mb-4">Trending Coins</h2>
-          <div className="flex flex-col divide-y divide-gray-100">
+        <div className="flex flex-col gap-2 bg-white">
+          <h2 className="text-3xl font-light mb-4 p-3 border-b border-gray-200 w-full">
+            Trending Coins
+          </h2>
+          <div className="flex flex-col divide-y divide-gray-100 p-2">
             {trendingCoinsData[0].coins.map((coin) => (
               <Link
                 key={coin.item.id}
@@ -43,7 +57,9 @@ const TrendingCoins = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <img
+                    <Image
+                      width={24}
+                      height={24}
                       src={coin.item.thumb}
                       alt={coin.item.name}
                       className="w-6 h-6 rounded-full"
@@ -90,9 +106,11 @@ const TrendingCoins = () => {
       )}
 
       {trendingCoinsData[0]?.nfts?.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <h2 className="text-3xl font-light mb-4">Trending NFTs</h2>
-          <div className="flex flex-col divide-y divide-gray-100">
+        <div className="flex flex-col gap-2 bg-white">
+          <h2 className="text-3xl font-light mb-4 p-3 border-b border-gray-200 w-full">
+            Trending NFTs
+          </h2>
+          <div className="flex flex-col divide-y divide-gray-100 p-2">
             {trendingCoinsData[0].nfts.map((nft) => (
               <div
                 key={nft.id}
@@ -100,7 +118,9 @@ const TrendingCoins = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <img
+                    <Image
+                      width={24}
+                      height={24}
                       src={nft.thumb}
                       alt={nft.name}
                       className="w-6 h-6 rounded-full"

@@ -4,7 +4,7 @@ import React from 'react'
 import Loader from '../loader-component'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-
+import Image from 'next/image'
 interface CoinData {
   id: string
   name: string
@@ -66,8 +66,8 @@ const AssetsTable: React.FC = () => {
 
   if (loadingCoinsData) {
     return (
-      <div className="w-full max-w-3xl overflow-x-auto p-2">
-        <h2 className="text-3xl font-light mb-4">
+      <div className="w-full bg-white h-fit max-w-3xl overflow-x-auto">
+        <h2 className="text-3xl font-light border-b border-gray-200 mb-4 p-3">
           {queryCoinsData ? 'Search Results' : 'Crypto Market Prices'}
         </h2>
         <div className="w-full text-sm flex-col py-10 min-h-[680px] flex items-center justify-center">
@@ -78,13 +78,13 @@ const AssetsTable: React.FC = () => {
   }
   if (loadingQueryCoinsData) {
     return (
-      <div className="w-full max-w-3xl overflow-x-auto p-2">
-        <h2 className="text-3xl font-light mb-4">
+      <div className="w-full bg-white h-fit max-w-3xl overflow-x-auto">
+        <h2 className="text-3xl font-light mb-4 border-b border-gray-200 p-3">
           {queryCoinsData ? 'Search Results' : 'Crypto Market Prices'}
+        </h2>
           <div className="w-full text-sm flex-col py-10 min-h-[680px] flex items-center justify-center">
             <Loader message="Loading crypto market prices..." />
           </div>
-        </h2>
       </div>
     )
   }
@@ -92,8 +92,8 @@ const AssetsTable: React.FC = () => {
   const displayData = queryCoinsData ? queryCoinsData.coins : coinsData || []
 
   return (
-    <div className="w-full max-w-3xl overflow-x-auto p-2">
-      <h2 className="text-3xl font-light mb-4">
+    <div className="w-full bg-white h-fit max-w-3xl overflow-x-auto">
+      <h2 className="text-3xl font-light mb-4 border-b border-gray-200 p-3">
         {queryCoinsData ? 'Search Results' : 'Crypto Market Prices'}
       </h2>
       <table className="min-w-full">
@@ -154,9 +154,9 @@ const AssetsTable: React.FC = () => {
                 <td className="px-2 py-2 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-8 w-8">
-                      <img
+                      <Image
                         className="h-8 w-8 rounded-full"
-                        src={coinData.large || coinData.image}
+                        src={coinData.large || coinData.image || ''}
                         alt={coinData.name}
                         width={32}
                         height={32}

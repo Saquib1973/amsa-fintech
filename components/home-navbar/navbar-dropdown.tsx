@@ -9,6 +9,8 @@ interface MenuItem {
   target?: string
   image?: string
   children?: MenuItem[]
+  logo?: string
+  content?: React.ReactNode
 }
 
 interface NavbarDropdownProps {
@@ -31,6 +33,12 @@ const NavbarDropdown: React.FC<NavbarDropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const handleScroll = () => {
+      if (isOpen && window.scrollY > 0) {
+        onClose()
+      }
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
       if (target.id === 'overlay') {
@@ -46,10 +54,12 @@ const NavbarDropdown: React.FC<NavbarDropdownProps> = ({
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
+      window.addEventListener('scroll', handleScroll)
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('scroll', handleScroll)
     }
   }, [isOpen, onClose, mainLinks])
 
@@ -77,7 +87,7 @@ const NavbarDropdown: React.FC<NavbarDropdownProps> = ({
       >
         {activeMenuItem.children && (
           <div className="flex">
-            <div className="font-semibold min-h-[400px] min-w-[300px] text-lg bg-blue-50">
+            <div className="font-semibold min-h-[400px] min-w-[400px] text-lg bg-blue-50">
               <Image
                 src={activeMenuItem.image || '/images/navbar-image.png'}
                 className="bg-gray-50 w-full h-full object-cover"
@@ -104,20 +114,26 @@ const NavbarDropdown: React.FC<NavbarDropdownProps> = ({
               </div>
               {activeMenuItem.children &&
                 activeMenuItem.children.length > 1 && (
-                  <div className="grid gap-2 py-4">
+                  <div className="grid gap-2 p-4">
                     {activeMenuItem.children.slice(1).map((child, index) => (
                       <Link
                         key={index}
                         href={child.href || '#'}
                         target={child.target}
-                        className="text-gray-600 hover:text-gray-900 transition-colors text-xl block px-3 rounded-md hover:underline"
+                        className="text-gray-600 hover:text-gray-900 transition-colors text-xl font-light block px-3 rounded-md hover:underline"
                         onClick={onClose}
                       >
                         {child.title}
+                        <span className='block text-xs font-medium'>{child.logo}</span>
                       </Link>
                     ))}
                   </div>
                 )}
+              {activeMenuItem.content && (
+                <div className="p-4">
+                  {activeMenuItem.content}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -5,9 +5,8 @@ import NavbarHomeCta from './navbar-home-cta'
 import MobileNavbar from './mobile-navbar'
 import NavbarDropdown from './navbar-dropdown'
 import { useState, useRef, useEffect } from 'react'
-import { menuItems } from '@/lib/data'
 import { AnimatePresence } from 'framer-motion'
-
+import { menuItems } from '@/lib/data'
 
 const NavbarHome = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
