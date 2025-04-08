@@ -21,10 +21,11 @@ const SecondaryButton = ({
   disabled?: boolean
   link?: string
 }) => {
+  const button_css = 'rounded-full text-base w-fit tracking-wide flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-900 dark:text-white p-3 px-6 text-black transition-all cursor-pointer'
   if(link){
     return (
       <Link href={link} className={cn(
-        'rounded-full text-base w-fit tracking-wide flex items-center justify-center gap-2 bg-gray-100 p-3 px-6 text-black transition-all cursor-pointer',
+        button_css,
         className
       )}
     >
@@ -35,7 +36,7 @@ const SecondaryButton = ({
   return (
     <button
       className={cn(
-        'rounded-full text-base w-fit tracking-wide flex items-center justify-center gap-2 bg-gray-100 p-3 px-6 text-black transition-all cursor-pointer',
+        button_css,
         className
       )}
       onClick={onClick}

@@ -38,15 +38,15 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick }) => {
   }
 
   return (
-    <div>
+    <div className=''>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="mobile-sub-menu hover:underline flex w-full items-center justify-between py-2 pl-3 pr-3.5 text-base leading-7"
+        className="hover:underline flex w-full items-center justify-between py-2 pl-3 pr-3.5 text-base leading-7"
       >
         {item.title}
         <svg
-          className={`h-4 w-4 transform transition-transform ${
+          className={`h-4 w-4 ${
             isOpen ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -120,7 +120,7 @@ const MobileNavbar = () => {
 
       <div
         ref={navRef}
-        className={`fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-full bg-white shadow-lg z-50 transform transition-transform duration-500 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

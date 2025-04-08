@@ -9,7 +9,7 @@ import SectionWrapper from '@/components/wrapper/section-wrapper'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 
 export default async function Dashboard() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions)
 
   const user = await prisma.user.findUnique({
     where: {
@@ -18,7 +18,7 @@ export default async function Dashboard() {
     include: {
       wallet: true,
     },
-  });
+  })
 
   return (
     <AnimateWrapper>
@@ -32,12 +32,12 @@ export default async function Dashboard() {
               >
                 AMSA Fintech
               </Link>
-              <p className="text-xl text-gray-500 mt-2 font-light">
+              <p className="text-xl text-gray-600 dark:text-gray-400 mt-2 font-light">
                 Welcome back, {session?.user?.email}
               </p>
             </div>
             {session && (
-              <div className='flex gap-4 max-md:ml-auto max-md:mt-4'>
+              <div className="flex gap-4 max-md:ml-auto max-md:mt-4">
                 <LogoutButton />
               </div>
             )}
@@ -66,25 +66,25 @@ export default async function Dashboard() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                <div className="bg-white border border-gray-100 rounded-md p-8">
-                  <h2 className="text-2xl font-light mb-4 text-gray-900">
+                <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md p-8">
+                  <h2 className="text-2xl font-light mb-4 dark:text-white">
                     Total Balance
                   </h2>
-                  <div className="text-5xl font-light text-gray-900">
+                  <div className="text-5xl font-light text-gray-900 dark:text-white">
                     ${user?.wallet?.balance}
                   </div>
-                  <div className="text-lg text-gray-500 mt-2 font-light">
+                  <div className="text-lg text-gray-600 dark:text-gray-400 mt-2 font-light">
                     Available for trading
                   </div>
                 </div>
 
-                <div className="bg-white border border-gray-100 rounded-md p-8">
-                  <h2 className="text-2xl font-light mb-4 text-gray-900">
+                <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md p-8">
+                  <h2 className="text-2xl font-light mb-4 dark:text-white">
                     Market Overview
                   </h2>
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
-                      <span className="text-xl text-gray-700 font-light">
+                      <span className="text-xl text-gray-600 dark:text-gray-400 font-light">
                         BTC/USD
                       </span>
                       <span className="text-green-500 text-xl font-light">
@@ -92,7 +92,7 @@ export default async function Dashboard() {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xl text-gray-700 font-light">
+                      <span className="text-xl text-gray-600 dark:text-gray-400 font-light">
                         ETH/USD
                       </span>
                       <span className="text-red-500 text-xl font-light">
@@ -102,13 +102,12 @@ export default async function Dashboard() {
                   </div>
                 </div>
 
-                {/* Recent Activity Card */}
-                <div className="bg-white border border-gray-100 rounded-md p-8">
-                  <h2 className="text-2xl font-light mb-4 text-gray-900">
+                <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md p-8">
+                  <h2 className="text-2xl font-light mb-4 dark:text-white">
                     Recent Activity
                   </h2>
                   <div className="space-y-4">
-                    <div className="text-xl text-gray-500 italic font-light">
+                    <div className="text-xl text-gray-600 dark:text-gray-400 italic font-light">
                       No recent transactions
                     </div>
                   </div>
@@ -118,7 +117,7 @@ export default async function Dashboard() {
           </SectionWrapper>
         ) : (
           <div className="text-center py-12">
-            <p className="text-2xl font-light text-gray-400">
+            <p className="text-2xl font-light text-gray-400 dark:text-gray-500">
               Please sign in to access your dashboard.
             </p>
           </div>

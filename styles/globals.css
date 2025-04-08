@@ -4,7 +4,7 @@
 @layer components {
   /* Input Field */
   .input-field {
-    @apply border border-gray-200 rounded-full px-4 bg-gray-50 md:px-5 text-lg outline-none p-2;
+    @apply border border-gray-300 dark:text-white placeholder:dark:text-gray-400 placeholder:text-gray-600 dark:border-gray-800 rounded-full px-4 bg-gray-50 dark:bg-gray-950 md:px-5 text-lg outline-none p-2;
   }
 
 
@@ -32,8 +32,16 @@
 
 }
 
+body{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
 @theme{
   --color-off-white: #F8F8F5;
   --exclude-header-height: 110px;
 }
+/* dark mode setup */
+@custom-variant dark (&:where(.dark, .dark *));
 

@@ -1,7 +1,10 @@
-import { useState } from 'react'
+"use client"
 import { CoinData } from '@/types/coingecko-types'
-import PrimaryButton from '../button/primary-button'
 import Image from 'next/image'
+import { useState } from 'react'
+import TransakPaymentComponent from '../transak-payment-component'
+import { useSession } from 'next-auth/react'
+import PrimaryButton from '../button/primary-button'
 interface AssetCalculatorProps {
   coinData: CoinData
   selectedCurrency: string
@@ -11,33 +14,51 @@ const AssetCalculator = ({
   coinData,
   selectedCurrency,
 }: AssetCalculatorProps) => {
-  const [usdAmount, setUsdAmount] = useState('')
-  const [btcAmount, setBtcAmount] = useState('')
+  const [currencyAmount, setCurrencyAmount] = useState('')
+  const [coinAmount, setCoinAmount] = useState('')
+  const { data: session } = useSession()
 
-  const handleUsdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    setUsdAmount(value)
+    setCurrencyAmount(value)
 
     if (value && coinData.market_data?.current_price?.usd) {
-      const btcValue =
+      const coinValue =
         parseFloat(value) / coinData.market_data.current_price.usd
-      setBtcAmount(btcValue.toFixed(8))
+      setCoinAmount(coinValue.toFixed(8))
     } else {
-      setBtcAmount('')
+      setCoinAmount('')
     }
   }
 
-  const handleBtcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    setBtcAmount(value)
+    setCoinAmount(value)
 
     if (value && coinData.market_data?.current_price?.usd) {
-      const usdValue =
+      const currencyValue =
         parseFloat(value) * coinData.market_data.current_price.usd
-      setUsdAmount(usdValue.toFixed(2))
+      setCurrencyAmount(currencyValue.toFixed(2))
     } else {
-      setUsdAmount('')
+      setCurrencyAmount('')
     }
+  }
+
+  const handleTransakSuccess = (orderData: {
+    orderId: string
+    status: string
+    transactionHash?: string
+    paymentMethod: string
+    amount: number
+    currency: string
+    timestamp: string
+    [key: string]: unknown
+  }) => {
+    console.log('Transaction successful:', orderData)
+  }
+
+  const handleTransakClose = () => {
+    console.log('Transak closed')
   }
 
   const currentPrice =
@@ -58,8 +79,8 @@ const AssetCalculator = ({
               name="dollars"
               className="input-field text-right w-full p-4 border rounded-lg"
               placeholder="Enter amount"
-              value={usdAmount}
-              onChange={handleUsdChange}
+              value={currencyAmount}
+              onChange={handleAmountChange}
             />
           </div>
 
@@ -92,8 +113,8 @@ const AssetCalculator = ({
               name="asset-value"
               className="input-field text-right w-full p-4 border rounded-lg pl-12"
               placeholder="0.00"
-              value={btcAmount}
-              onChange={handleBtcChange}
+              value={coinAmount}
+              onChange={handleCoinChange}
             />
           </div>
           <p className="text-color-text-body asset-price-calc">
@@ -102,9 +123,19 @@ const AssetCalculator = ({
               {selectedCurrency.toUpperCase()}
             </span>
           </p>
-          <PrimaryButton className="w-full">
-            Buy {coinData.symbol.toUpperCase()}
-          </PrimaryButton>
+          {session?.user ? (
+            <TransakPaymentComponent
+              fiatAmount={Number(currencyAmount)}
+              cryptoCurrency={coinData.symbol.toUpperCase()}
+              cryptoAmount={Number(coinAmount)}
+              onSuccess={handleTransakSuccess}
+              onClose={handleTransakClose}
+            />
+          ) : (
+            <PrimaryButton link="/auth/signin" className="w-full">
+              Login to Buy
+            </PrimaryButton>
+          )}
         </div>
       </div>
     </div>

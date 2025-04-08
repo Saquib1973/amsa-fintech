@@ -1,13 +1,13 @@
 'use client'
 
 import SecondaryButton from '@/components/button/secondary-button'
+import PrimaryButton from '@/components/button/primary-button'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
-
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -146,13 +146,13 @@ export default function SignInPage() {
           <div className="h-px w-full bg-gray-200" />
         </div>
 
-        <SecondaryButton
+        <PrimaryButton
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="flex items-center justify-center w-full gap-2 bg-blue-400 text-white"
+          className="flex items-center justify-center w-full gap-2"
         >
           <span>Sign in with Google</span>
-        </SecondaryButton>
+        </PrimaryButton>
 
         <p className="mt-6 text-center text-gray-600">
           Don&apos;t have an account?{' '}

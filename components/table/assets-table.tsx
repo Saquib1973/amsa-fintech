@@ -136,62 +136,76 @@ const AssetsTable: React.FC = () => {
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {displayData.length <= 0 ? (
-            <div className="text-red-500 text-xl font-light">
-              No assets found
-            </div>
+            <tr>
+              <td colSpan={6} className="px-2 py-2 text-center">
+                <div className="text-red-500 text-xl font-light">
+                  No assets found
+                </div>
+              </td>
+            </tr>
           ) : (
             displayData.map((coin: CoinData | { item: CoinData }) => {
               const coinData = 'item' in coin ? coin.item : coin
+              const getValidImageUrl = (url: string | undefined) => {
+                if (!url) return '/images/missing_large.png'
+                if (url.startsWith('http')) return url
+                return url.startsWith('/') ? url : `/${url}`
+              }
+              const imageUrl = getValidImageUrl(coinData.large || coinData.image)
               return (
                 <tr
-                key={coinData.id}
-                className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => router.push(`/assets/${coinData.id}`)}
-              >
-                <td className="px-2 py-2 whitespace-nowrap text-sm light-text">
-                  {coinData.market_cap_rank || 'N/A'}
-                </td>
-                <td className="px-2 py-2 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-8 w-8">
-                      <Image
-                        className="h-8 w-8 rounded-full"
-                        src={coinData.large || coinData.image || ''}
-                        alt={coinData.name}
-                        width={32}
-                        height={32}
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-light text-gray-900">
-                        {coinData.name}
+                  key={coinData.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => router.push(`/assets/${coinData.id}`)}
+                >
+                  <td className="px-2 py-2 whitespace-nowrap text-sm light-text">
+                    {coinData.market_cap_rank || 'N/A'}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-8 w-8">
+                        <Image
+                          className="h-8 w-8 rounded-full"
+                          src={imageUrl}
+                          alt={coinData.name}
+                          width={32}
+                          height={32}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/images/missing_large.png';
+                          }}
+                        />
                       </div>
-                      <div className="text-sm light-text">
-                        {coinData.symbol.toUpperCase()}
+                      <div className="ml-4">
+                        <div className="text-sm font-light text-gray-900">
+                          {coinData.name}
+                        </div>
+                        <div className="text-sm light-text">
+                          {coinData.symbol.toUpperCase()}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
-                  {formatNumber(coinData.current_price)}
-                </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 max-md:hidden">
-                  {formatNumber(coinData.market_cap)}
-                </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 max-md:hidden">
-                  {formatNumber(coinData.total_volume)}
-                </td>
-                <td className="px-2 py-2 whitespace-nowrap text-sm">
-                  <span
-                    className={`${
-                      (coinData.price_change_percentage_24h ?? 0) >= 0
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }`}
-                  >
-                    {formatPercentage(coinData.price_change_percentage_24h)}
-                  </span>
-                </td>
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
+                    {formatNumber(coinData.current_price)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 max-md:hidden">
+                    {formatNumber(coinData.market_cap)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 max-md:hidden">
+                    {formatNumber(coinData.total_volume)}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-sm">
+                    <span
+                      className={`${
+                        (coinData.price_change_percentage_24h ?? 0) >= 0
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      }`}
+                    >
+                      {formatPercentage(coinData.price_change_percentage_24h)}
+                    </span>
+                  </td>
                 </tr>
               )
             })

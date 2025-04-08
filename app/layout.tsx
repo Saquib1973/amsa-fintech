@@ -1,4 +1,4 @@
-import ClientWrapper from '@/context'
+import ClientWrapper from '@/context/client-wrapper'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import '../styles/globals.css'
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="overflow-x-hidden">
+    <html lang="en" className="overflow-x-hidden bg-white dark:bg-black">
       <body
         className={`${geistSans.variable} flex flex-col ${geistMono.variable} antialiased overflow-x-hidden`}
       >

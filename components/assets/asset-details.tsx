@@ -16,7 +16,7 @@ interface AssetDetailsProps {
 
 const AssetDetails = ({ id }: AssetDetailsProps) => {
   const { coinData, loadingCoinData, fetchCoinById } = useCoingecko()
-  const [selectedCurrency, setSelectedCurrency] = useState('usd')
+  const [selectedCurrency, setSelectedCurrency] = useState('aud')
   const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
     )
   }
 
-  if (!coinData) {
+  if ((!coinData && !loadingCoinData) || coinData === null) {
     return (
       <div className="flex justify-center items-center page-container">
         <div className="text-red-500 text-3xl font-light">

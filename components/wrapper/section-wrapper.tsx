@@ -5,7 +5,7 @@ const SectionWrapper = ({ children,className }: { children: React.ReactNode,clas
   return (
     <div
       className={cn(
-        'flex py-10 md:py-20 max-md:px-4 border-y border-gray-200 gap-6',
+        'flex py-10 md:py-20 max-md:px-4 border-y border-gray-200 dark:border-gray-800 gap-6',
         className
       )}
     >

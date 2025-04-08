@@ -7,6 +7,12 @@ import { courses } from '@/content/courses'
 import YouTubePlayer from '@/components/youtube-player'
 import { useState } from 'react'
 import Image from 'next/image'
+import { moveToTop } from '@/lib/utils'
+interface Lecture {
+  videoId: string
+  title: string
+  description: string
+}
 export default function CoursePage() {
   const params = useParams()
   const course = courses[params.slug as string]
@@ -14,7 +20,10 @@ export default function CoursePage() {
     notFound()
   }
   const [selectedLecture, setSelectedLecture] = useState(course.lectures[0])
-
+  const handleLessonChange = (lecture: Lecture) => {
+    setSelectedLecture(lecture)
+    moveToTop(100)
+  }
   return (
     <AnimateWrapper>
       <div className="width-1240 p-10 flex flex-col gap-10">
@@ -87,7 +96,7 @@ export default function CoursePage() {
                     ? 'bg-blue-50  border-blue-400'
                     : 'bg-gray-50 border-transparent hover:bg-gray-100'
                 }`}
-                onClick={() => setSelectedLecture(lecture)}
+                onClick={() => handleLessonChange(lecture)}
               >
                 <div className="aspect-video rounded-lg overflow-hidden">
                   <Image
