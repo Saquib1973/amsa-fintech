@@ -66,7 +66,7 @@ const AssetsTable: React.FC = () => {
 
   if (loadingCoinsData) {
     return (
-      <div className="w-full bg-white h-fit max-w-3xl overflow-x-auto">
+      <div className="w-full bg-white h-fit max-w-4xl overflow-x-auto">
         <h2 className="text-3xl font-light border-b border-gray-200 mb-4 p-3">
           {queryCoinsData ? 'Search Results' : 'Crypto Market Prices'}
         </h2>
@@ -78,7 +78,7 @@ const AssetsTable: React.FC = () => {
   }
   if (loadingQueryCoinsData) {
     return (
-      <div className="w-full bg-white h-fit max-w-3xl overflow-x-auto">
+      <div className="w-full bg-white h-fit max-w-4xl overflow-x-auto">
         <h2 className="text-3xl font-light mb-4 border-b border-gray-200 p-3">
           {queryCoinsData ? 'Search Results' : 'Crypto Market Prices'}
         </h2>
@@ -92,7 +92,7 @@ const AssetsTable: React.FC = () => {
   const displayData = queryCoinsData ? queryCoinsData.coins : coinsData || []
 
   return (
-    <div className="w-full bg-white h-fit max-w-3xl overflow-x-auto">
+    <div className="w-full bg-white h-fit max-w-4xl overflow-x-auto">
       <h2 className="text-3xl font-light mb-4 border-b border-gray-200 p-3">
         {queryCoinsData ? 'Search Results' : 'Crypto Market Prices'}
       </h2>

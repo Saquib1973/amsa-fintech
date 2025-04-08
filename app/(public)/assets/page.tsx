@@ -35,7 +35,7 @@ const AssetsPage = () => {
             </div>
           </div>
 
-          <div className="md:my-20 my-10 max-md:flex-col flex gap-6 justify-between">
+          <div className="md:my-20 my-10 max-lg:flex-col flex gap-6 justify-between">
             <AssetsTable />
             <TrendingCoins />
           </div>

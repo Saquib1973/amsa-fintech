@@ -7,7 +7,7 @@ const TrendingCoins = () => {
   const { loadingTrendingCoinsData, trendingCoinsData } = useCoingecko()
   if (loadingTrendingCoinsData) {
     return (
-      <div className="w-full md:w-1/3 gap-6 h-full flex flex-col items-center justify-center">
+      <div className="w-full lg:w-1/3 gap-6 h-full flex flex-col items-center justify-center">
         <div className="bg-white w-full flex items-center flex-col gap-6 h-fit">
           <h2 className="text-3xl font-light mb-4 p-3 border-b border-gray-200 w-full">
             Trending Assets
@@ -33,7 +33,7 @@ const TrendingCoins = () => {
     !trendingCoinsData?.[0]?.nfts?.length
   ) {
     return (
-      <div className="w-full md:w-1/3 flex flex-col gap-2">
+      <div className="w-full lg:w-1/3 flex flex-col gap-2">
         <h2 className="text-3xl font-light">Trending Assets</h2>
         <div className="text-sm text-gray-500">No data available</div>
       </div>
@@ -41,7 +41,7 @@ const TrendingCoins = () => {
   }
 
   return (
-    <div className="w-full md:w-1/3 flex flex-col gap-6">
+    <div className="w-full lg:w-1/3 flex flex-col gap-6">
 
       {trendingCoinsData[0]?.coins?.length > 0 && (
         <div className="flex flex-col gap-2 bg-white">

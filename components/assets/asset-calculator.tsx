@@ -67,17 +67,17 @@ const AssetCalculator = ({
     ] || 0
 
   return (
-    <div className="hidden xl:block md:w-[50%] border-l border-gray-200">
-      <div className="max-w-80 m-auto py-12 p-6">
-        <p className="text-3xl font-isola mb-6">
+    <div className="w-full xl:w-[50%] border-l border-gray-200">
+      <div className="m-auto w-full py-6 md:py-12 p-4 md:p-6">
+        <p className="text-2xl md:text-3xl font-isola mb-4 md:mb-6">
           Buy {coinData.name} in minutes
         </p>
-        <div className="asset-calculator flex flex-col gap-3">
-          <div className="relative">
+        <div className="w-full flex flex-col gap-3">
+          <div className="relative w-full">
             <input
               type="text"
               name="dollars"
-              className="input-field text-right w-full p-4 border rounded-lg"
+              className="input-field text-right w-full p-3 md:p-4 border rounded-lg"
               placeholder="Enter amount"
               value={currencyAmount}
               onChange={handleAmountChange}
@@ -99,25 +99,25 @@ const AssetCalculator = ({
           </svg>
 
           <div className="relative">
-            <div className="asset-icon absolute left-6 top-1/2 -translate-y-1/2">
+            <div className="asset-icon absolute left-4 md:left-6 top-1/2 -translate-y-1/2">
               <Image
                 width={24}
                 height={24}
                 src={coinData.image.large}
                 alt={coinData.name}
-                className="w-6 h-6"
+                className="w-5 h-5 md:w-6 md:h-6"
               />
             </div>
             <input
               type="text"
               name="asset-value"
-              className="input-field text-right w-full p-4 border rounded-lg pl-12"
+              className="input-field text-right w-full p-3 md:p-4 border rounded-lg pl-10 md:pl-12"
               placeholder="0.00"
               value={coinAmount}
               onChange={handleCoinChange}
             />
           </div>
-          <p className="text-color-text-body asset-price-calc">
+          <p className="text-color-text-body asset-price-calc text-sm md:text-base">
             1 {coinData.symbol.toUpperCase()} = ${currentPrice.toLocaleString()}{' '}
             <span className="currency-set">
               {selectedCurrency.toUpperCase()}
