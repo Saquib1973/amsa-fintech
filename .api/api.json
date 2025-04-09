@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "transak",
+      "source": "@transak/v1.0#2izauim8priz4o",
+      "integrity": "sha512-fMCetl3zBMrl9uAioZq/lKYxHXGX1CTvwpOVKRoUTJRtcPcIzZEAr/Vvouo6Df5AB8pTJUVGu5PQztKSqKLQ5Q==",
+      "installerVersion": "6.1.3"
+    }
+  ]
+}
