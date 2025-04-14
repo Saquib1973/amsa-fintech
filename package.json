@@ -20,6 +20,7 @@
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "ethers": "^5.7.2",
     "framer-motion": "^12.5.0",
     "gray-matter": "^4.0.3",
     "highcharts": "^12.1.2",

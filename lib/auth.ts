@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
                 provider: 'credentials',
               },
             },
-            wallet: true,
+            wallets: true,
           },
         })
 
@@ -78,10 +78,10 @@ export const authOptions: NextAuthOptions = {
 
         const customer = await prisma.user.findUnique({
           where: { id: user.id },
-          include: { wallet: true },
+          include: { wallets: true },
         })
 
-        if (!customer?.wallet) {
+        if (!customer?.wallets.length) {
           await prisma.wallet.create({
             data: {
               balance: 100,

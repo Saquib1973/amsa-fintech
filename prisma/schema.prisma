@@ -10,9 +10,12 @@ datasource db {
 model Wallet {
   id String @id @default(cuid())
   balance Int @default(0)
+  address String?
+  publicKey String?
+  type String @default("fiat")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId String? @unique
+  userId String?
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -22,7 +25,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  wallet        Wallet?
+  wallets       Wallet[]
   accounts      Account[]
   sessions      Session[]
 }

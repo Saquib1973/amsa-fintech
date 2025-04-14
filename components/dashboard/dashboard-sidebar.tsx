@@ -62,14 +62,14 @@ const DashboardSidebar = () => {
 
   return (
       <AnimateWrapper className='w-fit'>
-        <button className="flex w-full justify-between items-center xl:hidden bg-white text-black dark:text-white dark:bg-black border-b border-gray-200 dark:border-gray-800 max-lg:py-3 absolute top-0 left-0 z-30  px-6 py-2">
+        <div className="flex w-full justify-between items-center xl:hidden bg-white text-black dark:text-white dark:bg-black border-b border-gray-200 dark:border-gray-800 max-lg:py-3 absolute top-0 left-0 z-30  px-6 py-2">
           <Link href={'/'} className="text-xl font-light">
             Home
           </Link>
           <button className="p-2 cursor-pointer" onClick={toggleSidebar}>
             <Menu className="w-6 h-6" />
           </button>
-        </button>
+        </div>
 
         {isOpen && (
           <button

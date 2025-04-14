@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
+import Image from 'next/image'
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -95,7 +96,9 @@ export default function ProfilePage() {
                 <div className="p-6 text-center">
                   <div className="relative inline-block">
                     <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 mx-auto">
-                      <img
+                      <Image
+                        height={100}
+                        width={100}
                         src={userData.profileImage}
                         alt={userData.name}
                         className="w-full h-full object-cover"
@@ -154,7 +157,7 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">First Name</span>
                     <input
                       type="text"
                       name="firstName"
@@ -165,7 +168,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">Last Name</span>
                     <input
                       type="text"
                       name="lastName"
@@ -176,7 +179,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">Email</span>
                     <div className="relative">
                       <input
                         type="email"
@@ -190,7 +193,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">Phone</span>
                     <div className="relative">
                       <input
                         type="tel"
@@ -204,7 +207,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">Address</span>
                     <div className="relative">
                       <input
                         type="text"
@@ -218,7 +221,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">City</span>
                     <input
                       type="text"
                       name="city"
@@ -229,7 +232,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">State</span>
                     <input
                       type="text"
                       name="state"
@@ -240,7 +243,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</span>
                     <input
                       type="text"
                       name="zipCode"
@@ -251,7 +254,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">Country</span>
                     <input
                       type="text"
                       name="country"

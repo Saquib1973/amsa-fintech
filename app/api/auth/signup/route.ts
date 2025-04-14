@@ -35,7 +35,7 @@ export async function POST(req: Request) {
             password: hashedPassword,
           },
         },
-        wallet: {
+        wallets: {
           create: {
             balance: 100,
           },

@@ -1,12 +1,13 @@
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
 import LogoutButton from '@/components/button/logout-button'
-import AnimateWrapper from '@/components/wrapper/animate-wrapper'
-import Link from 'next/link'
-import SecondaryButton from '@/components/button/secondary-button'
-import { prisma } from '@/lib/prisma'
-import SectionWrapper from '@/components/wrapper/section-wrapper'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
+import ConnectWallet from '@/components/(protected-user)/dashboard/connect-wallet'
+import WalletCard from '@/components/(protected-user)/dashboard/wallet-card'
+import AnimateWrapper from '@/components/wrapper/animate-wrapper'
+import SectionWrapper from '@/components/wrapper/section-wrapper'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth/next'
+import Link from 'next/link'
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
@@ -16,7 +17,7 @@ export default async function Dashboard() {
       email: session?.user?.email,
     },
     include: {
-      wallet: true,
+      wallets: true,
     },
   })
 
@@ -47,72 +48,22 @@ export default async function Dashboard() {
         {session ? (
           <SectionWrapper className="py-6 md:py-16">
             <div className="space-y-12">
-              <div className="flex flex-wrap gap-4 justify-end">
-                <SecondaryButton className="bg-blue-400 hover:bg-blue-500 text-white w-[120px] transition-colors">
-                  Deposit
-                </SecondaryButton>
-                <SecondaryButton className="bg-green-400 hover:bg-green-500 text-white w-[120px] transition-colors">
-                  Buy
-                </SecondaryButton>
-                <SecondaryButton className="bg-red-400 hover:bg-red-500 text-white w-[120px] transition-colors">
-                  Sell
-                </SecondaryButton>
-                <SecondaryButton className="hover:bg-gray-100 w-[120px] transition-colors">
-                  Swap
-                </SecondaryButton>
-                <SecondaryButton className="bg-yellow-400 hover:bg-yellow-500 text-white w-[120px] transition-colors">
-                  Withdraw
-                </SecondaryButton>
+              <div className="flex justify-center">
+                <ConnectWallet />
               </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md p-8">
-                  <h2 className="text-2xl font-light mb-4 dark:text-white">
-                    Total Balance
-                  </h2>
-                  <div className="text-5xl font-light text-gray-900 dark:text-white">
-                    ${user?.wallet?.balance}
+              {user?.wallets.length ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {user.wallets.map(wallet => (
+                      <WalletCard key={wallet.id} wallet={wallet} />
+                    ))}
                   </div>
-                  <div className="text-lg text-gray-600 dark:text-gray-400 mt-2 font-light">
-                    Available for trading
-                  </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-2xl font-light text-gray-400 dark:text-gray-500">
+                    Please sign in to access your dashboard.
+                  </p>
                 </div>
-
-                <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md p-8">
-                  <h2 className="text-2xl font-light mb-4 dark:text-white">
-                    Market Overview
-                  </h2>
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl text-gray-600 dark:text-gray-400 font-light">
-                        BTC/USD
-                      </span>
-                      <span className="text-green-500 text-xl font-light">
-                        +2.5%
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl text-gray-600 dark:text-gray-400 font-light">
-                        ETH/USD
-                      </span>
-                      <span className="text-red-500 text-xl font-light">
-                        -1.2%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md p-8">
-                  <h2 className="text-2xl font-light mb-4 dark:text-white">
-                    Recent Activity
-                  </h2>
-                  <div className="space-y-4">
-                    <div className="text-xl text-gray-600 dark:text-gray-400 italic font-light">
-                      No recent transactions
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </SectionWrapper>
         ) : (

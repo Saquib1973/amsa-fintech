@@ -153,32 +153,31 @@ const MobileNavbar = () => {
           <div className="border-t border-gray-200 p-4">
             <div className="flex flex-col gap-1">
               {session ? (
-                <Link
-                  href="/dashboard"
+                <PrimaryButton
+                  link="/dashboard"
                   onClick={() => setIsOpen(false)}
-                  className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
+                  className='w-full'
+                  prefixIcon={<UserSvg />}
                 >
-                  <PrimaryButton className='w-full' prefixIcon={<UserSvg />}>Dashboard</PrimaryButton>
-                </Link>
+                  Dashboard
+                </PrimaryButton>
               ) : (
                 <>
-                  <Link
-                    href="/auth/signin"
+                  <SecondaryButton
+                    link="/auth/signin"
                     onClick={() => setIsOpen(false)}
-                    className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
+                    className='w-full'
                   >
-                    <SecondaryButton className='w-full'>Log in</SecondaryButton>
-                  </Link>
-                  <Link
-                    href="/auth/signup"
+                    Log in
+                  </SecondaryButton>
+                  <PrimaryButton
+                    link="/auth/signup"
                     onClick={() => setIsOpen(false)}
-                    className="w-full text-center px-3 py-2.5 text-base flex items-center justify-center gap-2"
+                    className="w-full"
                   >
-                    <PrimaryButton className="w-full">
-                      Get started
-                      <RightArrow />
-                    </PrimaryButton>
-                  </Link>
+                    Get started
+                    <RightArrow />
+                  </PrimaryButton>
                 </>
               )}
             </div>

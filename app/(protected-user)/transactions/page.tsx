@@ -10,7 +10,15 @@ import {
   Filter,
   Search
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import PrimaryButton from '@/components/button/primary-button'
+
+interface Wallet {
+  id: string;
+  address: string;
+  type: string;
+}
 
 interface Order {
   id: string;
@@ -27,11 +35,38 @@ interface Order {
 }
 
 export default function TransactionsPage() {
+  const { data: session } = useSession()
   const [dateRange, setDateRange] = useState('last30days')
   const [walletAddress, setWalletAddress] = useState('')
+  const [wallets, setWallets] = useState<Wallet[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(false)
+  const [walletsLoading, setWalletsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fetchWallets = async () => {
+      if (!session?.user?.id) return;
+
+      setWalletsLoading(true)
+      try {
+        const response = await fetch('/api/wallet')
+        const data = await response.json()
+
+        if (response.ok) {
+          setWallets(data.wallets || [])
+        } else {
+          setError(data.error || 'Failed to fetch wallets')
+        }
+      } catch {
+        setError('An error occurred while fetching wallets')
+      } finally {
+        setWalletsLoading(false)
+      }
+    }
+
+    fetchWallets()
+  }, [session?.user?.id])
 
   const fetchOrders = async () => {
     if (!walletAddress) return;
@@ -39,11 +74,11 @@ export default function TransactionsPage() {
     setLoading(true)
     setError('')
     try {
+      console.log('WALLET ADDRESS', walletAddress)
       const response = await fetch(`/api/admin/orders?walletAddress=${walletAddress}`)
       const data = await response.json()
 
       if (response.ok) {
-        // The orders are in data.data array
         setOrders(data.data || [])
       } else {
         setError(data.error || 'Failed to fetch orders')
@@ -55,7 +90,6 @@ export default function TransactionsPage() {
     }
   }
 
-  // Format currency
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -63,7 +97,6 @@ export default function TransactionsPage() {
     }).format(amount)
   }
 
-  // Format date
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -154,33 +187,36 @@ export default function TransactionsPage() {
         </OffWhiteHeadingContainer>
 
         <SectionWrapper className="py-6 md:py-16">
-          {/* Wallet Address Input */}
-          <div className="mb-6">
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={walletAddress}
-                    onChange={(e) => setWalletAddress(e.target.value)}
-                    placeholder="Enter wallet address..."
-                    className="w-full p-3 pl-10 border dark:placeholder:text-gray-600 border-gray-300 dark:border-gray-800 rounded-md"
-                  />
-                  <Search className="w-5 h-5 text-gray-400 dark:text-gray-600 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                </div>
-              </div>
-              <button
-                onClick={fetchOrders}
-                disabled={!walletAddress || loading}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:opacity-50"
+          <div className="py-4 flex items-center gap-2 justify-end">
+            <div className="relative max-w-md">
+              <select
+                value={walletAddress}
+                onChange={(e) => setWalletAddress(e.target.value)}
+                className="input-field w-[300px]"
               >
-                {loading ? 'Loading...' : 'Search'}
-              </button>
+                {walletsLoading && (
+                  <option value="">Loading...</option>
+                )}
+                {!walletsLoading && wallets.length > 0 && (
+                  <option value="">Select Wallet</option>
+                )}
+                {!walletsLoading && wallets.map((wallet) => (
+                  <option key={wallet.id} value={wallet.address}>
+                    {wallet.type === 'web3' ? 'Web3' : 'Fiat'} - {wallet.address?.slice(0, 10)}...{wallet.address?.slice(-4)}
+                  </option>
+                ))}
+              </select>
             </div>
-            {error && <p className="mt-2 text-red-500">{error}</p>}
+            <PrimaryButton
+              onClick={fetchOrders}
+              disabled={!walletAddress || loading}
+              className="h-full disabled:opacity-60"
+            >
+              {loading ? 'Loading...' : 'Search Transactions'}
+            </PrimaryButton>
           </div>
 
-          {/* Filters and Search */}
+          {/* Filter Options Section */}
           <div className="mb-6 flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -215,6 +251,7 @@ export default function TransactionsPage() {
               </button>
             </div>
           </div>
+          {error && <p className="mb-4 text-red-500">{error}</p>}
 
           {/* Orders Table */}
           <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md overflow-hidden">
