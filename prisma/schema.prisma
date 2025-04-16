@@ -23,11 +23,12 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
-  emailVerified DateTime?
+  isVerified    Boolean   @default(false)
   image         String?
   wallets       Wallet[]
   accounts      Account[]
   sessions      Session[]
+  otp           VerificationToken?
 }
 
 model Account {
@@ -61,6 +62,8 @@ model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String   @unique
 
   @@unique([identifier, token])
 }

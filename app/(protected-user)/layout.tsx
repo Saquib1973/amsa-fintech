@@ -3,16 +3,16 @@ import AuthCheckWrapper from '@/components/wrapper/auth-check-wrapper'
 
 export default function ProtectedUserLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <AuthCheckWrapper>
-      <div className="bg-white dark:bg-black flex h-screen overflow-hidden">
+      <div className="bg-white w-full dark:bg-black flex flex-col lg:flex-row h-screen">
         <DashboardSidebar />
-        <div className="flex-1 flex flex-col">
-          <div className="flex-1 overflow-y-auto">{children}</div>
-        </div>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+          {children}
+        </main>
       </div>
     </AuthCheckWrapper>
   )

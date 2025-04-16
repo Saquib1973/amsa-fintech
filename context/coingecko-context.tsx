@@ -1,58 +1,26 @@
 'use client'
-import type { TrendingCoinsData, CoinsData, CoinData } from '@/types/coingecko-types'
-import { createContext, useContext, useEffect, useState } from 'react'
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react'
 import * as coingeckoService from '@/services/coingecko-service'
-
-export interface SortConfig {
-  key: string
-  direction: 'asc' | 'desc'
-}
-
-interface SearchCoin {
-  id: string
-  name: string
-  symbol: string
-  market_cap_rank: number
-  large?: string
-}
-
-interface MarketData {
-  id: string
-  current_price: number
-  market_cap: number
-  total_volume: number
-  price_change_percentage_24h: number
-  image: string
-}
-
-interface QueryResult {
-  coins: {
-    item: SearchCoin & Partial<MarketData>
-  }[]
-}
-
-interface CoingeckoContextType {
-  coinsData: CoinsData[] | null
-  setCoinsData: (data: CoinsData[] | null) => void
-  trendingCoinsData: TrendingCoinsData[] | null
-  setTrendingCoinsData: (data: TrendingCoinsData[] | null) => void
-  queryCoinsData: QueryResult | null
-  setQueryCoinsData: (data: QueryResult | null) => void
-  coinData: CoinData | null
-  loadingCoinsData: boolean
-  loadingTrendingCoinsData: boolean
-  loadingQueryCoinsData: boolean
-  loadingCoinData: boolean
-  currentPage: number
-  setCurrentPage: (page: number) => void
-  sortConfig: SortConfig
-  setSortConfig: (config: SortConfig) => void
-  fetchQueryCoinsData: (query: string) => Promise<void>
-  fetchCoinsData: (page: number, sortBy: string, sortOrder: 'asc' | 'desc') => Promise<void>
-  fetchTrendingCoinsData: () => Promise<void>
-  fetchCoinById: (id: string) => Promise<void>
-}
-
+import {
+  type CoingeckoContextType,
+  type SearchCoin,
+  type SortConfig,
+  type QueryResult,
+  type MarketData,
+} from '@/context/types'
+import type {
+  TrendingCoinsData,
+  CoinsData,
+  CoinData,
+} from '@/types/coingecko-types'
 const CoingeckoContext = createContext<CoingeckoContextType>({
   coinsData: null,
   setCoinsData: () => {},
@@ -83,14 +51,21 @@ const useCoingecko = () => {
   return context
 }
 
-export const CoingeckoProvider = ({ children }: { children: React.ReactNode }) => {
+export const CoingeckoProvider = ({
+  children,
+}: {
+  children: React.ReactNode
+}) => {
   const [loadingCoinsData, setLoadingCoinsData] = useState(false)
-  const [loadingTrendingCoinsData, setLoadingTrendingCoinsData] = useState(false)
+  const [loadingTrendingCoinsData, setLoadingTrendingCoinsData] =
+    useState(false)
   const [loadingQueryCoinsData, setLoadingQueryCoinsData] = useState(false)
   const [loadingCoinData, setLoadingCoinData] = useState(false)
 
   const [coinsData, setCoinsData] = useState<CoinsData[] | null>(null)
-  const [trendingCoinsData, setTrendingCoinsData] = useState<TrendingCoinsData[] | null>(null)
+  const [trendingCoinsData, setTrendingCoinsData] = useState<
+    TrendingCoinsData[] | null
+  >(null)
   const [queryCoinsData, setQueryCoinsData] = useState<QueryResult | null>(null)
   const [coinData, setCoinData] = useState<CoinData | null>(null)
 
@@ -100,7 +75,7 @@ export const CoingeckoProvider = ({ children }: { children: React.ReactNode }) =
     direction: 'desc',
   })
 
-  const fetchCoinById = async (id: string) => {
+  const fetchCoinById = useCallback(async (id: string) => {
     if (!id) return
 
     setLoadingCoinData(true)
@@ -113,52 +88,60 @@ export const CoingeckoProvider = ({ children }: { children: React.ReactNode }) =
     } finally {
       setLoadingCoinData(false)
     }
-  }
+  }, [])
 
-  const fetchQueryCoinsData = async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      setQueryCoinsData(null)
-      setLoadingQueryCoinsData(false)
-      return
-    }
-
-    if (loadingQueryCoinsData) return
-
-    setLoadingQueryCoinsData(true)
-    try {
-      const searchData = await coingeckoService.searchCoins(searchQuery)
-
-      if (searchData.coins.length === 0) {
-        setQueryCoinsData({ coins: [] } as QueryResult)
+  const fetchQueryCoinsData = useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery.trim()) {
+        setQueryCoinsData(null)
+        setLoadingQueryCoinsData(false)
         return
       }
 
-      const coinIds = searchData.coins.slice(0, 10).map((coin: SearchCoin) => coin.id).join(',')
-      const marketData = await coingeckoService.getCoinsMarketData(coinIds)
+      if (loadingQueryCoinsData) return
 
-      const combinedData: QueryResult = {
-        coins: searchData.coins.slice(0, 10).map((searchCoin: SearchCoin) => {
-          const marketInfo = marketData.find((market: MarketData) => market.id === searchCoin.id)
-          return {
-            item: {
-              ...searchCoin,
-              ...marketInfo,
-              large: searchCoin.large || marketInfo?.image,
-            },
-          }
-        }),
+      setLoadingQueryCoinsData(true)
+      try {
+        const searchData = await coingeckoService.searchCoins(searchQuery)
+
+        if (searchData.coins.length === 0) {
+          setQueryCoinsData({ coins: [] } as QueryResult)
+          return
+        }
+
+        const coinIds = searchData.coins
+          .slice(0, 10)
+          .map((coin: SearchCoin) => coin.id)
+          .join(',')
+        const marketData = await coingeckoService.getCoinsMarketData(coinIds)
+
+        const combinedData: QueryResult = {
+          coins: searchData.coins.slice(0, 10).map((searchCoin: SearchCoin) => {
+            const marketInfo = marketData.find(
+              (market: MarketData) => market.id === searchCoin.id
+            )
+            return {
+              item: {
+                ...searchCoin,
+                ...marketInfo,
+                large: searchCoin.large || marketInfo?.image,
+              },
+            }
+          }),
+        }
+
+        setQueryCoinsData(combinedData)
+      } catch (err) {
+        console.error('Error fetching search data:', err)
+        setQueryCoinsData(null)
+      } finally {
+        setLoadingQueryCoinsData(false)
       }
+    },
+    [loadingQueryCoinsData]
+  )
 
-      setQueryCoinsData(combinedData as QueryResult)
-    } catch (err) {
-      console.error('Error fetching search data:', err)
-      setQueryCoinsData(null)
-    } finally {
-      setLoadingQueryCoinsData(false)
-    }
-  }
-
-  const fetchTrendingCoinsData = async () => {
+  const fetchTrendingCoinsData = useCallback(async () => {
     setLoadingTrendingCoinsData(true)
     try {
       const data = await coingeckoService.getTrendingCoins()
@@ -169,20 +152,27 @@ export const CoingeckoProvider = ({ children }: { children: React.ReactNode }) =
     } finally {
       setLoadingTrendingCoinsData(false)
     }
-  }
+  }, [])
 
-  const fetchCoinsData = async (page: number, sortBy: string, sortOrder: 'asc' | 'desc') => {
-    try {
-      setLoadingCoinsData(true)
-      const data = await coingeckoService.getCoinsData(page, sortBy, sortOrder)
-      setCoinsData(data)
-    } catch (err) {
-      console.error('Error fetching coins data:', err)
-      setCoinsData(null)
-    } finally {
-      setLoadingCoinsData(false)
-    }
-  }
+  const fetchCoinsData = useCallback(
+    async (page: number, sortBy: string, sortOrder: 'asc' | 'desc') => {
+      try {
+        setLoadingCoinsData(true)
+        const data = await coingeckoService.getCoinsData(
+          page,
+          sortBy,
+          sortOrder
+        )
+        setCoinsData(data)
+      } catch (err) {
+        console.error('Error fetching coins data:', err)
+        setCoinsData(null)
+      } finally {
+        setLoadingCoinsData(false)
+      }
+    },
+    []
+  )
 
   useEffect(() => {
     fetchCoinsData(currentPage, sortConfig.key, sortConfig.direction)
@@ -192,27 +182,45 @@ export const CoingeckoProvider = ({ children }: { children: React.ReactNode }) =
     fetchTrendingCoinsData()
   }, [])
 
-  const contextValue = {
-    coinsData,
-    setCoinsData,
-    trendingCoinsData,
-    setTrendingCoinsData,
-    queryCoinsData,
-    setQueryCoinsData,
-    coinData,
-    loadingCoinsData,
-    loadingTrendingCoinsData,
-    loadingQueryCoinsData,
-    loadingCoinData,
-    currentPage,
-    setCurrentPage,
-    sortConfig,
-    setSortConfig,
-    fetchCoinsData,
-    fetchTrendingCoinsData,
-    fetchQueryCoinsData,
-    fetchCoinById,
-  }
+  const contextValue = useMemo(
+    () => ({
+      coinsData,
+      setCoinsData,
+      trendingCoinsData,
+      setTrendingCoinsData,
+      queryCoinsData,
+      setQueryCoinsData,
+      coinData,
+      loadingCoinsData,
+      loadingTrendingCoinsData,
+      loadingQueryCoinsData,
+      loadingCoinData,
+      currentPage,
+      setCurrentPage,
+      sortConfig,
+      setSortConfig,
+      fetchCoinsData,
+      fetchTrendingCoinsData,
+      fetchQueryCoinsData,
+      fetchCoinById,
+    }),
+    [
+      coinsData,
+      trendingCoinsData,
+      queryCoinsData,
+      coinData,
+      loadingCoinsData,
+      loadingTrendingCoinsData,
+      loadingQueryCoinsData,
+      loadingCoinData,
+      currentPage,
+      sortConfig,
+      fetchCoinsData,
+      fetchTrendingCoinsData,
+      fetchQueryCoinsData,
+      fetchCoinById,
+    ]
+  )
 
   return (
     <CoingeckoContext.Provider value={contextValue}>

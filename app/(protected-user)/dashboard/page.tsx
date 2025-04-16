@@ -12,6 +12,16 @@ import Link from 'next/link'
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
 
+  if(!session?.user?.email) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-2xl font-light text-gray-400 dark:text-gray-500">
+          Please sign in to access your dashboard.
+        </p>
+      </div>
+    )
+  }
+
   const user = await prisma.user.findUnique({
     where: {
       email: session?.user?.email,
@@ -46,7 +56,7 @@ export default async function Dashboard() {
         </OffWhiteHeadingContainer>
 
         {session ? (
-          <SectionWrapper className="py-6 md:py-16">
+          <SectionWrapper className="p-2 py-6 md:py-16">
             <div className="space-y-12">
               <div className="flex justify-center">
                 <ConnectWallet />

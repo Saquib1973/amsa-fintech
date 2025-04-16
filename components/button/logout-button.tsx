@@ -4,13 +4,14 @@ import SecondaryButton from './secondary-button'
 import { signOut } from 'next-auth/react'
 import toast from 'react-hot-toast'
 import Modal from '../modal'
+import { cn } from '@/lib/utils'
 
-const LogoutButton = () => {
+const LogoutButton = ({ className }: { className?: string }) => {
   const [open, setOpen] = useState(false)
   return (
-    <>
+    <div className="w-full relative">
       <SecondaryButton
-        className="max-w-fit bg-red-500 border-red-800 text-white"
+        className={cn(`w-fit bg-red-500 border-red-800 text-white ${className}`)}
         onClick={() => setOpen(true)}
       >
         Logout
@@ -28,7 +29,7 @@ const LogoutButton = () => {
           closeModal={() => setOpen(false)}
         />
       )}
-    </>
+    </div>
   )
 }
 

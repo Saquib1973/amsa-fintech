@@ -25,23 +25,25 @@ export default function SignUpPage() {
         }).then((res) => {
           if (res.ok) {
             resolve(res)
-            router.push('/auth/signin')
+            router.push(`/auth/verify-email?email=${email}`)
           } else {
-            reject(res)
+            throw new Error('Failed to sign up')
           }
+        }).catch((err) => {
+          reject(err)
         })
       }),
       {
-        loading: 'Signing up...',
-        success: 'Signed up successfully',
-        error: 'Failed to sign up',
+        loading: 'Registering...',
+        success: 'Registered successfully',
+        error: 'Failed to register',
       }
     )
   }
 
   return (
     <AnimateWrapper>
-      <div className="flex flex-col p-8 py-16 max-w-lg mx-auto items-center justify-center h-screen">
+      <div className="flex flex-col p-8 py-16 max-w-lg mx-auto items-center justify-center">
         <h2 className="text-4xl mb-8">Sign Up</h2>
         <form
           onSubmit={handleSubmit}

@@ -8,7 +8,20 @@ import GoogleProvider from 'next-auth/providers/google'
 import { getServerSession } from 'next-auth/next'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: {
+    ...PrismaAdapter(prisma),
+    createUser: async (data: { emailVerified?: Date | null; name?: string | null; email?: string | null; image?: string | null }) => {
+      const userData = {
+        name: data.name,
+        email: data.email,
+        image: data.image,
+        isVerified: true,
+      }
+      return prisma.user.create({
+        data: userData,
+      })
+    },
+  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -17,7 +30,9 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Please enter both email and password')
+        }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
@@ -31,14 +46,26 @@ export const authOptions: NextAuthOptions = {
           },
         })
 
-        if (!user || !user.accounts[0]?.password) return null
+        if (!user) {
+          throw new Error('No user found with this email')
+        }
+
+        if (!user.accounts[0]?.password) {
+          throw new Error('Invalid credentials')
+        }
+
+        if (!user.isVerified) {
+          throw new Error('Please verify your email to sign in')
+        }
 
         const isValidPassword = await bcrypt.compare(
           credentials.password,
           user.accounts[0].password
         )
 
-        if (!isValidPassword) return null
+        if (!isValidPassword) {
+          throw new Error('Invalid password')
+        }
 
         return {
           id: user.id,
@@ -51,6 +78,15 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          isVerified: true,
+        }
+      }
     }),
   ],
   callbacks: {
@@ -75,6 +111,12 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === 'google') {
         console.log(`User ${user.email} signed in with Google`)
+
+        // Update user to be verified
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { isVerified: true },
+        })
 
         const customer = await prisma.user.findUnique({
           where: { id: user.id },
@@ -109,3 +151,21 @@ export const getSession = async () => {
   const session = await getServerSession(authOptions)
   return session
 }
+
+export const generateOTP = () => {
+  return Math.floor(1000 + Math.random() * 9000).toString()
+}
+export async function sendVerificationEmail(email: string, name: string) {
+  const response = await fetch('/api/auth/email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, name }),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to send verification email')
+  }
+
+  return response.json()
+}
+

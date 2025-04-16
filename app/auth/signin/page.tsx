@@ -28,9 +28,10 @@ export default function SignInPage() {
         password,
         redirect: false,
       })
+      console.log(result)
 
       if (result?.error) {
-        toast.error('Invalid email or password')
+        toast.error(result.error)
       } else {
         toast.success('Signed in successfully')
         router.push(callbackUrl)
@@ -62,7 +63,7 @@ export default function SignInPage() {
 
   return (
     <AnimateWrapper>
-      <div className="flex flex-col max-w-lg mx-auto items-center justify-center min-h-screen p-6 py-16">
+      <div className="flex flex-col max-w-lg mx-auto items-center justify-center p-6 py-16">
         <h2 className="text-4xl font-bold mb-8">Sign In</h2>
 
         {error && (

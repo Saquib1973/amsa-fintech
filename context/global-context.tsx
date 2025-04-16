@@ -1,16 +1,13 @@
 'use client'
-import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
-
-interface ThemeState {
-  mode: 'light' | 'dark' | 'system'
-  loading: boolean
-}
-
-interface ThemeContextType {
-  theme: ThemeState
-  setTheme: (mode: 'light' | 'dark' | 'system') => void
-  toggleTheme: (mode: 'light' | 'dark' | 'system') => void
-}
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react'
+import { ThemeContextType, ThemeState } from '@/context/types'
 
 const GlobalContext = createContext<ThemeContextType | undefined>(undefined)
 
@@ -32,7 +29,10 @@ export const GlobalContextProvider = ({
     localStorage.setItem('theme', mode)
 
     if (mode === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+        .matches
+        ? 'dark'
+        : 'light'
       document.documentElement.classList.toggle('dark', systemTheme === 'dark')
     } else {
       document.documentElement.classList.toggle('dark', mode === 'dark')
@@ -40,7 +40,11 @@ export const GlobalContextProvider = ({
   }, [])
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null
+    const savedTheme = localStorage.getItem('theme') as
+      | 'light'
+      | 'dark'
+      | 'system'
+      | null
     if (savedTheme) {
       setTheme(savedTheme)
     }
@@ -56,15 +60,21 @@ export const GlobalContextProvider = ({
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [themeState.mode])
 
-  function toggleTheme(mode: 'light' | 'dark' | 'system') {
+  const toggleTheme = useCallback(function toggleTheme(
+    mode: 'light' | 'dark' | 'system'
+  ) {
     setTheme(mode)
-  }
+  },
+  [])
 
-  const contextValue = useMemo(() => ({
-    theme: themeState,
-    setTheme,
-    toggleTheme
-  }), [themeState, setTheme, toggleTheme])
+  const contextValue = useMemo(
+    () => ({
+      theme: themeState,
+      setTheme,
+      toggleTheme,
+    }),
+    [themeState, setTheme, toggleTheme]
+  )
 
   return (
     <GlobalContext.Provider value={contextValue}>
