@@ -1,25 +1,28 @@
+import { cn } from '@/lib/utils'
 import React from 'react'
 
 const Loader = ({
   message,
   noMessage = false,
-  size = 'medium',
+  size = 'md',
+  className,
   darker = false,
 }: {
   message?: string
   noMessage?: boolean
-  size?: 'small' | 'medium' | 'large'
+  size?: 'sm' | 'md' | 'lg'
   darker?: boolean
+  className?: string
 }) => {
   const sizeClass = {
-    small: 'w-5 h-5 border-[3px]',
-    medium: 'w-8 h-8 border-[5px]',
-    large: 'w-12 h-12 border-[7px]',
+    sm: 'w-5 h-5 border-[3px]',
+    md: 'w-8 h-8 border-[5px]',
+    lg: 'w-12 h-12 border-[7px]',
   }
 
   return (
-    <div className="flex flex-col items-center bg-white dark:bg-black">
-      <div className="relative">
+    <div className={cn("flex flex-col items-center dark:bg-black", className)}>
+      <div className='relative'>
         <div
           className={`rounded-full ${sizeClass[size]} border-gray-200 dark:border-gray-800`}
         ></div>
@@ -28,7 +31,7 @@ const Loader = ({
         ></div>
       </div>
       {!noMessage && (
-        <p className="mt-2 text-gray-600 font-medium">
+        <p className="my-2 text-gray-600 font-medium">
           {message || 'Loading...'}
         </p>
       )}

@@ -117,7 +117,9 @@ const HeaderSection = () => {
       </div>
       <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
         <HelpCircle className="text-blue-500 size-10" />
-        <h2 className="text-3xl font-light">FAQs</h2>
+        <h2 id="faqs" className="text-3xl font-light">
+          FAQs
+        </h2>
         <p className="text-gray-500 text-center">
           Find answers to commonly asked questions.
         </p>

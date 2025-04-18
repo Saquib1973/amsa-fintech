@@ -6,7 +6,9 @@ import SecondaryButton from '../button/secondary-button'
 import { useSession } from 'next-auth/react'
 
 const NavbarHomeCta =  () => {
-  const {status} = useSession();
+  const { status, data: session } = useSession();
+  console.log('Session status:', status);
+  console.log('Session data:', session);
   const router = useRouter();
 
   const renderButtons = () => {

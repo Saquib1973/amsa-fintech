@@ -2,6 +2,7 @@
 
 import SecondaryButton from '@/components/button/secondary-button'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
+import Loader from '@/components/loader-component'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -12,33 +13,37 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    toast.promise(
-      new Promise((resolve, reject) => {
+    setIsLoading(true)
+    try {
+      await toast.promise(
         fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password }),
         }).then((res) => {
           if (res.ok) {
-            resolve(res)
             router.push(`/auth/verify-email?email=${email}`)
+            return res
           } else {
             throw new Error('Failed to sign up')
           }
-        }).catch((err) => {
-          reject(err)
-        })
-      }),
-      {
-        loading: 'Registering...',
-        success: 'Registered successfully',
-        error: 'Failed to register',
-      }
-    )
+        }),
+        {
+          loading: 'Registering...',
+          success: 'Registered successfully',
+          error: 'Failed to register',
+        }
+      )
+    } catch (error) {
+      console.error('Signup error:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -71,11 +76,19 @@ export default function SignUpPage() {
             className="input-field"
           />
 
-          <SecondaryButton
-            type="submit"
-            className="w-full text-center flex items-center justify-center mt-6"
-          >
-            Sign Up
+            <SecondaryButton
+              type="submit"
+              className="w-full text-center flex h-12 items-center justify-center mt-6"
+              >
+              {isLoading ? (
+                <Loader
+                  size="sm"
+                  message="Registering..."
+                  className="flex-row justify-center gap-2"
+                />
+            ) : (
+              'Sign Up'
+            )}
           </SecondaryButton>
         </form>
         <div className="flex items-center w-full my-6 justify-center gap-2">

@@ -13,7 +13,7 @@ const GoBackButton = ({ className, redirect }: { className?: string, redirect?: 
         router.back()
       }
     }}>
-      <ArrowLeft className='size-6 xl:size-8' />
+      <ArrowLeft className='size-6 xl:size-6' />
     </SecondaryButton>
   )
 }

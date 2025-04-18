@@ -9,6 +9,7 @@ const PrimaryButton = ({
   suffixIcon,
   className,
   link,
+  type
 }: {
   children: React.ReactNode
   disabled?: boolean
@@ -17,8 +18,9 @@ const PrimaryButton = ({
   suffixIcon?: React.ReactNode
   className?: string
   link?: string
-  }) => {
-  if(link){
+  type?: 'button' | 'submit'
+}) => {
+  if (link) {
     return (
       <Link href={link} className={cn(
         'rounded-full text-base tracking-wide flex items-center justify-center gap-2 bg-blue-400 min-w-max text-white p-3 px-6 transition-all cursor-pointer w-fit',
@@ -33,6 +35,7 @@ const PrimaryButton = ({
   return (
     <button
       disabled={disabled}
+      type={type}
       className={cn(
         'rounded-full text-base tracking-wide flex items-center justify-center gap-2 bg-blue-400 min-w-max text-white p-3 px-6 transition-all cursor-pointer w-fit',
         className,

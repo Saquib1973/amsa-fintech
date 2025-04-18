@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import Loader from '@/components/loader-component'
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -121,15 +122,16 @@ export default function SignInPage() {
 
           <SecondaryButton
             type="submit"
-            className="w-full text-center flex items-center justify-center mt-6"
+            className="w-full text-center h-12 flex items-center justify-center mt-6"
             disabled={isLoading}
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? <Loader size="sm" message="Signing in..." className="flex-row justify-center gap-2" /> : 'Sign In'}
           </SecondaryButton>
 
-          <button
-            type="button"
-            className="text-blue-500 ml-auto text-sm hover:underline cursor-pointer"
+          <div className="flex items-center justify-between mt-2 gap-2">
+            <button
+              type="button"
+            className="text-blue-500 text-sm hover:underline cursor-pointer"
             onClick={(e) => {
               e.preventDefault()
               setEmail(testCredentials.email)
@@ -137,8 +139,20 @@ export default function SignInPage() {
             }}
             disabled={isLoading}
           >
-            Use Test Credentials
+            Test Credentials
           </button>
+          <button
+            type="button"
+            className="text-blue-500 text-sm underline cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault()
+              router.push('/auth/forgot-password')
+            }}
+            disabled={isLoading}
+          >
+            Forgot Passowrd?
+          </button>
+            </div>
         </form>
 
         <div className="flex items-center w-full my-6 justify-center gap-2">

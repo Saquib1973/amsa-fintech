@@ -71,6 +71,9 @@ const NavbarHome = () => {
           <Link href="/support" className="" onClick={() => setActiveDropdown(null)}>
             Support
           </Link>
+          <Link href="/support#faqs" className="" onClick={() => setActiveDropdown(null)}>
+            FAQs
+          </Link>
         </div>
 
         <div className="hidden xl:block">

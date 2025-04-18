@@ -10,7 +10,12 @@ import { getServerSession } from 'next-auth/next'
 export const authOptions: NextAuthOptions = {
   adapter: {
     ...PrismaAdapter(prisma),
-    createUser: async (data: { emailVerified?: Date | null; name?: string | null; email?: string | null; image?: string | null }) => {
+    createUser: async (data: {
+      emailVerified?: Date | null
+      name?: string | null
+      email?: string | null
+      image?: string | null
+    }) => {
       const userData = {
         name: data.name,
         email: data.email,
@@ -48,16 +53,11 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) {
           throw new Error('No user found with this email')
-        }
-
-        if (!user.accounts[0]?.password) {
+        } else if (!user.accounts[0]?.password) {
           throw new Error('Invalid credentials')
-        }
-
-        if (!user.isVerified) {
+        } else if (!user.isVerified) {
           throw new Error('Please verify your email to sign in')
         }
-
         const isValidPassword = await bcrypt.compare(
           credentials.password,
           user.accounts[0].password
@@ -86,7 +86,7 @@ export const authOptions: NextAuthOptions = {
           image: profile.picture,
           isVerified: true,
         }
-      }
+      },
     }),
   ],
   callbacks: {
@@ -151,6 +151,17 @@ export const getSession = async () => {
   const session = await getServerSession(authOptions)
   return session
 }
+
+// export const saveSession = async (session: Session) => {
+//   await prisma.session.create({
+//     data: {
+//       sessionToken: session.sessionToken,
+//       userId: session.user.id,
+//       expires: session.expires,
+//       location: session.location,
+//     },
+//   })
+// }
 
 export const generateOTP = () => {
   return Math.floor(1000 + Math.random() * 9000).toString()

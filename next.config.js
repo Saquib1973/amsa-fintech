@@ -6,6 +6,7 @@ const nextConfig = {
       'coin-images.coingecko.com',
       'assets.coingecko.com',
       'static.coingecko.com',
+      'lh3.googleusercontent.com',
     ],
   },
 }

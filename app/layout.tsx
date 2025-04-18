@@ -2,6 +2,7 @@ import ClientWrapper from '@/context/client-wrapper'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import '../styles/globals.css'
+import { getSession } from '@/lib/auth'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,11 +20,13 @@ export const metadata: Metadata = {
     'AmsaFintech offers cutting-edge financial technology solutions, empowering businesses and individuals with secure, efficient, and innovative tools for financial management and growth.',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const session = await getSession()
+  console.log(session)
   return (
     <html lang="en" className="overflow-x-hidden bg-white dark:bg-black">
       <body

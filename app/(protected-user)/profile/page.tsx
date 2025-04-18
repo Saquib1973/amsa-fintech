@@ -1,56 +1,70 @@
 'use client'
 
 import PrimaryButton from '@/components/button/primary-button'
+import SecondaryButton from '@/components/button/secondary-button'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
-import {
-  Camera,
-  Edit,
-  Mail,
-  MapPin,
-  Phone,
-  X
-} from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'react-hot-toast'
+import { Camera, Edit, Mail, MapPin, X } from 'lucide-react'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import { toast } from 'react-hot-toast'
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const getUserInformation = async () => {
+    const response = await fetch('/api/user/information')
+    const data = await response.json()
+    setFormData({
+      name: data.user.name,
+      email: data.user.email,
+      phone: data.user.phone,
+      address: data.user.addresses?.address ,
+      city: data.user.addresses?.city,
+      state: data.user.addresses?.state,
+      zip: data.user.addresses?.zip,
+      country: data.user.addresses?.country,
+      image: data.user.image,
+    })
+    return data
+  }
+  const updateUserInformation = async () => {
+    const response = await fetch('/api/user/information', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        country: formData.country,
+      }),
+    })
+    const data = await response.json()
+    toast.success(data.message)
+    getUserInformation()
+  }
+  useEffect(() => {
+    getUserInformation()
+  }, [])
   const [formData, setFormData] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main St, Apt 4B',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'United States',
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: '',
+    image: '',
   })
 
-  // Sample user data
-  const userData = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main St, Apt 4B',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'United States',
-    membershipStatus: 'Premium',
-    joinDate: 'January 15, 2023',
-    profileImage: '/placeholder-avatar.jpg'
-  }
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target)
     const { name, value } = e.target
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }))
   }
 
@@ -58,14 +72,8 @@ export default function ProfilePage() {
     setIsLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Update user data with form data
-      // In a real app, you would make an API call here
-
+      await updateUserInformation()
       setIsEditing(false)
-      toast.success('Profile updated successfully')
     } catch (error) {
       console.error('Error updating profile:', error)
       toast.error('Failed to update profile')
@@ -99,8 +107,8 @@ export default function ProfilePage() {
                       <Image
                         height={100}
                         width={100}
-                        src={userData.profileImage}
-                        alt={userData.name}
+                        src={formData.image}
+                        alt={formData.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -110,21 +118,18 @@ export default function ProfilePage() {
                       </button>
                     )}
                   </div>
-                  <h2 className="mt-4 text-xl font-light">{userData.name}</h2>
-                  <p className="text-gray-500">{userData.email}</p>
-                  <div className="mt-2 inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    {userData.membershipStatus}
-                  </div>
+                  <h2 className="mt-4 text-xl font-light">{formData.name}</h2>
+                  <p className="text-gray-500">{formData.email}</p>
                   <div className="mt-4">
                     {isEditing ? (
                       <div className="flex gap-2 justify-center">
-                        <button
+                        <SecondaryButton
                           onClick={() => setIsEditing(false)}
-                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-sm"
+                          className=""
                         >
                           <X className="w-4 h-4" />
                           <span>Cancel</span>
-                        </button>
+                        </SecondaryButton>
                         <PrimaryButton
                           onClick={handleSaveProfile}
                           disabled={isLoading}
@@ -152,66 +157,52 @@ export default function ProfilePage() {
               <div className="bg-white border border-gray-100 rounded-md p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <Mail className="w-6 h-6 text-blue-500" />
-                  <h2 className="text-2xl font-light text-gray-900">Personal Information</h2>
+                  <h2 className="text-2xl font-light text-gray-900">
+                    Personal Information
+                  </h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">First Name</span>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">
+                      Name
+                    </span>
                     <input
                       type="text"
-                      name="firstName"
-                      value={formData.firstName}
+                      name="name"
+                      placeholder="Enter your name"
+                      value={formData.name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       className="input-field w-full"
                     />
                   </div>
                   <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">Last Name</span>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className="input-field w-full"
-                    />
-                  </div>
-                  <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">Email</span>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">
+                      Email
+                    </span>
                     <div className="relative">
                       <input
                         type="email"
                         name="email"
+                        placeholder="Enter your email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        disabled={!isEditing}
+                        disabled={true}
                         className="input-field w-full pl-10"
                       />
                       <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                     </div>
                   </div>
-                  <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">Phone</span>
-                    <div className="relative">
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        className="input-field w-full pl-10"
-                      />
-                      <Phone className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                    </div>
-                  </div>
                   <div className="md:col-span-2">
-                    <span className="block text-sm font-medium text-gray-700 mb-1">Address</span>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">
+                      Address
+                    </span>
                     <div className="relative">
                       <input
                         type="text"
                         name="address"
+                        placeholder="Enter your address"
                         value={formData.address}
                         onChange={handleInputChange}
                         disabled={!isEditing}
@@ -221,10 +212,13 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">City</span>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </span>
                     <input
                       type="text"
                       name="city"
+                      placeholder="Enter your city"
                       value={formData.city}
                       onChange={handleInputChange}
                       disabled={!isEditing}
@@ -232,10 +226,13 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">State</span>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">
+                      State
+                    </span>
                     <input
                       type="text"
                       name="state"
+                      placeholder="Enter your state"
                       value={formData.state}
                       onChange={handleInputChange}
                       disabled={!isEditing}
@@ -243,21 +240,27 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</span>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">
+                      ZIP Code
+                    </span>
                     <input
                       type="text"
-                      name="zipCode"
-                      value={formData.zipCode}
+                      name="zip"
+                      placeholder="Enter your zip code"
+                      value={formData.zip}
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       className="input-field w-full"
                     />
                   </div>
                   <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">Country</span>
+                    <span className="block text-sm font-medium text-gray-700 mb-1">
+                      Country
+                    </span>
                     <input
                       type="text"
                       name="country"
+                      placeholder="Enter your country"
                       value={formData.country}
                       onChange={handleInputChange}
                       disabled={!isEditing}

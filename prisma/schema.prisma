@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "./generated/client"
 }
 
 datasource db {
@@ -29,6 +30,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   otp           VerificationToken?
+  addresses     Address?
 }
 
 model Account {
@@ -49,12 +51,23 @@ model Account {
 
   @@unique([provider, providerAccountId])
 }
+model Address {
+  id String @id @default(cuid())
+  address String
+  city String
+  state String
+  zip String
+  country String
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  location     String?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 

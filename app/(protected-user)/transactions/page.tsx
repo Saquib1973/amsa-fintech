@@ -112,7 +112,7 @@ export default function TransactionsPage() {
       return (
         <tr>
           <td colSpan={7} className="px-6 py-4 text-center h-[300px] text-gray-500">
-            <Loader size="small" />
+            <Loader size="sm" />
           </td>
         </tr>
       )

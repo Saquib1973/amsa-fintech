@@ -107,14 +107,14 @@ const DashboardSidebar = () => {
                     </button>
 
                     {isSettingsOpen && (
-                      <div className="pl-4">
+                      <div className="">
                         {item.submenuItems?.map((subItem) => {
                           const isSubItemActive = pathname === subItem.href
                           return (
                             <Link
                               key={subItem.name}
                               href={subItem.href || '#'}
-                              className={`flex text-base items-center p-3 font-light transition-colors ${
+                              className={`pl-10 flex text-base items-center p-3 font-light transition-colors ${
                                 isSubItemActive
                                   ? 'text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-900'
                                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'

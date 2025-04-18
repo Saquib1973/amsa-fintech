@@ -112,7 +112,7 @@ const TransakPaymentComponent = ({
         >
           {isLoading ? (
             <>
-              <Loader noMessage size="small" darker />
+              <Loader noMessage size="sm" darker />
               Initializing...
             </>
           ) : (
@@ -127,7 +127,7 @@ const TransakPaymentComponent = ({
         >
           {isLoading ? (
             <>
-              <Loader noMessage size="small" darker />
+              <Loader noMessage size="sm" darker />
               Processing...
             </>
           ) : (
