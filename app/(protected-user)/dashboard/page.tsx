@@ -8,6 +8,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import Link from 'next/link'
+import { Wallet } from '@prisma/client'
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
@@ -63,7 +64,7 @@ export default async function Dashboard() {
               </div>
               {user?.wallets.length ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {user.wallets.map(wallet => (
+                    {user.wallets.map((wallet: Wallet) => (
                       <WalletCard key={wallet.id} wallet={wallet} />
                     ))}
                   </div>
