@@ -7,12 +7,10 @@ import SectionWrapper from '@/components/wrapper/section-wrapper'
 import {
   Calendar,
   Download,
-  Filter,
   Search
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import PrimaryButton from '@/components/button/primary-button'
+import { useEffect, useState } from 'react'
 
 interface Wallet {
   id: string;
@@ -54,7 +52,11 @@ export default function TransactionsPage() {
         const data = await response.json()
 
         if (response.ok) {
-          setWallets(data.wallets || [])
+          const walletsData = data.wallets || []
+          setWallets(walletsData)
+          if (walletsData.length > 0) {
+            setWalletAddress(walletsData[0].address)
+          }
         } else {
           setError(data.error || 'Failed to fetch wallets')
         }
@@ -68,22 +70,29 @@ export default function TransactionsPage() {
     fetchWallets()
   }, [session?.user?.id])
 
+  useEffect(() => {
+    if (walletAddress) {
+      fetchOrders()
+    }
+  }, [walletAddress])
+
   const fetchOrders = async () => {
     if (!walletAddress) return;
 
     setLoading(true)
     setError('')
     try {
-      console.log('WALLET ADDRESS', walletAddress)
       const response = await fetch(`/api/admin/orders?walletAddress=${walletAddress}`)
       const data = await response.json()
 
       if (response.ok) {
-        setOrders(data.data || [])
+        const ordersData = Array.isArray(data.data) ? data.data : []
+        setOrders(ordersData)
       } else {
         setError(data.error || 'Failed to fetch orders')
       }
-    } catch {
+    } catch (err) {
+      console.error('Error fetching orders:', err)
       setError('An error occurred while fetching orders')
     } finally {
       setLoading(false)
@@ -118,50 +127,56 @@ export default function TransactionsPage() {
       )
     }
     if (orders.length > 0) {
-      return orders.map((order) => (
-        <tr key={order.id} className="">
-          <td className="px-6 py-4">
-            <div className="font-medium text-gray-900">{order.id}</div>
-          </td>
-          <td className="px-6 py-4 text-sm text-gray-500">
-            {formatDate(order.createdAt)}
-          </td>
-          <td className="px-6 py-4">
-            {formatCurrency(order.fiatAmount, order.fiatCurrency)}
-          </td>
-          <td className="px-6 py-4">
-            {order.cryptoAmount} {order.cryptoCurrency}
-          </td>
-          <td className="px-6 py-4">
-            <span className="text-sm text-gray-500">
-              {order.paymentOptionId.replace(/_/g, ' ').toUpperCase()}
-            </span>
-          </td>
-          <td className="px-6 py-4">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              order.status === 'COMPLETED'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-yellow-100 text-yellow-800'
-            }`}>
-              {order.status}
-            </span>
-          </td>
-          <td className="px-6 py-4">
-            {order.transactionLink ? (
-              <a
-                href={order.transactionLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-700 text-sm"
-              >
-                View
-              </a>
-            ) : (
-              <span className="text-gray-500 text-sm">-</span>
-            )}
-          </td>
-        </tr>
-      ))
+      return orders.map((order) => {
+        if (!order || typeof order !== 'object') {
+          console.error('Invalid order data:', order)
+          return null
+        }
+        return (
+          <tr key={order.id} className="">
+            <td className="px-6 py-4">
+              <div className="font-medium text-gray-900">{order.id}</div>
+            </td>
+            <td className="px-6 py-4 text-sm text-gray-500">
+              {formatDate(order.createdAt)}
+            </td>
+            <td className="px-6 py-4">
+              {formatCurrency(order.fiatAmount, order.fiatCurrency)}
+            </td>
+            <td className="px-6 py-4">
+              {order.cryptoAmount} {order.cryptoCurrency}
+            </td>
+            <td className="px-6 py-4">
+              <span className="text-sm text-gray-500">
+                {order.paymentOptionId?.replace(/_/g, ' ').toUpperCase()}
+              </span>
+            </td>
+            <td className="px-6 py-4">
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                order.status === 'COMPLETED'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {order.status}
+              </span>
+            </td>
+            <td className="px-6 py-4">
+              {order.transactionLink ? (
+                <a
+                  href={order.transactionLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-700 text-sm"
+                >
+                  View
+                </a>
+              ) : (
+                <span className="text-gray-500 text-sm">-</span>
+              )}
+            </td>
+          </tr>
+        )
+      })
     }
     return (
       <tr>
@@ -197,9 +212,6 @@ export default function TransactionsPage() {
                 {walletsLoading && (
                   <option value="">Loading...</option>
                 )}
-                {!walletsLoading && wallets.length > 0 && (
-                  <option value="">Select Wallet</option>
-                )}
                 {!walletsLoading && wallets.map((wallet) => (
                   <option key={wallet.id} value={wallet.address}>
                     {wallet.type === 'web3' ? 'Web3' : 'Fiat'} - {wallet.address?.slice(0, 10)}...{wallet.address?.slice(-4)}
@@ -207,16 +219,8 @@ export default function TransactionsPage() {
                 ))}
               </select>
             </div>
-            <PrimaryButton
-              onClick={fetchOrders}
-              disabled={!walletAddress || loading}
-              className="h-full disabled:opacity-60"
-            >
-              {loading ? 'Loading...' : 'Search Transactions'}
-            </PrimaryButton>
           </div>
 
-          {/* Filter Options Section */}
           <div className="mb-6 flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -241,10 +245,6 @@ export default function TransactionsPage() {
                 </select>
                 <Calendar className="w-5 h-5 text-gray-400 dark:text-gray-600 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
               </div>
-              <button className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-md text-sm">
-                <Filter className="w-4 h-4" />
-                <span>Filters</span>
-              </button>
               <button className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-md text-sm">
                 <Download className="w-4 h-4" />
                 <span>Export</span>

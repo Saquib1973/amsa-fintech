@@ -5,6 +5,9 @@ import { useState } from 'react'
 import TransakPaymentComponent from '../transak-payment-component'
 import { useSession } from 'next-auth/react'
 import PrimaryButton from '../button/primary-button'
+import Confetti from '../confetti'
+import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 interface AssetCalculatorProps {
   coinData: CoinData
   selectedCurrency: string
@@ -16,7 +19,9 @@ const AssetCalculator = ({
 }: AssetCalculatorProps) => {
   const [currencyAmount, setCurrencyAmount] = useState('')
   const [coinAmount, setCoinAmount] = useState('')
+  const [showConfetti, setShowConfetti] = useState(false)
   const { data: session } = useSession()
+  const router = useRouter()
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -54,7 +59,16 @@ const AssetCalculator = ({
     timestamp: string
     [key: string]: unknown
   }) => {
-    console.log('Transaction successful:', orderData)
+    setShowConfetti(true)
+    toast.success(`Transaction completed successfully! Amount: ${orderData.amount} ${orderData.currency}`, {
+      duration: 5000,
+      position: 'top-center'
+    })
+    setTimeout(() => {
+      setShowConfetti(false)
+      toast.dismiss()
+      router.push('/transactions')
+    }, 5000)
   }
 
   const handleTransakClose = () => {
@@ -68,6 +82,7 @@ const AssetCalculator = ({
 
   return (
     <div className="w-full xl:w-[50%] border-l border-gray-200">
+      {showConfetti && <Confetti />}
       <div className="m-auto w-full py-6 md:py-12 p-4 md:p-6">
         <p className="text-2xl md:text-3xl font-isola mb-4 md:mb-6">
           Buy {coinData.name} in minutes
