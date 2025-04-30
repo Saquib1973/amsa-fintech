@@ -6,7 +6,7 @@ import SecondaryButton from './secondary-button'
 const GoBackButton = ({ className, redirect }: { className?: string, redirect?: string }) => {
   const router = useRouter()
   return (
-    <SecondaryButton className={cn("p-2 aspect-square hover:bg-gray-200 transition-all", className)} onClick={() => {
+    <SecondaryButton className={cn("p-2 aspect-square hover:bg-surface-hover transition-all", className)} onClick={() => {
       if (redirect) {
         router.push(redirect)
       } else {

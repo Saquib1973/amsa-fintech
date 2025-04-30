@@ -20,7 +20,7 @@ const TrustSection = () => {
     },
   ]
   return (
-    <div className="w-full h-full relative border border-gray-200 py-16">
+    <div className="w-full h-full relative b-200 py-16">
       <div className="max-w-[1600px] mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {trustItems.map((item) => (
@@ -28,7 +28,7 @@ const TrustSection = () => {
               <h3 className="text-3xl sm:text-5xl leading-tighter font-extralight">
                 {item.title}
               </h3>
-              <p className="text-base sm:text-lg text-blue-500 font-extralight">
+              <p className="text-base sm:text-lg text-primary-main font-extralight">
                 {item.description}
               </p>
             </div>

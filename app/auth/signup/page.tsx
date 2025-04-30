@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import PrimaryButton from '@/components/button/primary-button'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -96,15 +97,15 @@ export default function SignUpPage() {
           <span className="text-gray-500 text-sm font-medium px-2">OR</span>
           <div className="h-px w-full bg-gray-200" />
         </div>
-        <SecondaryButton
+        <PrimaryButton
           onClick={() => signIn('google')}
-          className="flex items-center justify-center w-full gap-2 bg-blue-400 text-white"
+          className="flex items-center justify-center w-full gap-2"
         >
           Sign up with Google
-        </SecondaryButton>
+        </PrimaryButton>
         <p className="mt-4">
           Already have an account?{' '}
-          <Link href="/auth/signin" className="hover:underline text-blue-500">
+          <Link href="/auth/signin" className="hover:underline text-primary-main">
             Sign In
           </Link>
         </p>

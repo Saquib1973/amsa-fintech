@@ -100,16 +100,16 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Profile Sidebar */}
             <div className="lg:col-span-1">
-              <div className="bg-white border border-gray-100 rounded-md overflow-hidden">
+              <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md overflow-hidden">
                 <div className="p-6 text-center">
                   <div className="relative inline-block">
-                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 mx-auto">
+                    <div className="w-30 h-30 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800 mx-auto">
                       <Image
                         height={100}
                         width={100}
                         src={formData.image}
                         alt={formData.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover rounded-full"
                       />
                     </div>
                     {isEditing && (
@@ -154,10 +154,10 @@ export default function ProfilePage() {
 
             {/* Profile Content */}
             <div className="lg:col-span-3">
-              <div className="bg-white border border-gray-100 rounded-md p-8">
+              <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <Mail className="w-6 h-6 text-blue-500" />
-                  <h2 className="text-2xl font-light text-gray-900">
+                  <h2 className="text-2xl font-light dark:text-white">
                     Personal Information
                   </h2>
                 </div>

@@ -4,7 +4,7 @@
 @layer components {
   /* Input Field */
   .input-field {
-    @apply border border-gray-300 dark:text-white placeholder:dark:text-gray-400 placeholder:text-gray-600 dark:border-gray-800 rounded-full px-4 bg-gray-50 dark:bg-gray-950 md:px-5 text-lg outline-none p-2;
+    @apply border border-primary-alt-hover bg-surface-main rounded-full dark:border-primary-main-dark dark:bg-primary-main-dark md:px-5 text-lg outline-none p-2;
   }
 
 
@@ -42,6 +42,41 @@ body{
 @theme{
   --color-off-white: #F8F8F5;
   --exclude-header-height: 110px;
+
+  /* Primary (Blue) */
+    --color-primary-main: #3A59D1;
+    --color-primary-main-hover: #3D90D7;
+    /* Lighter blue for hover */
+    --color-primary-main-dark: #222831;
+    /* Use dark gray as 'dark' variant */
+    --color-primary-main-dark-hover: #393E46;
+    /* Slightly lighter dark for hover */
+
+    /* Primary Alt (Dark Gray) */
+    --color-primary-alt: #686D76;
+    /* Main dark gray */
+    --color-primary-alt-hover: #D8D9DA;
+    /* Even darker for hover */
+    --color-primary-alt-dark: #000000;
+    /* Black for deepest dark */
+    --color-primary-alt-dark-hover: #222831;
+    /* Dark gray for hover */
+
+    /* Accent (Light Blue) */
+    --color-accent-main: #60B5FF;
+    --color-accent-hover: #3D90D7;
+
+    /* Neutrals */
+    --color-black: #000000;
+    --color-black-hover: #222831;
+    --color-white: #FFFFFF;
+    --color-white-hover: #F7F7F7;
+
+    /* Surface/Backgrounds */
+    --color-surface-main: #F1EFEC;
+    --color-surface-alt: #EFEEEA;
+    --color-surface-hover: #F7F7F7;
+
 }
 /* dark mode setup */
 @custom-variant dark (&:where(.dark, .dark *));

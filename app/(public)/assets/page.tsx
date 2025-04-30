@@ -8,15 +8,15 @@ import SearchCoins from '@/components/assets/search-coins'
 const AssetsPage = () => {
   return (
     <AnimateWrapper>
-      <div className="bg-gradient-to-b from-white via-blue-50 to-white">
+      <div className="bg-gradient-to-b from-white dark:from-gray-950 via-blue-50 dark:via-gray-900 to-white dark:to-gray-950">
         <SectionWrapper>
           <div className="flex max-md:flex-col-reverse gap-4 justify-between items-center">
             <div className="md:w-1/2 flex flex-col gap-10">
-              <h1 className="text-6xl font-light text-gray-900">
+              <h1 className="text-6xl font-light text-gray-900 dark:text-white">
                 All crypto assets for
                 <span className="italic block">trading</span>
               </h1>
-              <p className="text-gray-700 font-light">
+              <p className="text-gray-700 dark:text-gray-300 font-light">
                 Below is a comprehensive list of crypto assets you can buy,
                 sell, and swap directly within our platform, presented with
                 real-time prices in Australian dollars (AUD). You can also

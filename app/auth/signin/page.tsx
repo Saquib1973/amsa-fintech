@@ -131,7 +131,7 @@ export default function SignInPage() {
           <div className="flex items-center justify-between mt-2 gap-2">
             <button
               type="button"
-            className="text-blue-500 text-sm hover:underline cursor-pointer"
+            className="text-primary-main text-sm hover:underline cursor-pointer"
             onClick={(e) => {
               e.preventDefault()
               setEmail(testCredentials.email)
@@ -143,7 +143,7 @@ export default function SignInPage() {
           </button>
           <button
             type="button"
-            className="text-blue-500 text-sm underline cursor-pointer"
+            className="text-primary-main text-sm underline cursor-pointer"
             onClick={(e) => {
               e.preventDefault()
               router.push('/auth/forgot-password')
@@ -171,7 +171,7 @@ export default function SignInPage() {
 
         <p className="mt-6 text-center text-gray-600">
           Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="text-blue-600 hover:underline">
+          <Link href="/auth/signup" className="text-primary-main hover:underline">
             Sign Up
           </Link>
         </p>

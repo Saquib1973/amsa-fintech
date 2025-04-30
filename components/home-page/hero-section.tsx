@@ -1,18 +1,21 @@
-import React from 'react'
-import PrimaryButton from '../button/primary-button'
+'use client'
 import { Check, Fast, Safe } from '@/public/svg'
+import PrimaryButton from '../button/primary-button'
 const HeroSection = () => {
   return (
-    <div className="w-full h-full relative border bg-gradient-to-b from-white via-off-white/80 to-off-white border-gray-200 p-2 md:p-6">
+    <div className="w-full h-full relative bg-gradient-to-b from-surface-alt via-surface-main to-off-white b-200 p-2 md:p-6">
       <div className="flex justify-between p-6 md:p-10 py-10 md:py-16 max-w-[1200px] mx-auto w-full ">
         <div className="flex items-start justify-start flex-col gap-4 z-10">
           <h1 className="text-7xl md:text-8xl max-w-[80%] font-semibold">
             The
             <span className="italic px-4">joy</span>
-            of financial freedom.
+            of financial
+            <span className="italic px-4">freedom.</span>
           </h1>
           <p className="text-xl text-gray-500">Less cryptic, more crypto</p>
-          <PrimaryButton className="mt-4" link="/auth/signup">Get Started</PrimaryButton>
+          <PrimaryButton className="mt-4" link="/auth/signup">
+            Get Started
+          </PrimaryButton>
           <div className="mt-16 flex gap-5 xl:gap-10 justify-center items-center">
             <div className="flex flex-col items-center gap-2">
               <Fast className="size-10 lg:size-20 text-gray-400" />

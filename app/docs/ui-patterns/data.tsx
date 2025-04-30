@@ -4,6 +4,7 @@ import type { UIComponent } from './types'
 import PrimaryButton from '@/components/button/primary-button'
 import SecondaryButton from '@/components/button/secondary-button'
 import Modal from '@/components/ui/modal-component'
+import { ColorSwatch } from '@/components/ui/color-swatch'
 
 const ModalExample = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -119,5 +120,87 @@ const MyComponent = () => {
     </div>
   );
 };`,
+  },
+  {
+    id: 'color-scheme',
+    title: 'Color Scheme',
+    category: 'Foundation',
+    description: 'A comprehensive overview of the color palette used throughout the application.',
+    content: (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Primary Colors */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Primary Colors</h3>
+          <div className="space-y-2">
+            <ColorSwatch name="Primary Main" color="var(--color-primary-main)" />
+            <ColorSwatch name="Primary Main Hover" color="var(--color-primary-main-hover)" />
+            <ColorSwatch name="Primary Main Dark" color="var(--color-primary-main-dark)" />
+            <ColorSwatch name="Primary Main Dark Hover" color="var(--color-primary-main-dark-hover)" />
+          </div>
+        </div>
+
+        {/* Primary Alt Colors */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Primary Alt Colors</h3>
+          <div className="space-y-2">
+            <ColorSwatch name="Primary Alt" color="var(--color-primary-alt)" />
+            <ColorSwatch name="Primary Alt Hover" color="var(--color-primary-alt-hover)" />
+            <ColorSwatch name="Primary Alt Dark" color="var(--color-primary-alt-dark)" />
+            <ColorSwatch name="Primary Alt Dark Hover" color="var(--color-primary-alt-dark-hover)" />
+          </div>
+        </div>
+
+        {/* Accent Colors */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Accent Colors</h3>
+          <div className="space-y-2">
+            <ColorSwatch name="Accent Main" color="var(--color-accent-main)" />
+            <ColorSwatch name="Accent Hover" color="var(--color-accent-hover)" />
+          </div>
+        </div>
+
+        {/* Neutral Colors */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Neutral Colors</h3>
+          <div className="space-y-2">
+            <ColorSwatch name="Black" color="var(--color-black)" />
+            <ColorSwatch name="Black Hover" color="var(--color-black-hover)" />
+            <ColorSwatch name="White" color="var(--color-white)" />
+            <ColorSwatch name="White Hover" color="var(--color-white-hover)" />
+          </div>
+        </div>
+
+        {/* Surface Colors */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Surface Colors</h3>
+          <div className="space-y-2">
+            <ColorSwatch name="Surface Main" color="var(--color-surface-main)" />
+            <ColorSwatch name="Surface Alt" color="var(--color-surface-alt)" />
+            <ColorSwatch name="Surface Hover" color="var(--color-surface-hover)" />
+          </div>
+        </div>
+
+        {/* Special Colors */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Special Colors</h3>
+          <div className="space-y-2">
+            <ColorSwatch name="Off White" color="var(--color-off-white)" />
+          </div>
+        </div>
+      </div>
+    ),
+    usage: `// Color Swatch Component
+const ColorSwatch = ({ name, color }: { name: string; color: string }) => (
+  <div className="flex items-center gap-3">
+    <div
+      className="w-12 h-12 rounded-lg border border-gray-200"
+      style={{ backgroundColor: color }}
+    />
+    <div>
+      <p className="font-medium">{name}</p>
+      <p className="text-sm text-gray-500">{color}</p>
+    </div>
+  </div>
+);`
   },
 ]

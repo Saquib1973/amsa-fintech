@@ -38,7 +38,7 @@ const Footer = () => {
 
   return (
     <footer className="border-t border-gray-200">
-      <div className="width-1240 flex gap-4 justify-center py-16">
+      <div className="width-1600 flex gap-4  py-16">
         <div className="flex max-md:flex-col md:justify-center w-full px-6 gap-6">
           <div className=" flex flex-col max-w-[300px]">
             <Link href="/" className="mb-5">
