@@ -6,6 +6,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import { getServerSession } from 'next-auth/next'
+import { getClientIpAddress } from '@/lib/ip'
 
 export const authOptions: NextAuthOptions = {
   adapter: {
@@ -91,7 +92,6 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account }) {
-      // Initial sign in
       if (account && user) {
         return {
           ...token,
@@ -131,6 +131,26 @@ export const authOptions: NextAuthOptions = {
             },
           })
         }
+      }
+
+      // Create new session
+      await prisma.session.create({
+        data: {
+          userId: user.id,
+          sessionToken: crypto.randomUUID(),
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+          location: await getClientIpAddress(),
+        },
+      })
+    },
+    async signOut({ token }) {
+      if (token?.id) {
+        // Delete all sessions for the user
+        await prisma.session.deleteMany({
+          where: {
+            userId: token.id as string,
+          },
+        })
       }
     },
   },

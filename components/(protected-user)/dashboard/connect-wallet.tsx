@@ -1,9 +1,9 @@
 'use client'
+import PrimaryButton from '@/components/button/primary-button'
+import Modal from '@/components/modal'
 import { ethers } from 'ethers'
 import { useState } from 'react'
-import SecondaryButton from '../../button/secondary-button'
 import toast from 'react-hot-toast'
-import Modal from '@/components/modal'
 
 declare global {
   interface Window {
@@ -185,13 +185,13 @@ export default function ConnectWallet() {
 
   return (
     <div className="flex flex-col items-start w-full gap-4">
-      <SecondaryButton
+      <PrimaryButton
         onClick={connectWallet}
         disabled={isConnecting}
-        className="bg-blue-400 hover:bg-blue-500 text-white md:w-[300px] transition-colors"
+        className="md:w-[300px]"
       >
         {isConnecting ? 'Connecting...' : 'Connect Web3 Wallet'}
-      </SecondaryButton>
+      </PrimaryButton>
 
       {showAccountModal && (
         <Modal

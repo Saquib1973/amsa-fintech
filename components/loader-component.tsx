@@ -24,7 +24,7 @@ const Loader = ({
     <div className={cn("flex flex-col items-center dark:bg-black", className)}>
       <div className='relative'>
         <div
-          className={`rounded-full ${sizeClass[size]} border-gray-200 dark:border-gray-800`}
+          className={`rounded-full ${sizeClass[size]} border-surface-main dark:border-primary-alt`}
         ></div>
         <div
           className={`absolute top-0 left-0 rounded-full animate-spin ${sizeClass[size]} ${darker ? 'border-blue-800 border-t-transparent' : 'border-blue-500 border-t-transparent'}`}

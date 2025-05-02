@@ -7,7 +7,7 @@ interface AssetHeaderProps {
   selectedCurrency: string
   setSelectedCurrency: (currency: string) => void
   activeTab: string
-  setActiveTab: (tab: string) => void
+  handleTabChange: (tab: string) => void
 }
 
 const CURRENCY_OPTIONS = [
@@ -17,7 +17,7 @@ const CURRENCY_OPTIONS = [
   { value: 'gbp', label: 'GBP', symbol: '£' },
 ]
 
-const AssetHeader = ({ coinData, selectedCurrency, setSelectedCurrency, activeTab, setActiveTab }: AssetHeaderProps) => {
+const AssetHeader = ({ coinData, selectedCurrency, setSelectedCurrency, activeTab, handleTabChange }: AssetHeaderProps) => {
   const getCurrentPrice = () => {
     if (!coinData?.market_data?.current_price) return '0.00'
     return coinData.market_data.current_price[
@@ -104,20 +104,20 @@ const AssetHeader = ({ coinData, selectedCurrency, setSelectedCurrency, activeTa
       </div>
       <div className="w-full mt-2 flex border-b border-gray-200">
         <button
-          onClick={() => setActiveTab('overview')}
+          onClick={() => handleTabChange('overview')}
           className={`cursor-pointer text-lg sm:text-3xl font-light border-b-4 p-4 sm:p-6 transition-colors ${
             activeTab === 'overview'
-              ? 'border-b-blue-400 text-blue-600'
+              ? 'border-b-primary-main text-primary-main'
               : 'border-b-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
           Overview
         </button>
         <button
-          onClick={() => setActiveTab('chart')}
+          onClick={() => handleTabChange('chart')}
           className={`cursor-pointer text-lg sm:text-3xl font-light border-b-4 p-4 sm:p-6 transition-colors ${
             activeTab === 'chart'
-              ? 'border-b-blue-400 text-blue-600'
+              ? 'border-b-primary-main text-primary-main'
               : 'border-b-transparent text-gray-600 hover:text-gray-900'
           }`}
         >

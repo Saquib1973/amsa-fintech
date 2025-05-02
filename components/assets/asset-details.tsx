@@ -9,7 +9,7 @@ import AssetOverview from './asset-overview'
 import AssetChart from './asset-chart'
 import TrendingCoins from './trending-coins'
 import AssetCalculator from './asset-calculator'
-
+import { useRouter, useSearchParams } from 'next/navigation'
 interface AssetDetailsProps {
   id: string
 }
@@ -17,11 +17,19 @@ interface AssetDetailsProps {
 const AssetDetails = ({ id }: AssetDetailsProps) => {
   const { coinData, loadingCoinData, fetchCoinById } = useCoingecko()
   const [selectedCurrency, setSelectedCurrency] = useState('aud')
-  const [activeTab, setActiveTab] = useState('overview')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') ?? 'overview')
 
   useEffect(() => {
     fetchCoinById(id)
   }, [id])
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const newUrl = tab ? `/assets/${id}?tab=${tab}` : `/assets/${id}`
+    router.push(newUrl,{scroll:false})
+  }
 
   if (loadingCoinData) {
     return (
@@ -57,7 +65,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
             selectedCurrency={selectedCurrency}
             setSelectedCurrency={setSelectedCurrency}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            handleTabChange={handleTabChange}
           />
           <AssetCalculator coinData={coinData} selectedCurrency={selectedCurrency} />
         </div>

@@ -4,16 +4,18 @@ import PrimaryButton from '@/components/button/primary-button'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
-import {
-  Check,
-  Clock,
-  Eye,
-  EyeOff,
-  Lock,
-  X
-} from 'lucide-react'
-import { useState } from 'react'
+import { Check, Clock, Eye, EyeOff, Lock } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
+import { formatDistanceToNow } from 'date-fns'
+import Loader from '@/components/loader-component'
+
+interface Session {
+  id: string
+  location: string
+  expires: string
+  current: boolean
+}
 
 export default function SecurityPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -22,41 +24,28 @@ export default function SecurityPage() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [sessions, setSessions] = useState<Session[]>([])
 
-  const loginHistory = [
-    {
-      id: 1,
-      location: 'New York, USA',
-      device: 'Chrome on Windows',
-      date: '2023-04-01T10:30:00',
-      status: 'current'
-    },
-    {
-      id: 2,
-      location: 'Los Angeles, USA',
-      device: 'Safari on iPhone',
-      date: '2023-03-28T15:45:00',
-      status: 'active'
-    },
-    {
-      id: 3,
-      location: 'Chicago, USA',
-      device: 'Firefox on Mac',
-      date: '2023-03-15T09:20:00',
-      status: 'active'
+  useEffect(() => {
+    fetchSessions()
+  }, [])
+
+  const fetchSessions = async () => {
+    try {
+      const response = await fetch('/api/auth/manage-session')
+      const data = await response.json()
+      setSessions(data.sessions)
+    } catch (error) {
+      console.error('Error fetching sessions:', error)
+      toast.error('Failed to load login history')
+    } finally {
+      setIsLoading(false)
     }
-  ]
+  }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+  const formatDate = (date: string) => {
+    return formatDistanceToNow(new Date(date), { addSuffix: true })
   }
 
   const handlePasswordUpdate = async () => {
@@ -95,7 +84,6 @@ export default function SecurityPage() {
         throw new Error(data.error || 'Failed to update password')
       }
 
-      // Clear form fields
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
@@ -103,9 +91,46 @@ export default function SecurityPage() {
       toast.success('Password updated successfully')
     } catch (error) {
       console.error('Error updating password:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to update password')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update password'
+      )
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const renderLoginHistory = () => {
+    if (isLoading) {
+      return <Loader message="loading history" size="sm" />
+    } else if (sessions.length === 0) {
+      return (
+        <div className="text-center py-4 text-primary-alt">
+          No login history found
+        </div>
+      )
+    } else {
+      return sessions.map((session) => (
+        <div
+          key={session.id}
+          className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-950 rounded-md"
+        >
+          <div>
+            <p className="font-medium">
+              {session.location || 'Unknown location'}
+            </p>
+            <p className="text-sm text-gray-500">
+              Expires {formatDate(session.expires)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {session.current && (
+              <span className="text-green-600 dark:text-green-400 text-sm font-medium flex items-center">
+                <Check className="w-4 h-4 mr-1" /> Current Session
+              </span>
+            )}
+          </div>
+        </div>
+      ))
     }
   }
 
@@ -133,10 +158,12 @@ export default function SecurityPage() {
 
               <div className="space-y-4 max-w-md">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Current Password
+                  </label>
                   <div className="relative">
                     <input
-                      type={showCurrentPassword ? "text" : "password"}
+                      type={showCurrentPassword ? 'text' : 'password'}
                       className="input-field w-full"
                       placeholder="Enter current password"
                       value={currentPassword}
@@ -144,19 +171,27 @@ export default function SecurityPage() {
                     />
                     <button
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
                       type="button"
                     >
-                      {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showCurrentPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New Password
+                  </label>
                   <div className="relative">
                     <input
-                      type={showNewPassword ? "text" : "password"}
+                      type={showNewPassword ? 'text' : 'password'}
                       className="input-field w-full"
                       placeholder="Enter new password"
                       value={newPassword}
@@ -167,16 +202,22 @@ export default function SecurityPage() {
                       onClick={() => setShowNewPassword(!showNewPassword)}
                       type="button"
                     >
-                      {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showNewPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm New Password
+                  </label>
                   <div className="relative">
                     <input
-                      type={showConfirmPassword ? "text" : "password"}
+                      type={showConfirmPassword ? 'text' : 'password'}
                       className="input-field w-full"
                       placeholder="Confirm new password"
                       value={confirmPassword}
@@ -184,10 +225,16 @@ export default function SecurityPage() {
                     />
                     <button
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       type="button"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -207,29 +254,7 @@ export default function SecurityPage() {
                 <Clock className="w-6 h-6 text-blue-500" />
                 <h2 className="text-2xl font-light">Login History</h2>
               </div>
-
-              <div className="space-y-3">
-                {loginHistory.map((login) => (
-                  <div key={login.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-950 rounded-md">
-                    <div>
-                      <p className="font-medium">{login.location}</p>
-                      <p className="text-sm text-gray-500">{login.device}</p>
-                      <p className="text-sm text-gray-500">{formatDate(login.date)}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {login.status === 'current' ? (
-                        <span className="text-green-600 dark:text-green-400 text-sm font-medium flex items-center">
-                          <Check className="w-4 h-4 mr-1" /> Current Session
-                        </span>
-                      ) : (
-                        <button className="text-red-600 dark:text-red-400 text-sm hover:underline flex items-center">
-                          <X className="w-4 h-4 mr-1" /> Revoke
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="space-y-3">{renderLoginHistory()}</div>
             </div>
           </div>
         </SectionWrapper>

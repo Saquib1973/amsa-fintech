@@ -1,46 +1,40 @@
 'use client'
-import { Check, Fast, Safe } from '@/public/svg'
+import { useSession } from 'next-auth/react'
 import PrimaryButton from '../button/primary-button'
+import Typewritter from '../typewritter'
 const HeroSection = () => {
+  const { data: session } = useSession()
   return (
-    <div className="w-full h-full relative bg-gradient-to-b from-surface-alt via-surface-main to-off-white b-200 p-2 md:p-6">
-      <div className="flex justify-between p-6 md:p-10 py-10 md:py-16 max-w-[1200px] mx-auto w-full ">
+    <div
+      className="w-full h-full relative bg-cover bg-center bg-gradient-to-b from-surface-alt via-surface-main to-off-white b-200 p-2 md:p-6"
+      style={{
+        backgroundImage: 'url(/images/herobg.png)',
+      }}
+    >
+      <div className="flex gap-4 justify-between p-6 md:p-10 py-20 min-h-[66vh] md:py-32 max-w-[1200px] mx-auto w-full ">
         <div className="flex items-start justify-start flex-col gap-4 z-10">
-          <h1 className="text-7xl md:text-8xl max-w-[80%] font-semibold">
+          <h1 className="text-7xl md:text-8xl text-white font-semibold">
             The
-            <span className="italic px-4">joy</span>
+            <span className="inline-block italic px-4 text-primary-main">
+              <Typewritter
+                textArray={['joy', 'freedom', 'success']}
+                className="font-semibold"
+                letterDelay={0.08}
+                mainFadeDuration={0.5}
+              />
+            </span>
             of financial
             <span className="italic px-4">freedom.</span>
           </h1>
-          <p className="text-xl text-gray-500">Less cryptic, more crypto</p>
-          <PrimaryButton className="mt-4" link="/auth/signup">
-            Get Started
+          <p className="text-xl text-gray-100">Less cryptic, more crypto</p>
+          <PrimaryButton
+            className="mt-4"
+            link={session ? '/dashboard' : '/auth/signup'}
+          >
+            {session ? 'Dashboard' : 'Get Started'}
           </PrimaryButton>
-          <div className="mt-16 flex gap-5 xl:gap-10 justify-center items-center">
-            <div className="flex flex-col items-center gap-2">
-              <Fast className="size-10 lg:size-20 text-gray-400" />
-              <span className="text-3xl font-bold">Fast</span>
-              <span className="text-gray-500 text-sm text-center lg:text-lg">
-                Easily buy, sell and store crypto
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <Check className="size-10 lg:size-20 text-gray-400" />
-              <span className="text-3xl font-bold">Simple</span>
-              <span className="text-gray-500 text-sm text-center lg:text-lg">
-                Easily buy, sell and store crypto
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <Safe className="size-10 lg:size-20 text-gray-400" />
-              <span className="text-3xl font-bold">Simple</span>
-              <span className="text-gray-500 text-sm text-center lg:text-lg">
-                Easily buy, sell and store crypto
-              </span>
-            </div>
-          </div>
         </div>
-        <div></div>
+        <div className="relative"></div>
       </div>
     </div>
   )

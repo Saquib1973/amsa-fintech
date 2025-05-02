@@ -1,7 +1,5 @@
-import ErrorPage from '@/components/error-fallback';
+import ErrorPage from '@/components/error-fallback'
 
 export default function NotFound() {
-  return (
-<ErrorPage error />
-  );
+  return <ErrorPage error />
 }

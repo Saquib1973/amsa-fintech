@@ -60,7 +60,7 @@ const Footer = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {Object.entries(footerLinks).map(([section, links]) => (
               <div key={section} className="">
-                <h3 className="text-blue-500 text-2xl mb-4 capitalize">
+                <h3 className="text-primary-main text-2xl mb-4 capitalize">
                   {section}
                 </h3>
                 <ul>

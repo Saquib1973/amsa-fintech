@@ -20,7 +20,7 @@ const page = () => {
         <SectionWrapper>
           <h1 className="text-center text-6xl font-light">
             The help you need,
-            <span className="italic block text-blue-400">
+            <span className="italic block text-primary-main">
               {' '}
               when you need it
             </span>

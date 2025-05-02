@@ -52,7 +52,7 @@ const TrendingCoins = () => {
             {trendingCoinsData[0].coins.map((coin) => (
               <Link
                 key={coin.item.id}
-                href={`/assets/${coin.item.id}`}
+                href={`/assets/${coin.item.id}?tab=overview`}
                 className="py-2 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">

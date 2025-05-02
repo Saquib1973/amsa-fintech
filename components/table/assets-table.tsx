@@ -156,7 +156,7 @@ const AssetsTable: React.FC = () => {
                 <tr
                   key={coinData.id}
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => router.push(`/assets/${coinData.id}`)}
+                  onClick={() => router.push(`/assets/${coinData.id}?tab=overview`)}
                 >
                   <td className="px-2 py-2 whitespace-nowrap text-sm light-text">
                     {coinData.market_cap_rank || 'N/A'}

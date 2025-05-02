@@ -75,7 +75,7 @@ const NavbarDropdown: React.FC<NavbarDropdownProps> = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="fixed left-1/2 top-0 -translate-x-1/2 bg-white z-50 min-w-[700px]"
+      className="fixed left-1/2 -top-0 -translate-x-1/2 bg-white z-50 min-w-[700px]"
     >
       <motion.div
         ref={dropdownRef}
@@ -104,7 +104,7 @@ const NavbarDropdown: React.FC<NavbarDropdownProps> = ({
                     <Link
                       href={activeMenuItem.children[0].href || '#'}
                       target={activeMenuItem.children[0].target}
-                      className="bg-blue-400 flex justify-between hover:bg-blue-500 transition-colors text-white p-6 text-xl"
+                      className="bg-primary-main flex justify-between hover:bg-primary-main-hover transition-colors text-white p-6 text-xl"
                       onClick={onClose}
                     >
                       {activeMenuItem.children[0].title}
