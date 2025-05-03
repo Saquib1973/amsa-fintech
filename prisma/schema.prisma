@@ -19,6 +19,12 @@ model Wallet {
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum USER_TYPE {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -28,6 +34,7 @@ model User {
   wallets       Wallet[]
   accounts      Account[]
   sessions      Session[]
+  type          USER_TYPE @default(USER)
   otp           VerificationToken?
   addresses     Address?
 }

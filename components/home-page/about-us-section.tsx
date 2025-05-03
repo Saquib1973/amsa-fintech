@@ -43,9 +43,9 @@ const AboutUsSection = () => {
   }, [isActive])
 
   return (
-    <div className="w-full h-full flex relative b-200">
+    <div className="w-full h-full flex relative">
       <div className="flex max-md:flex-col justify-between max-w-[1400px] mx-auto w-full">
-        <div className="p-10 xl:p-24 md:border-r border-gray-200 w-full md:w-1/2 h-full">
+        <div className="p-10 xl:p-24 w-full md:w-1/2 h-full">
           <div className="relative p-4 w-full h-full">
             {features.map((feature, index) => (
               <div
@@ -80,18 +80,18 @@ const AboutUsSection = () => {
                     setProgress(0)
                   }}
                   className={`w-full cursor-pointer flex items-center h-20 px-6 transition-colors duration-200 ${
-                    index === isActive - 1
-                      ? 'bg-primary-main text-white'
-                      : ''
+                    index === isActive - 1 ? 'bg-primary-main text-white' : ''
                   }`}
                 >
                   <span className="text-2xl font-light">{feature.title}</span>
                 </button>
-                <div className={`relative h-1 ${index===isActive-1 ? "bg-accent-main":""} overflow-hidden`}>
+                <div
+                  className={`relative h-1 ${index === isActive - 1 ? 'bg-primary-main' : ''} overflow-hidden`}
+                >
                   <div
                     className="absolute top-0 left-0 h-full bg-red-600 transition-all duration-100 ease-linear"
                     style={{
-                      width: `${index === isActive - 1 ? progress : 0}%`,
+                      width: `${index === isActive - 1 ? progress + 5 : 0}%`, // 5 is a padding for improved user experience
                     }}
                   />
                 </div>

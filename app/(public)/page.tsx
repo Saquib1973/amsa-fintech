@@ -7,6 +7,7 @@ import UtilityPricePlay from '@/components/home-page/utility-price-play'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import SecondaryButton from './../../components/button/secondary-button'
+import WhatWeCanDoForYouSection from '@/components/home-page/what-we-can-do-for-you-section'
 const page = () => {
   return (
     <AnimateWrapper>
@@ -17,6 +18,7 @@ const page = () => {
         <CtaSectionOne />
         <UtilityPricePlay />
         {/* Temporary */}
+        <WhatWeCanDoForYouSection />
         <SectionWrapper>
           <h1 className="text-center text-6xl font-light">
             The help you need,

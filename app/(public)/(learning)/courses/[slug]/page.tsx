@@ -1,6 +1,6 @@
 'use client'
 
-import { notFound, useParams } from 'next/navigation'
+import { notFound, useParams, useSearchParams, useRouter } from 'next/navigation'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import Link from 'next/link'
 import { courses } from '@/content/courses'
@@ -15,14 +15,31 @@ interface Lecture {
 }
 export default function CoursePage() {
   const params = useParams()
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const course = courses[params.slug as string]
   if (!course) {
     notFound()
   }
-  const [selectedLecture, setSelectedLecture] = useState(course.lectures[0])
+
+  // Get the lecture ID from URL parameters
+  const lectureId = searchParams.get('lecture')
+  const initialLecture = lectureId
+    ? course.lectures.find(lecture => lecture.videoId === lectureId) ?? course.lectures[0]
+    : course.lectures[0]
+
+  const [selectedLecture, setSelectedLecture] = useState(initialLecture)
   const handleLessonChange = (lecture: Lecture) => {
     setSelectedLecture(lecture)
     moveToTop(100)
+    // Update URL with the new lecture ID
+    router.push(`/courses/${params.slug}?lecture=${lecture.videoId}`, { scroll: false })
+    // Save the last watched lecture to localStorage
+    localStorage.setItem('lastWatchedLecture', JSON.stringify({
+      courseSlug: params.slug,
+      lectureId: lecture.videoId,
+      lectureTitle: lecture.title
+    }))
   }
   return (
     <AnimateWrapper>

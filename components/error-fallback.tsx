@@ -1,124 +1,111 @@
-"use client"
+'use client'
+import Link from 'next/link'
 import React from 'react'
-import AnimateWrapper from './wrapper/animate-wrapper'
-import SecondaryButton from './button/secondary-button'
 import StillBuildingPage from './still-building-page'
-import { motion } from 'framer-motion'
+import { ArrowDownRight } from 'lucide-react'
+import AnimateWrapper from './wrapper/animate-wrapper'
+import SectionWrapper from './wrapper/section-wrapper'
+import SecondaryButton from './button/secondary-button'
 
-const GlitchText = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="relative">
-      <motion.div
-        animate={{
-          x: [-2, 2, -2],
-          opacity: [1, 0.8, 1],
-        }}
-        transition={{
-          duration: 0.2,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-          times: [0, 0.5, 1]
-        }}
-        className="absolute text-red-500 left-0 top-0"
-      >
-        {children}
-      </motion.div>
-      <motion.div
-        animate={{
-          x: [2, -2, 2],
-          opacity: [1, 0.8, 1],
-        }}
-        transition={{
-          duration: 0.3,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-          times: [0, 0.5, 1]
-        }}
-        className="absolute text-cyan-500 left-0 top-0"
-      >
-        {children}
-      </motion.div>
-      <div>{children}</div>
-    </div>
-  )
-}
+const navOptions = [
+  {
+    label: 'Home',
+    description: 'Back to the main page',
+    href: '/',
+  },
+  {
+    label: 'Support',
+    description: 'Get help or contact us',
+    href: '/support',
+  },
+  {
+    label: 'Assets',
+    description: 'Browse our resources and assets',
+    href: '/assets',
+  },
+]
 
 const ErrorPage = ({
   error = null,
   building = null,
+  simple = false,
+  title = "Page Not Found",
+  message = "The page you're looking for doesn't exist.",
 }: {
   error?: boolean | null
   building?: boolean | null
+  simple?: boolean
+  title?: string
+  message?: string
 }) => {
   if (error || building === null) {
-    return (
-      <AnimateWrapper>
-        <div className="page-container min-h-screen overflow-hidden">
-          <motion.div
-            className='absolute -z-10 flex max-md:flex-col left-0 top-0 w-full h-full'
-            animate={{
-              y: [-10, 0, -5],
-            }}
-            transition={{
-              duration: 0.2,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "easeInOut",
-            }}
-          >
-            <div className='md:w-1/7 w-full h-1/7 md:h-full bg-white' />
-            <div className='md:w-1/7 w-full h-1/7 md:h-full bg-yellow-400' />
-            <div className='md:w-1/7 w-full h-1/7 md:h-full bg-cyan-400' />
-            <div className='md:w-1/7 w-full h-1/7 md:h-full bg-green-400' />
-            <div className='md:w-1/7 w-full h-1/7 md:h-full bg-pink-400' />
-            <div className='md:w-1/7 w-full h-1/7 md:h-full bg-red-400' />
-            <div className='md:w-1/7 w-full h-1/7 md:h-full bg-blue-400' />
-          </motion.div>
-
-          <div className="flex flex-col items-center p-10 justify-center gap-6 relative">
-            <motion.div
-              animate={{
-                opacity: [1, 0.8, 1],
-              }}
-              transition={{
-                duration: 0.5,
-                repeat: Infinity,
-                repeatType: "reverse",
-              }}
-              className="absolute inset-0 bg-black/10 h-screen backdrop-blur-sm"
-            />
-
-            <div className="relative z-10 py-5 md:py-10">
-              <GlitchText>
-                <h1 className="text-4xl font-mono font-bold text-gray-900 uppercase tracking-wider">
-                  OOPS
-                  <span className='text-primary-main'> 404 </span>
-                  NO SIGNAL!
+    if (simple) {
+      return (
+        <AnimateWrapper>
+          <SectionWrapper>
+            <div className="page-container">
+              <div className="width-1600 py-20 p-10 flex flex-col items-center justify-center gap-6">
+                <h1 className="text-4xl font-light text-gray-900">
+                  {title}
                 </h1>
-              </GlitchText>
-
-              <motion.p
-                className="text-gray-600 text-lg mt-4 text-center"
-                animate={{
-                  x: [-1, 1, -1],
-                }}
-                transition={{
-                  duration: 0.1,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                }}
-              >
-                The page you&apos;re looking for doesn&apos;t exist.
-              </motion.p>
-
-              <div className="mt-6 flex justify-center">
-                <SecondaryButton link="/" className="relative z-10">
+                <p className="text-gray-600 text-lg">
+                  {message}
+                </p>
+                <SecondaryButton
+                  link="/"
+                  className=""
+                >
                   Return to Home
                 </SecondaryButton>
               </div>
             </div>
+          </SectionWrapper>
+        </AnimateWrapper>
+      )
+    }
+
+    return (
+      <AnimateWrapper>
+        <div className="relative min-h-[90vh] flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center select-none">
+            <span className="text-[20vw] max-lg:hidden md:text-[30vw] font-extrabold text-black tracking-widest z-0">
+              4
+            </span>
+            <div className="relative z-10 bg-black translate-y-4 md:translate-y-9 text-white rounded-3xl border border-gray-200 p-4 md:p-8 w-[90%] max-w-md flex flex-col items-center">
+              <h1 className="text-3xl md:text-5xl font-bold text-center mb-2">
+                ... 404 error ...
+              </h1>
+              <p className="text-xl md:text-3xl tracking-wide text-center mb-4">
+                Sorry, page not found
+              </p>
+              <p className="text-center text-gray-400 mb-6 text-sm md:text-base">
+                Go to other sections to learn more about Solar Digital
+              </p>
+              <div className="w-full flex flex-col gap-2 md:gap-3">
+                {navOptions.map((opt, idx) => (
+                  <Link
+                    key={opt.label}
+                    href={opt.href}
+                    className={`flex cursor-pointer items-center justify-between p-3 md:p-4 rounded-lg border transition group ${
+                      idx === 0
+                        ? 'text-blue-100 bg-primary-main border-blue-900'
+                        : 'text-gray-800 bg-white'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-semibold text-sm md:text-base">{opt.label}</div>
+                      <div className="text-xs">{opt.description}</div>
+                    </div>
+                    <span className="ml-2 font-bold text-base md:text-lg group-hover:-rotate-90 duration-500 -rotate-45 group-hover:bg-gray-100 rounded-full aspect-square h-5 md:h-6 w-5 md:w-6 flex justify-center items-center group-hover:text-black transition-all">
+                      <ArrowDownRight className="w-3 md:w-4 h-3 md:h-4" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <span className="text-[20vw] max-lg:hidden md:text-[30vw] font-extrabold text-black tracking-widest z-0">
+              4
+            </span>
           </div>
         </div>
       </AnimateWrapper>

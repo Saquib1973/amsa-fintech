@@ -20,24 +20,25 @@ const Footer = () => {
     ],
     support: [
       { href: '/help', label: 'Help Center' },
-      { href: '/docs', label: 'API Documentation' },
+      { href: '/docs', label: "API's" },
     ],
+
     more: [
       { href: '/terms-of-use', label: 'Terms of Use' },
       { href: '/support', label: 'Support' },
       { href: '/privacy', label: 'Privacy Policy' },
+      { href: '/tnc', label: 'Terms and Conditions' },
     ],
     assets: [
       { href: '/assets', label: 'All Assets' },
       { href: '/assets/bitcoin', label: 'Buy Bitcoins' },
       { href: '/assets/ethereum', label: 'Buy Ethereum' },
       { href: '/assets/solana', label: 'Buy Solana' },
-
     ],
   }
 
   return (
-    <footer className="border-t border-gray-200">
+    <footer className="">
       <div className="width-1600 flex gap-4  py-16">
         <div className="flex max-md:flex-col md:justify-center w-full px-6 gap-6">
           <div className=" flex flex-col max-w-[300px]">
@@ -76,7 +77,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="border-t border-gray-200" />
+      <div className="" />
 
       <div className="width-1240 px-4 text-gray-500 text-lg mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-6 py-6">
         <div className="copyright">

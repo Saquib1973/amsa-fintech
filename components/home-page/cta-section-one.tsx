@@ -2,7 +2,7 @@ import PrimaryButton from '../button/primary-button'
 
 const CtaSectionOne = () => {
   return (
-    <div className="w-full h-full flex relative border border-gray-200 bg-white">
+    <div className="w-full h-full flex relative bg-white">
       <div className="flex max-md:flex-col gap-4 justify-between max-w-[1400px] p-10 md:p-24 mx-auto w-full">
         <h1 className="text-5xl md:text-6xl font-normal md:w-1/2 ">
           Trade 440+ cryptocurrencies

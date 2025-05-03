@@ -41,7 +41,7 @@ body{
 
 @theme{
   --color-off-white: #F8F8F5;
-  --exclude-header-height: 110px;
+  --exclude-header-height: 86px;
 
   /* Primary (Blue) */
     --color-primary-main: #3A59D1;

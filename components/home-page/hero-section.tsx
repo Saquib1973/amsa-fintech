@@ -6,7 +6,7 @@ const HeroSection = () => {
   const { data: session } = useSession()
   return (
     <div
-      className="w-full h-full relative bg-cover bg-center bg-gradient-to-b from-surface-alt via-surface-main to-off-white b-200 p-2 md:p-6"
+      className="w-full h-full relative bg-cover bg-center bg-gradient-to-b from-surface-alt via-surface-main to-off-white p-2 md:p-6"
       style={{
         backgroundImage: 'url(/images/herobg.png)',
       }}

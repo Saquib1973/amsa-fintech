@@ -38,7 +38,7 @@ const NavbarHome = () => {
   return (
     <AnimatePresence>
       <div
-        className="w-full py-2 md:py-4 max-xl:px-4 px-6 bg-white dark:bg-black border border-gray-200 dark:border-gray-900 dark:text-white flex-1 relative"
+        className="w-full py-2 md:py-4 max-xl:px-4 px-6 bg-white dark:bg-black border border-gray-100 dark:border-gray-900 dark:text-white flex-1 relative"
         ref={navbarRef}
       >
         <div className="w-full xl:max-w-[1400px] text-lg mx-auto flex items-center justify-between xl:justify-around">

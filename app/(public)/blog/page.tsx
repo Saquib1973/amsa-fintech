@@ -1,9 +1,10 @@
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
-import Link from 'next/link'
 import { blogPosts } from '@/content/blog'
+import { ExternalLink } from 'lucide-react'
+import Link from 'next/link'
 
-const BlogPage = () => {
+const BlogPage = async () => {
   const posts = Object.entries(blogPosts).map(([id, post]) => ({
     id,
     name: post.title,
@@ -18,7 +19,7 @@ const BlogPage = () => {
             <span className="underline underline-offset-4">Home</span>
             {` / Blog`}
           </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {posts.map((post) => (
               <BlogCard
                 key={post.id}
@@ -33,17 +34,18 @@ const BlogPage = () => {
   )
 }
 
-export default BlogPage
-
 const BlogCard = ({ name, link }: { name: string; link: string }) => {
   return (
-    <div className='flex flex-col gap-2'>
-      <div className="bg-gradient-to-tr aspect-video from-blue-400 flex items-center justify-center via-blue-600 to-blue-400 p-10">
+    <Link href={link} className='group flex hover:bg-surface-main transition-all hover:shadow p-3 flex-col gap-2'>
+      <div className="bg-gradient-to-tr aspect-video from-blue-400 flex relative items-center justify-center via-blue-600 to-blue-400 p-10">
         <h1 className='text-white text-4xl font-light'>AMSA | Blog</h1>
+        <ExternalLink className='w-5 h-5 absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all text-white z-50' />
       </div>
-      <Link href={link} className='text-lg underline underline-offset-4'>
+      <div className='group-hover:text-black text-gray-500 text-lg group-hover:underline underline-offset-4'>
         {name}
-      </Link>
-    </div>
+      </div>
+    </Link>
   )
 }
+
+export default BlogPage

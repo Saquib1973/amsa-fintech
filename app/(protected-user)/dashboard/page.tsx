@@ -13,7 +13,7 @@ import { Wallet } from '@prisma/client'
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
 
-  if(!session?.user?.email) {
+  if (!session?.user?.email) {
     return (
       <div className="text-center py-12">
         <p className="text-2xl font-light text-gray-400 dark:text-gray-500">
@@ -44,8 +44,11 @@ export default async function Dashboard() {
               >
                 AMSA Fintech
               </Link>
-              <p className="text-xl text-gray-600 dark:text-gray-400 mt-2 font-light">
+              <p className="text-xl text-gray-600 dark:text-gray-400 text-left mt-2 font-light">
                 Welcome back, {session?.user?.email}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-left mt-2 font-light">
+                {user?.type}
               </p>
             </div>
             {session && (
@@ -63,11 +66,11 @@ export default async function Dashboard() {
                 <ConnectWallet />
               </div>
               {user?.wallets.length ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {user.wallets.map((wallet: Wallet) => (
-                      <WalletCard key={wallet.id} wallet={wallet} />
-                    ))}
-                  </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {user.wallets.map((wallet: Wallet) => (
+                    <WalletCard key={wallet.id} wallet={wallet} />
+                  ))}
+                </div>
               ) : (
                 <div className="text-center py-12">
                   <p className="text-2xl font-light text-gray-400 dark:text-gray-500">
