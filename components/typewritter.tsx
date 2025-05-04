@@ -30,7 +30,7 @@ const Typewritter = ({
       setTextIndex((prevIndex) => (prevIndex + 1) % textArray.length)
     }, swapDelayInMs)
     return () => clearInterval(intervalId)
-  }, [])
+  }, [swapDelayInMs, textArray.length])
   const textSizeClass = {
     lg: 'text-lg',
     md: 'text-md',

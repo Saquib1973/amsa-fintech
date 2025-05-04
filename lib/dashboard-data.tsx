@@ -1,4 +1,4 @@
-import { Coins, CreditCard, Database, Globe, Home, Lock, Settings, Shield, User, Users } from 'lucide-react';
+import { Coins, CreditCard, Database, Globe, Home, Lock, Settings, Shield, User, Users, ChartBar } from 'lucide-react';
 
 export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
 
@@ -54,6 +54,12 @@ export const navItems: NavItem[] = [
         name: 'System Settings',
         href: '/system',
         icon: <Database className="w-5 h-5" />,
+        roles: ['SUPER_ADMIN'],
+      },
+      {
+        name: 'Analytics',
+        href: '/analytics',
+        icon: <ChartBar className="w-5 h-5" />,
         roles: ['SUPER_ADMIN'],
       },
     ],

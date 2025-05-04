@@ -1,5 +1,7 @@
 import SectionWrapper from '../wrapper/section-wrapper'
 import Image from 'next/image'
+import React from 'react'
+
 const WhatWeCanDoForYouSection = () => {
   const services = [
     {
@@ -36,16 +38,15 @@ const WhatWeCanDoForYouSection = () => {
 
   return (
     <SectionWrapper className="max-w-full w-full max-md:px-0">
-      <div className="relative min-h-screen bg-surface-alt py-20 md:py-40">
+      <div className="relative max-2xl:min-h-screen bg-surface-alt py-20 md:py-40">
         <div className="max-w-4xl mx-auto px-4">
           <div className="space-y-24">
-            <h1 className="text-4xl font-semibold text-black">
+            <h1 className="text-5xl text-black">
               WHAT WE CAN DO FOR YOU ?
             </h1>
             {services.map((service, index) => (
-              <>
+              <React.Fragment key={service.id}>
                 <div
-                  key={service.id}
                   className={`flex flex-col md:flex-row gap-8 ${index % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}
                 >
                   <div className="relative w-full">
@@ -72,7 +73,7 @@ const WhatWeCanDoForYouSection = () => {
                 {index < services.length - 1 && (
                   <div className="h-px w-full bg-gray-300 mb-12" />
                 )}
-              </>
+              </React.Fragment>
             ))}
           </div>
         </div>

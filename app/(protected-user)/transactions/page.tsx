@@ -46,6 +46,35 @@ export default function TransactionsPage() {
     return walletsList.some((wallet) => wallet.address === address)
   }
 
+  const fetchOrders = async () => {
+    if (!walletAddress || !isWalletAccessible(walletAddress, wallets)) {
+      setError('Wallet not accessible')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    try {
+      const response = await fetch(
+        `/api/transaction?walletAddress=${walletAddress}`
+      )
+      const data = await response.json()
+      console.log('RESPONSE DATA', data)
+
+      if (response.ok) {
+        const ordersData = Array.isArray(data.data) ? data.data : []
+        setOrders(ordersData)
+      } else {
+        setError(data.error || 'Failed to fetch orders')
+      }
+    } catch (err) {
+      console.error('Error fetching orders:', err)
+      setError('An error occurred while fetching orders')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     const fetchWallets = async () => {
       if (!session?.user?.id) return
@@ -87,13 +116,13 @@ export default function TransactionsPage() {
     if (status === 'authenticated') {
       fetchWallets()
     }
-  }, [session?.user?.id, status, urlWalletAddress])
+  }, [session?.user?.id, status, urlWalletAddress, router])
 
   useEffect(() => {
     if (walletAddress && !error && isWalletAccessible(walletAddress, wallets)) {
       fetchOrders()
     }
-  }, [walletAddress, wallets])
+  }, [walletAddress, wallets, error, fetchOrders])
 
   const handleWalletChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newWalletAddress = e.target.value
@@ -103,35 +132,6 @@ export default function TransactionsPage() {
       router.push(`/transactions?wallet=${newWalletAddress}`)
     } else {
       setError('Wallet not accessible')
-    }
-  }
-
-  const fetchOrders = async () => {
-    if (!walletAddress || !isWalletAccessible(walletAddress, wallets)) {
-      setError('Wallet not accessible')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-    try {
-      const response = await fetch(
-        `/api/admin/orders?walletAddress=${walletAddress}`
-      )
-      const data = await response.json()
-      console.log('RESPONSE DATA', data)
-
-      if (response.ok) {
-        const ordersData = Array.isArray(data.data) ? data.data : []
-        setOrders(ordersData)
-      } else {
-        setError(data.error || 'Failed to fetch orders')
-      }
-    } catch (err) {
-      console.error('Error fetching orders:', err)
-      setError('An error occurred while fetching orders')
-    } finally {
-      setLoading(false)
     }
   }
 

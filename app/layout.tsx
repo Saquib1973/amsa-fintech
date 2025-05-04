@@ -2,7 +2,6 @@ import ClientWrapper from '@/context/client-wrapper'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import '../styles/globals.css'
-import { getSession } from '@/lib/auth'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -25,8 +24,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const session = await getSession()
-  console.log(session)
   return (
     <html lang="en" className="overflow-x-hidden bg-white dark:bg-black">
       <body

@@ -26,7 +26,7 @@ const Footer = () => {
     more: [
       { href: '/terms-of-use', label: 'Terms of Use' },
       { href: '/support', label: 'Support' },
-      { href: '/privacy', label: 'Privacy Policy' },
+      { href: '/privacy-policy', label: 'Privacy Policy' },
       { href: '/tnc', label: 'Terms and Conditions' },
     ],
     assets: [

@@ -15,7 +15,7 @@ import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import AnimateWrapper from '../wrapper/animate-wrapper'
-
+import { motion } from 'framer-motion'
 
 const DashboardSidebar = () => {
   const pathname = usePathname()
@@ -23,12 +23,20 @@ const DashboardSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({})
   const [userRole, setUserRole] = useState<UserRole>('USER')
-console.log(userRole)
+  const [loading, setLoading] = useState(false)
+
   useEffect(() => {
     const fetchUserRole = async () => {
-      const response = await fetch('/api/user')
-      const data = await response.json()
-      setUserRole(data.type)
+      try {
+        setLoading(true)
+        const response = await fetch('/api/user')
+        const data = await response.json()
+        setUserRole(data.type)
+      } catch (error) {
+        console.error('Error fetching user role:', error)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchUserRole()
   }, [])
@@ -65,6 +73,19 @@ console.log(userRole)
   }
 
   const renderNavItem = (item: (typeof navItems)[0]) => {
+    if (loading) {
+      return (
+        <div key={item.name} className="relative">
+          <div className="flex w-full text-lg items-center px-8 py-4 gap-4">
+            <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+            {!isCollapsed && (
+              <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded animate-pulse flex-1" />
+            )}
+          </div>
+        </div>
+      )
+    }
+
     if (!hasAccess(item.roles)) return null
 
     const isActive =
@@ -166,9 +187,10 @@ console.log(userRole)
         />
       )}
 
-      <div
-        className={`fixed lg:sticky top-0 left-0 h-screen w-full max-w-[250px] lg:h-[calc(100vh-0px)] bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50`}
-        style={{ width: isCollapsed ? 100 : 300, transition: 'width 0.3s' }}
+      <motion.div
+        className={`fixed lg:sticky top-0 left-0 h-screen w-full ${isCollapsed ? 'max-w-[90px]' : 'max-w-full xl:max-w-[250px]'} lg:h-[calc(100vh-0px)] bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
       >
         <div className="flex flex-col h-full">
           <div className="hidden lg:flex justify-between items-center p-6">
@@ -177,10 +199,10 @@ console.log(userRole)
                 Home
               </Link>
             )}
-            <div className="flex-1 flex justify-end">
+            <div className="flex mt-0.5 justify-end">
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className={`p-2 cursor-pointer bg-gray-100 dark:bg-gray-800 ${isCollapsed ? '' : 'ml-10'} dark:hover:bg-gray-700 rounded-lg transition-colors mx-auto`}
+                className={`p-2 cursor-pointer bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors mx-auto`}
                 aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               >
@@ -220,7 +242,7 @@ console.log(userRole)
             {!isCollapsed && 'Logout'}
           </button>
         </div>
-      </div>
+      </motion.div>
     </AnimateWrapper>
   )
 }

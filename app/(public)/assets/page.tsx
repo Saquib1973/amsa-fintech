@@ -5,6 +5,8 @@ import CtaSectionTwo from '@/components/home-page/cta-section-two'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import TrendingCoins from '@/components/assets/trending-coins'
 import SearchCoins from '@/components/assets/search-coins'
+import { Suspense } from 'react'
+
 const AssetsPage = () => {
   return (
     <AnimateWrapper>
@@ -23,7 +25,9 @@ const AssetsPage = () => {
                 access exclusive insights into top traded assets on Swyftx and
                 top moving cryptocurrencies based on their AUD price.
               </p>
-              <SearchCoins />
+              <Suspense fallback={<div>Loading...</div>}>
+                <SearchCoins />
+              </Suspense>
             </div>
             <div className="md:w-1/2 flex items-center justify-center">
               <Image

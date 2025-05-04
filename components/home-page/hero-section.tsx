@@ -11,7 +11,7 @@ const HeroSection = () => {
         backgroundImage: 'url(/images/herobg.png)',
       }}
     >
-      <div className="flex gap-4 justify-between p-6 md:p-10 py-20 min-h-[66vh] md:py-32 max-w-[1200px] mx-auto w-full ">
+      <div className="flex gap-4 justify-between p-6 md:p-10 py-20 max-2xl:min-h-[66vh] 2xl:py-52 md:py-32 max-w-[1200px] mx-auto w-full ">
         <div className="flex items-start justify-start flex-col gap-4 z-10">
           <h1 className="text-7xl md:text-8xl text-white font-semibold">
             The

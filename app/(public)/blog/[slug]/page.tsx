@@ -17,7 +17,7 @@ export default function BlogPostPage() {
   useEffect(() => {
     setPost(blogPosts[params.slug as string])
     setLoading(false)
-  }, [])
+  }, [params.slug])
 
   if (loading) {
     return <LoadingSkeleton />

@@ -8,6 +8,7 @@ import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import SecondaryButton from './../../components/button/secondary-button'
 import WhatWeCanDoForYouSection from '@/components/home-page/what-we-can-do-for-you-section'
+import Testimonials from '@/components/home-page/testimonials'
 const page = () => {
   return (
     <AnimateWrapper>
@@ -31,6 +32,7 @@ const page = () => {
               <SecondaryButton link="/assets">Explore Assets</SecondaryButton>
           </div>
         </SectionWrapper>
+        <Testimonials />
         <CtaSectionTwo />
       </div>
     </AnimateWrapper>

@@ -1,15 +1,15 @@
 'use client'
 import Loader from '@/components/loader-component'
+import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import useCoingecko from '@/context/coingecko-context'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import AnimateWrapper from '@/components/wrapper/animate-wrapper'
+import AssetCalculator from './asset-calculator'
+import AssetChart from './asset-chart'
 import AssetHeader from './asset-header'
 import AssetOverview from './asset-overview'
-import AssetChart from './asset-chart'
 import TrendingCoins from './trending-coins'
-import AssetCalculator from './asset-calculator'
-import { useRouter, useSearchParams } from 'next/navigation'
 interface AssetDetailsProps {
   id: string
 }
@@ -19,16 +19,18 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
   const [selectedCurrency, setSelectedCurrency] = useState('aud')
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') ?? 'overview')
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get('tab') ?? 'overview'
+  )
 
   useEffect(() => {
     fetchCoinById(id)
-  }, [id])
+  }, [id, fetchCoinById])
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
+    setActiveTab(tab)
     const newUrl = tab ? `/assets/${id}?tab=${tab}` : `/assets/${id}`
-    router.push(newUrl,{scroll:false})
+    router.push(newUrl, { scroll: false })
   }
 
   if (loadingCoinData) {
@@ -59,7 +61,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
   return (
     <AnimateWrapper className="bg-gradient-to-b from-white via-blue-50/80 to-white">
       <SectionWrapper className="py-0 md:py-0">
-        <div className="flex flex-col xl:flex-row justify-between gap-4 md:gap-0">
+        <div className="flex flex-col-reverse xl:flex-row justify-between gap-4 md:gap-0">
           <AssetHeader
             coinData={coinData}
             selectedCurrency={selectedCurrency}
@@ -67,7 +69,10 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
             activeTab={activeTab}
             handleTabChange={handleTabChange}
           />
-          <AssetCalculator coinData={coinData} selectedCurrency={selectedCurrency} />
+          <AssetCalculator
+            coinData={coinData}
+            selectedCurrency={selectedCurrency}
+          />
         </div>
       </SectionWrapper>
       <SectionWrapper className="flex flex-col lg:flex-row gap-4">
