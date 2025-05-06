@@ -25,7 +25,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
 
   useEffect(() => {
     fetchCoinById(id)
-  }, [id, fetchCoinById])
+  }, [id])
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab)
@@ -36,7 +36,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
   if (loadingCoinData) {
     return (
       <div className="flex justify-center flex-col gap-2 items-center page-container">
-        <Loader message={`Loading ${id} data...`} />
+        <Loader message={`Fetching ${id} data...`} />
       </div>
     )
   }

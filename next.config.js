@@ -7,6 +7,7 @@ const nextConfig = {
       'assets.coingecko.com',
       'static.coingecko.com',
       'lh3.googleusercontent.com',
+      'randomuser.me',
     ],
   },
 }

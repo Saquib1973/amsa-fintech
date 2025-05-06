@@ -75,8 +75,13 @@ const DashboardSidebar = () => {
   const renderNavItem = (item: (typeof navItems)[0]) => {
     if (loading) {
       return (
-        <div key={item.name} className="relative">
-          <div className="flex w-full text-lg items-center px-8 py-4 gap-4">
+        <div
+          key={item.name}
+          className={`relative ${isCollapsed ? 'w-[90px]' : 'max-w-full xl:w-[250px]'}`}
+        >
+          <div
+            className={`flex w-full text-lg items-center px-8 py-4 gap-4 ${isCollapsed ? 'justify-center' : ''}`}
+          >
             <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
             {!isCollapsed && (
               <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded animate-pulse flex-1" />
@@ -188,7 +193,7 @@ const DashboardSidebar = () => {
       )}
 
       <motion.div
-        className={`fixed lg:sticky top-0 left-0 h-screen w-full ${isCollapsed ? 'max-w-[90px]' : 'max-w-full xl:max-w-[250px]'} lg:h-[calc(100vh-0px)] bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50 ${
+        className={`fixed lg:sticky top-0 left-0 h-screen w-full ${isCollapsed ? 'w-[90px]' : 'max-w-full xl:w-[250px]'} lg:h-[calc(100vh-0px)] bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >

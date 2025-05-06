@@ -9,7 +9,9 @@ import Confetti from '../confetti'
 import toast from 'react-hot-toast'
 import Breadcrumb from '../bread-crumb'
 import SecondaryButton from '../button/secondary-button'
-
+import { ExternalLink } from 'lucide-react'
+import Link from 'next/link'
+import { AnimatePresence, motion } from 'framer-motion'
 interface TransactionData {
   id: string
   userId: string
@@ -79,124 +81,164 @@ const TransactionReceipt = ({ orderData, onClose }: TransactionReceiptProps) => 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
-          <h2 className="text-2xl font-isola">Transaction Receipt</h2>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    >
+      <div className="bg-white px-6 w-full max-w-[90%] max-h-[90%] overflow-y-auto">
+        <div className="flex justify-between py-6 items-center mb-6 sticky top-0 bg-white pb-4 border-gray-200 border-b">
+          <div>
+            <h2 className="text-2xl font-isola">Transaction Receipt</h2>
+            <p className="text-gray-500 mt-1">Order ID: {formatValue(orderData.id)}</p>
+          </div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Order ID:</span>
-            <span className="font-medium">{formatValue(orderData.id)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Status:</span>
-            <span className={`font-medium ${orderData.status === 'COMPLETED' ? 'text-green-600' : 'text-yellow-600'}`}>
-              {formatValue(orderData.status)}
-            </span>
-          </div>
-          {orderData.statusReason && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">Status Reason:</span>
-              <span className="font-medium text-gray-800">{formatValue(orderData.statusReason)}</span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span className="text-gray-600">Amount:</span>
-            <span className="font-medium">{formatValue(orderData.fiatAmount)} {formatValue(orderData.fiatCurrency)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Crypto Amount:</span>
-            <span className="font-medium">{formatValue(orderData.cryptoAmount)} {formatValue(orderData.cryptoCurrency)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Payment Method:</span>
-            <span className="font-medium">{formatValue(orderData.paymentOptionId).replace(/_/g, ' ').toUpperCase()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Network:</span>
-            <span className="font-medium">{formatValue(orderData.network)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Wallet Address:</span>
-            <span className="font-medium break-all text-right">{formatValue(orderData.walletAddress)}</span>
-          </div>
-          {orderData.walletLink && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">Wallet Link:</span>
-              <a href={orderData.walletLink} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:text-blue-800 break-all text-right">
-                View on Explorer
-              </a>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span className="text-gray-600">Fees:</span>
-            <span className="font-medium">{formatValue(orderData.totalFeeInFiat)} {formatValue(orderData.fiatCurrency)}</span>
-          </div>
-          {orderData.transakFeeAmount && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">Transak Fee:</span>
-              <span className="font-medium">{formatValue(orderData.transakFeeAmount)} {formatValue(orderData.fiatCurrency)}</span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span className="text-gray-600">Created At:</span>
-            <span className="font-medium">{formatDate(orderData.createdAt)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Updated At:</span>
-            <span className="font-medium">{formatDate(orderData.updatedAt)}</span>
-          </div>
-          {orderData.cardPaymentData && (
-            <div className="mt-4 pt-4 border-t">
-              <h3 className="font-medium mb-2">Payment Details</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium mb-3">Transaction Details</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Status:</span>
-                  <span className="font-medium">{formatValue(orderData.cardPaymentData.status)}</span>
+                  <span className="text-gray-600">Status:</span>
+                  <span className={`font-medium ${orderData.status === 'COMPLETED' ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {formatValue(orderData.status)}
+                  </span>
                 </div>
-                {orderData.cardPaymentData.statusReason && (
+                {orderData.statusReason && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Payment Reason:</span>
-                    <span className="font-medium">{formatValue(orderData.cardPaymentData.statusReason)}</span>
+                    <span className="text-gray-600">Status Reason:</span>
+                    <span className="font-medium text-gray-800">{formatValue(orderData.statusReason)}</span>
                   </div>
                 )}
-                {orderData.cardPaymentData.processedOn && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Processed On:</span>
-                    <span className="font-medium">{formatDate(orderData.cardPaymentData.processedOn)}</span>
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Amount:</span>
+                  <span className="font-medium">{formatValue(orderData.fiatAmount)} {formatValue(orderData.fiatCurrency)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Crypto Amount:</span>
+                  <span className="font-medium">{formatValue(orderData.cryptoAmount)} {formatValue(orderData.cryptoCurrency)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Payment Method:</span>
+                  <span className="font-medium">{formatValue(orderData.paymentOptionId).replace(/_/g, ' ').toUpperCase()}</span>
+                </div>
               </div>
             </div>
-          )}
-          {orderData.statusHistories && orderData.statusHistories.length > 0 && (
-            <div className="mt-4 pt-4 border-t">
-              <h3 className="font-medium mb-2">Status History</h3>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium mb-3">Wallet Information</h3>
               <div className="space-y-2">
-                {orderData.statusHistories.map((history, index) => (
-                  <div key={index} className="flex flex-col">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Status:</span>
-                      <span className="font-medium">{formatValue(history.status)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Time:</span>
-                      <span className="font-medium">{formatDate(history.createdAt)}</span>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">{formatValue(history.message)}</div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Network:</span>
+                  <span className="font-medium">{formatValue(orderData.network)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Wallet Address:</span>
+                  <span className="font-medium break-all text-right">{formatValue(orderData.walletAddress)}</span>
+                </div>
+                {orderData.walletLink && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Wallet Link:</span>
+                    <Link href={orderData.walletLink} target="_blank" rel="noopener noreferrer" className="flex gap-1 items-center font-medium text-blue-600 hover:text-blue-800 break-all text-right">
+                      Visit Wallet <ExternalLink className="w-4 h-4" />
+                    </Link>
                   </div>
-                ))}
+                )}
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium mb-3">Fee Information</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total Fees:</span>
+                  <span className="font-medium">{formatValue(orderData.totalFeeInFiat)} {formatValue(orderData.fiatCurrency)}</span>
+                </div>
+                {orderData.transakFeeAmount && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Transak Fee:</span>
+                    <span className="font-medium">{formatValue(orderData.transakFeeAmount)} {formatValue(orderData.fiatCurrency)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Amount in USD:</span>
+                  <span className="font-medium">${formatValue(orderData.fiatAmountInUsd)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium mb-3">Timestamps</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Created At:</span>
+                  <span className="font-medium">{formatDate(orderData.createdAt)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Updated At:</span>
+                  <span className="font-medium">{formatDate(orderData.updatedAt)}</span>
+                </div>
+              </div>
+            </div>
+
+            {orderData.cardPaymentData && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium mb-3">Payment Details</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Payment Status:</span>
+                    <span className="font-medium">{formatValue(orderData.cardPaymentData.status)}</span>
+                  </div>
+                  {orderData.cardPaymentData.statusReason && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Reason:</span>
+                      <span className="font-medium">{formatValue(orderData.cardPaymentData.statusReason)}</span>
+                    </div>
+                  )}
+                  {orderData.cardPaymentData.processedOn && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Processed On:</span>
+                      <span className="font-medium">{formatDate(orderData.cardPaymentData.processedOn)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="mt-6 flex justify-between gap-4 sticky bottom-0 bg-white pt-2">
+
+        {orderData.statusHistories && orderData.statusHistories.length > 0 && (
+          <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-medium mb-3">Status History</h3>
+            <div className="space-y-4">
+              {orderData.statusHistories.map((history, index) => (
+                <div key={index} className="flex items-start gap-4">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <span className="font-medium">{formatValue(history.status)}</span>
+                      <span className="text-gray-500 text-sm">{formatDate(history.createdAt)}</span>
+                    </div>
+                    <p className="text-gray-600 text-sm mt-1">{formatValue(history.message)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-between pb-6 gap-4 sticky bottom-0 bg-white pt-4 border-gray-200 border-t">
           <SecondaryButton onClick={onClose} className="px-6">
             Close
           </SecondaryButton>
@@ -205,7 +247,7 @@ const TransactionReceipt = ({ orderData, onClose }: TransactionReceiptProps) => 
           </PrimaryButton>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -215,38 +257,40 @@ interface AssetCalculatorProps {
 }
 
 interface TransakOrderData {
-  id?: string
-  userId?: string
-  isBuyOrSell?: string
-  fiatCurrency?: string
-  cryptoCurrency?: string
-  fiatAmount?: number
-  status?: string
-  amountPaid?: number
-  paymentOptionId?: string
-  walletAddress?: string
-  walletLink?: string
-  network?: string
-  cryptoAmount?: number
-  totalFeeInFiat?: number
-  fiatAmountInUsd?: number
-  countryCode?: string
-  stateCode?: string
-  createdAt?: string
-  updatedAt?: string
-  statusReason?: string
-  transakFeeAmount?: number
-  cardPaymentData?: {
+  eventName: string
+  status: {
+    id: string
+    userId: string
+    isBuyOrSell: string
+    fiatCurrency: string
+    cryptoCurrency: string
+    fiatAmount: number
     status: string
-    statusReason?: string
-    processedOn?: string
-  }
-  statusHistories?: Array<{
-    status: string
+    amountPaid: number
+    paymentOptionId: string
+    walletAddress: string
+    walletLink: string
+    network: string
+    cryptoAmount: number
+    totalFeeInFiat: number
+    fiatAmountInUsd: number
+    countryCode: string
+    stateCode: string
     createdAt: string
-    message: string
-  }>
-  [key: string]: unknown
+    updatedAt: string
+    statusReason?: string
+    transakFeeAmount?: number
+    cardPaymentData?: {
+      status: string
+      statusReason?: string
+      processedOn?: string
+    }
+    statusHistories?: Array<{
+      status: string
+      createdAt: string
+      message: string
+    }>
+  }
 }
 
 const AssetCalculator = ({
@@ -286,7 +330,7 @@ const AssetCalculator = ({
     }
   }
 
-  const handleTransakSuccess = (orderData: TransakOrderData | string) => {
+  const handleTransakSuccess = (orderData: TransakOrderData) => {
     const defaultTransactionData: TransactionData = {
       id: "ERROR",
       userId: "ERROR",
@@ -313,43 +357,36 @@ const AssetCalculator = ({
     let transactionData: TransactionData = defaultTransactionData;
 
     try {
-      // If orderData is a string, parse it
-      const parsedData = typeof orderData === 'string' ? JSON.parse(orderData) : orderData;
-
-      // If parsedData.status is a string containing JSON, parse it and use as main data
-      let mainData = parsedData;
-      if (typeof parsedData.status === 'string' && parsedData.status.trim().startsWith('{')) {
-        try {
-          mainData = JSON.parse(parsedData.status);
-        } catch {
-          mainData = parsedData;
-        }
+      if (!orderData.status) {
+        throw new Error('No status data received');
       }
 
+      const status = orderData.status;
+
       transactionData = {
-        id: mainData.id || parsedData.id || "N/A",
-        userId: mainData.userId || parsedData.userId || "N/A",
-        isBuyOrSell: mainData.isBuyOrSell || parsedData.isBuyOrSell || "BUY",
-        fiatCurrency: mainData.fiatCurrency || parsedData.fiatCurrency || "AUD",
-        cryptoCurrency: mainData.cryptoCurrency || parsedData.cryptoCurrency || "BTC",
-        fiatAmount: mainData.fiatAmount || parsedData.fiatAmount || 0,
-        status: typeof mainData.status === 'string' ? mainData.status : (parsedData.status && typeof parsedData.status === 'string' ? parsedData.status : "PROCESSING"),
-        amountPaid: mainData.amountPaid || parsedData.amountPaid || 0,
-        paymentOptionId: mainData.paymentOptionId || parsedData.paymentOptionId || "credit_debit_card",
-        walletAddress: mainData.walletAddress || parsedData.walletAddress || "N/A",
-        walletLink: mainData.walletLink || parsedData.walletLink || "",
-        network: mainData.network || parsedData.network || "mainnet",
-        cryptoAmount: mainData.cryptoAmount || parsedData.cryptoAmount || 0,
-        totalFeeInFiat: mainData.totalFeeInFiat || parsedData.totalFeeInFiat || 0,
-        fiatAmountInUsd: mainData.fiatAmountInUsd || parsedData.fiatAmountInUsd || 0,
-        countryCode: mainData.countryCode || parsedData.countryCode || "US",
-        stateCode: mainData.stateCode || parsedData.stateCode || "",
-        createdAt: mainData.createdAt || parsedData.createdAt || new Date().toISOString(),
-        updatedAt: mainData.updatedAt || parsedData.updatedAt || new Date().toISOString(),
-        statusReason: mainData.statusReason || parsedData.statusReason,
-        transakFeeAmount: mainData.transakFeeAmount || parsedData.transakFeeAmount,
-        cardPaymentData: mainData.cardPaymentData || parsedData.cardPaymentData,
-        statusHistories: mainData.statusHistories || parsedData.statusHistories || []
+        id: status.id || "N/A",
+        userId: status.userId || "N/A",
+        isBuyOrSell: status.isBuyOrSell || "BUY",
+        fiatCurrency: status.fiatCurrency || "AUD",
+        cryptoCurrency: status.cryptoCurrency || "BTC",
+        fiatAmount: status.fiatAmount || 0,
+        status: status.status || "PROCESSING",
+        amountPaid: status.amountPaid || 0,
+        paymentOptionId: status.paymentOptionId || "credit_debit_card",
+        walletAddress: status.walletAddress || "N/A",
+        walletLink: status.walletLink || "",
+        network: status.network || "mainnet",
+        cryptoAmount: status.cryptoAmount || 0,
+        totalFeeInFiat: status.totalFeeInFiat || 0,
+        fiatAmountInUsd: status.fiatAmountInUsd || 0,
+        countryCode: status.countryCode || "US",
+        stateCode: status.stateCode || "",
+        createdAt: status.createdAt || new Date().toISOString(),
+        updatedAt: status.updatedAt || new Date().toISOString(),
+        statusReason: status.statusReason,
+        transakFeeAmount: status.transakFeeAmount,
+        cardPaymentData: status.cardPaymentData,
+        statusHistories: status.statusHistories || []
       };
     } catch (error) {
       console.error('Error parsing transaction data:', error);
@@ -385,9 +422,11 @@ const AssetCalculator = ({
   return (
     <div className="w-full xl:w-[50%] md:border-l border-b border-gray-200">
       {showConfetti && <Confetti />}
-      {showReceipt && transactionData && (
-        <TransactionReceipt orderData={transactionData} onClose={handleCloseReceipt} />
-      )}
+      <AnimatePresence>
+        {showReceipt && transactionData && (
+          <TransactionReceipt orderData={transactionData} onClose={handleCloseReceipt} />
+        )}
+      </AnimatePresence>
       <div className="m-auto w-full py-6 md:py-12 p-4 md:p-6">
         <Breadcrumb className="xl:hidden my-2" />
         <p className="text-2xl md:text-3xl font-isola mb-4 md:mb-6">

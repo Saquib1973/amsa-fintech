@@ -8,7 +8,8 @@ const AnimateWrapper = ({ children,animateVertical = false,duration = 0.7,delay 
       <motion.div
         initial={{ opacity: 0, y: animateVertical ? 10 : 0 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: duration, delay: delay }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: duration, delay: delay,once: true }}
         exit={{ opacity: 0, y: animateVertical ? -10 : 0 }}
         className={cn('w-full',className)}
       >

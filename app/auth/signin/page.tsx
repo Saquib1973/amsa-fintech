@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import Loader from '@/components/loader-component'
+import TestCredentialsOptions from '@/components/auth/test-credentials-options'
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -55,11 +56,6 @@ export default function SignInPage() {
       toast.error('Failed to sign in with Google')
       setIsLoading(false)
     }
-  }
-
-  const testCredentials = {
-    email: 'testuser@gmail.com',
-    password: 'testuser',
   }
 
   return (
@@ -129,30 +125,24 @@ export default function SignInPage() {
           </SecondaryButton>
 
           <div className="flex items-center justify-between mt-2 gap-2">
+            <TestCredentialsOptions
+              onSelectCredentials={(credentials) => {
+                setEmail(credentials.email)
+                setPassword(credentials.password)
+              }}
+            />
             <button
               type="button"
-            className="text-primary-main text-sm hover:underline cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault()
-              setEmail(testCredentials.email)
-              setPassword(testCredentials.password)
-            }}
-            disabled={isLoading}
-          >
-            Test Credentials
-          </button>
-          <button
-            type="button"
-            className="text-primary-main text-sm underline cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault()
-              router.push('/auth/forgot-password')
-            }}
-            disabled={isLoading}
-          >
-            Forgot Passowrd?
-          </button>
-            </div>
+              className="text-primary-main text-sm underline cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault()
+                router.push('/auth/forgot-password')
+              }}
+              disabled={isLoading}
+            >
+              Forgot Passowrd?
+            </button>
+          </div>
         </form>
 
         <div className="flex items-center w-full my-6 justify-center gap-2">

@@ -56,7 +56,7 @@ export default function TransactionsPage() {
     setError('')
     try {
       const response = await fetch(
-        `/api/transaction?walletAddress=${walletAddress}`
+        `/api/transaction/transak?walletAddress=${walletAddress}`
       )
       const data = await response.json()
       console.log('RESPONSE DATA', data)
@@ -116,13 +116,13 @@ export default function TransactionsPage() {
     if (status === 'authenticated') {
       fetchWallets()
     }
-  }, [session?.user?.id, status, urlWalletAddress, router])
+  }, [urlWalletAddress])
 
   useEffect(() => {
     if (walletAddress && !error && isWalletAccessible(walletAddress, wallets)) {
       fetchOrders()
     }
-  }, [walletAddress, wallets, error, fetchOrders])
+  }, [walletAddress])
 
   const handleWalletChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newWalletAddress = e.target.value
@@ -201,7 +201,7 @@ export default function TransactionsPage() {
             colSpan={7}
             className="px-6 py-4 text-center h-[300px] text-gray-500"
           >
-            <Loader size="sm" />
+            <Loader size="sm" message='Loading transaction rows...' />
           </td>
         </tr>
       )
@@ -288,7 +288,7 @@ export default function TransactionsPage() {
         <SectionWrapper className="py-6 md:py-16">
           {status === 'loading' || walletsLoading ? (
             <div className="flex justify-center items-center min-h-[200px]">
-              <Loader />
+              <Loader message='Loading transactions...' />
             </div>
           ) : status === 'unauthenticated' ? (
             <div className="text-center py-4 text-gray-500">

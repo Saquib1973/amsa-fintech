@@ -39,7 +39,7 @@ const AssetHeader = ({
 
   useLayoutEffect(() => {
     handleTabChange(activeTab)
-  }, [activeTab, handleTabChange])
+  }, [])
   return (
     <div className="flex  flex-col items-center justify-between w-full md:py-4 md:pb-0 pb-0">
       <div className=" w-full mb-2">

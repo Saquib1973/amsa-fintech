@@ -32,6 +32,12 @@ export const navItems: NavItem[] = [
     roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
   },
   {
+    name: 'Analytics',
+    href: '/analytics',
+    icon: <ChartBar className="w-5 h-5" />,
+    roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
+  },
+  {
     name: 'Profile',
     href: '/profile',
     icon: <User className="w-5 h-5" />,

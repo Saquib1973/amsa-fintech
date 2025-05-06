@@ -102,9 +102,9 @@ const NavbarDropdown: React.FC<NavbarDropdownProps> = ({
                 {activeMenuItem.children &&
                   activeMenuItem.children.length > 0 && (
                     <Link
-                      href={activeMenuItem.children[0].href || '#'}
+                      href={activeMenuItem.children[0].href ?? '#'}
                       target={activeMenuItem.children[0].target}
-                      className="bg-primary-main flex justify-between hover:bg-primary-main-hover transition-colors text-white p-6 text-xl"
+                      className="bg-primary-main flex justify-between hover:underline transition-colors text-white p-6 text-xl"
                       onClick={onClose}
                     >
                       {activeMenuItem.children[0].title}

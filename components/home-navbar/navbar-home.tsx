@@ -5,7 +5,7 @@ import NavbarHomeCta from './navbar-home-cta'
 import MobileNavbar from './mobile-navbar'
 import NavbarDropdown from './navbar-dropdown'
 import { useState, useRef, useEffect } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { menuItems } from '@/lib/data'
 import Image from 'next/image'
 
@@ -36,12 +36,18 @@ const NavbarHome = () => {
   }
 
   return (
-    <AnimatePresence>
-      <div
-        className="w-full py-2 md:py-4 max-xl:px-4 px-6 bg-white dark:bg-black border border-gray-100 dark:border-gray-900 dark:text-white flex-1 relative"
-        ref={navbarRef}
-      >
-        <div className="w-full xl:max-w-[1400px] text-lg mx-auto flex items-center justify-between xl:justify-around">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="w-full py-2 md:py-4 max-xl:px-4 px-6 bg-white dark:bg-black border border-gray-100 dark:border-gray-900 dark:text-white flex-1 relative"
+      ref={navbarRef}
+    >
+      <div className="w-full xl:max-w-[1400px] text-lg mx-auto flex items-center justify-between xl:justify-around">
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        >
           <Link
             href={'/'}
             className="text-3xl flex-col text-center font-light flex items-center"
@@ -56,18 +62,25 @@ const NavbarHome = () => {
               />
               {/* <span className="text-primary-main font-bold ">A</span> */}
               <span className='max-md:hidden'>
-
-              MSA
+                MSA
               </span>
             </span>
-            <span className="text-xs  font-normal tracking-normal">
+            <span className="text-xs font-normal tracking-normal">
               Fintech and IT Solutions
             </span>
           </Link>
+        </motion.div>
 
-          <div className="hidden xl:flex items-center gap-10">
-            {menuItems.map((item) => (
-              <div key={item.title} id={item.title} className="relative">
+        <div className="hidden xl:flex items-center gap-10">
+          {menuItems.map((item, index) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <div id={item.title} className="relative">
                 <button
                   ref={(el) => {
                     buttonRefs.current[item.title] = el
@@ -77,10 +90,23 @@ const NavbarHome = () => {
                     activeDropdown === item.title ? 'text-blue-600' : ''
                   }`}
                 >
-                  {item.title} <DownSmallArrow className="size-5" />
+                  {item.title}
+                  <motion.span
+                    animate={{ rotate: activeDropdown === item.title ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <DownSmallArrow className="size-5" />
+                  </motion.span>
                 </button>
               </div>
-            ))}
+            </motion.div>
+          ))}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: menuItems.length * 0.05 }}
+            whileHover={{ scale: 1.02 }}
+          >
             <Link
               href="/support"
               className=""
@@ -88,6 +114,13 @@ const NavbarHome = () => {
             >
               Support
             </Link>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: (menuItems.length + 1) * 0.05 }}
+            whileHover={{ scale: 1.02 }}
+          >
             <Link
               href="/support#faqs"
               className=""
@@ -95,38 +128,44 @@ const NavbarHome = () => {
             >
               FAQs
             </Link>
-          </div>
-
-          <div className="hidden xl:block">
-            <NavbarHomeCta />
-          </div>
-
-          <div className="xl:hidden flex items-center">
-            <NavbarHomeCta />
-            <MobileNavbar />
-          </div>
+          </motion.div>
         </div>
-        <div className="relative">
+
+        <div className="hidden xl:block">
+          <NavbarHomeCta />
+        </div>
+
+        <div className="xl:hidden flex items-center">
+          <NavbarHomeCta />
+          <MobileNavbar />
+        </div>
+      </div>
+      <div className="relative">
+        <AnimatePresence>
           {activeDropdown !== null && (
-            <div
+            <motion.div
               id="overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className="fixed bg-black/60 z-40 inset-0"
               style={{
                 top: navbarHeight,
               }}
             />
           )}
-          <NavbarDropdown
-            mainLinks={mainLinks}
-            items={menuItems}
-            isOpen={activeDropdown !== null}
-            onClose={() => setActiveDropdown(null)}
-            activeItem={activeDropdown}
-            navbarHeight={navbarHeight}
-          />
-        </div>
+        </AnimatePresence>
+        <NavbarDropdown
+          mainLinks={mainLinks}
+          items={menuItems}
+          isOpen={activeDropdown !== null}
+          onClose={() => setActiveDropdown(null)}
+          activeItem={activeDropdown}
+          navbarHeight={navbarHeight}
+        />
       </div>
-    </AnimatePresence>
+    </motion.div>
   )
 }
 

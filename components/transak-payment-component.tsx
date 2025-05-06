@@ -5,15 +5,42 @@ import PrimaryButton from './button/primary-button'
 import Loader from './loader-component'
 
 interface TransakOrderData {
-  orderId: string
-  status: string
-  transactionHash?: string
-  paymentMethod: string
-  amount: number
-  currency: string
-  timestamp: string
-  [key: string]: unknown
+  eventName: string
+  status: {
+    id: string
+    userId: string
+    isBuyOrSell: string
+    fiatCurrency: string
+    cryptoCurrency: string
+    fiatAmount: number
+    status: string
+    amountPaid: number
+    paymentOptionId: string
+    walletAddress: string
+    walletLink: string
+    network: string
+    cryptoAmount: number
+    totalFeeInFiat: number
+    fiatAmountInUsd: number
+    countryCode: string
+    stateCode: string
+    createdAt: string
+    updatedAt: string
+    statusReason?: string
+    transakFeeAmount?: number
+    cardPaymentData?: {
+      status: string
+      statusReason?: string
+      processedOn?: string
+    }
+    statusHistories?: Array<{
+      status: string
+      createdAt: string
+      message: string
+    }>
+  }
 }
+
 interface TransakPaymentProps {
   exchangeScreenTitle?: string
   fiatAmount?: number
@@ -46,6 +73,29 @@ const TransakPaymentComponent = ({
 }: TransakPaymentProps) => {
   const [transak, setTransak] = useState<Transak | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const saveTransaction = async (orderData: TransakOrderData) => {
+    const payload = {
+      isBuyOrSell: orderData.status.isBuyOrSell ?? 'BUY',
+      fiatAmount: orderData.status.fiatAmount ?? 0,
+      fiatCurrency: orderData.status.fiatCurrency ?? 'AUD',
+      cryptoCurrency: orderData.status.cryptoCurrency ?? 'BTC',
+      cryptoAmount: orderData.status.cryptoAmount ?? 0,
+      walletLink: orderData.status.walletLink ?? '',
+      walletAddress: orderData.status.walletAddress ?? '',
+      network: orderData.status.network ?? '',
+    }
+    try {
+      await fetch('/api/transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      console.log('Transaction saved successfully')
+    } catch (error) {
+      console.error('Error saving transaction:', error)
+    }
+  }
+
   const initializeTransak = () => {
     setIsLoading(true)
     const apiKey = process.env.NEXT_PUBLIC_TRANSAK_API || ''
@@ -84,8 +134,10 @@ const TransakPaymentComponent = ({
       console.log(orderData)
     })
 
-    Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, (orderData) => {
+    Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, async (orderData ) => {
+
       console.log(orderData)
+      await saveTransaction(orderData as TransakOrderData)
       newTransak.close()
       setTransak(null)
       setIsLoading(false)
@@ -102,13 +154,15 @@ const TransakPaymentComponent = ({
     }
   }
 
+  const disabledCondition = isLoading || fiatAmount<=0
+
   return (
     <div className={`flex flex-col items-center ${className}`}>
       {!transak ? (
         <PrimaryButton
           className="w-full"
           onClick={initializeTransak}
-          disabled={isLoading}
+          disabled={disabledCondition}
         >
           {isLoading ? (
             <>
@@ -123,7 +177,7 @@ const TransakPaymentComponent = ({
         <PrimaryButton
           className="w-full"
           onClick={handleClose}
-          disabled={isLoading}
+          disabled={disabledCondition}
         >
           {isLoading ? (
             <>
