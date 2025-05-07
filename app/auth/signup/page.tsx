@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import PrimaryButton from '@/components/button/primary-button'
+import Image from 'next/image'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -49,63 +50,104 @@ export default function SignUpPage() {
 
   return (
     <AnimateWrapper>
-      <div className="flex flex-col p-8 py-16 max-w-lg mx-auto items-center justify-center">
-        <h2 className="text-4xl mb-8">Sign Up</h2>
+      <div className="flex flex-col max-w-lg mx-auto items-center justify-center p-6 py-16">
+        <h2 className="text-4xl font-bold mb-8">Sign Up</h2>
         <form
           onSubmit={handleSubmit}
-          className="flex w-full flex-col space-y-3"
+          className="flex w-full flex-col space-y-4"
         >
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Name"
-            className="input-field"
-          />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="input-field"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="input-field"
-          />
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="input-field w-full"
+              required
+              disabled={isLoading}
+            />
+          </div>
 
-            <SecondaryButton
-              type="submit"
-              className="w-full text-center flex h-12 items-center justify-center mt-6"
-              >
-              {isLoading ? (
-                <Loader
-                  size="sm"
-                  message="Registering..."
-                  className="flex-row justify-center gap-2"
-                />
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="input-field w-full"
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="input-field w-full"
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <PrimaryButton
+            type="submit"
+            className="w-full text-center h-12 flex items-center justify-center mt-6"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader
+                size="sm"
+                message="Registering..."
+                className="text-white flex-row justify-center gap-2"
+              />
             ) : (
               'Sign Up'
             )}
-          </SecondaryButton>
+          </PrimaryButton>
         </form>
+
         <div className="flex items-center w-full my-6 justify-center gap-2">
           <div className="h-px w-full bg-gray-200" />
           <span className="text-gray-500 text-sm font-medium px-2">OR</span>
           <div className="h-px w-full bg-gray-200" />
         </div>
-        <PrimaryButton
+
+        <SecondaryButton
           onClick={() => signIn('google')}
+          disabled={isLoading}
           className="flex items-center justify-center w-full gap-2"
         >
-          Sign up with Google
-        </PrimaryButton>
-        <p className="mt-4">
+          <Image src="/images/google-logo.webp" className='p-1 rounded-full' alt="Google" width={30} height={30} />
+          <span>Sign up with Google</span>
+        </SecondaryButton>
+
+        <p className="mt-6 text-center text-gray-600">
           Already have an account?{' '}
-          <Link href="/auth/signin" className="hover:underline text-primary-main">
+          <Link href="/auth/signin" className="text-primary-main hover:underline">
             Sign In
           </Link>
         </p>

@@ -10,6 +10,7 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import Loader from '@/components/loader-component'
 import TestCredentialsOptions from '@/components/auth/test-credentials-options'
+import Image from 'next/image'
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -116,13 +117,13 @@ export default function SignInPage() {
             />
           </div>
 
-          <SecondaryButton
+          <PrimaryButton
             type="submit"
             className="w-full text-center h-12 flex items-center justify-center mt-6"
             disabled={isLoading}
           >
-            {isLoading ? <Loader size="sm" message="Signing in..." className="flex-row justify-center gap-2" /> : 'Sign In'}
-          </SecondaryButton>
+            {isLoading ? <Loader size="sm" message="Signing in..." className="text-white flex-row justify-center gap-2" /> : 'Sign In'}
+          </PrimaryButton>
 
           <div className="flex items-center justify-between mt-2 gap-2">
             <TestCredentialsOptions
@@ -151,13 +152,14 @@ export default function SignInPage() {
           <div className="h-px w-full bg-gray-200" />
         </div>
 
-        <PrimaryButton
+        <SecondaryButton
           onClick={handleGoogleSignIn}
           disabled={isLoading}
           className="flex items-center justify-center w-full gap-2"
         >
+          <Image src="/images/google-logo.webp" className='p-1 rounded-full' alt="Google" width={30} height={30} />
           <span>Sign in with Google</span>
-        </PrimaryButton>
+        </SecondaryButton>
 
         <p className="mt-6 text-center text-gray-600">
           Don&apos;t have an account?{' '}

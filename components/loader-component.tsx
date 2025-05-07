@@ -21,8 +21,13 @@ const Loader = ({
   }
 
   return (
-    <div className={cn("flex flex-col items-center dark:bg-black", className)}>
-      <div className='relative'>
+    <div
+      className={cn(
+        'flex flex-col items-center dark:bg-black text-gray-600',
+        className
+      )}
+    >
+      <div className="relative">
         <div
           className={`rounded-full ${sizeClass[size]} border-surface-main dark:border-primary-alt`}
         ></div>
@@ -31,9 +36,7 @@ const Loader = ({
         ></div>
       </div>
       {!noMessage && (
-        <p className="my-2 text-gray-600 font-medium">
-          {message || 'Loading...'}
-        </p>
+        <p className="my-2 font-medium">{message || 'Loading...'}</p>
       )}
     </div>
   )
