@@ -45,7 +45,6 @@ const NavbarHome = () => {
     >
       <div className="w-full xl:max-w-[1400px] text-lg mx-auto flex items-center justify-between xl:justify-around">
         <motion.div
-          whileHover={{ scale: 1.01 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <Link
@@ -78,7 +77,6 @@ const NavbarHome = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.02 }}
             >
               <div id={item.title} className="relative">
                 <button
@@ -105,7 +103,6 @@ const NavbarHome = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: menuItems.length * 0.05 }}
-            whileHover={{ scale: 1.02 }}
           >
             <Link
               href="/support"
@@ -119,7 +116,6 @@ const NavbarHome = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: (menuItems.length + 1) * 0.05 }}
-            whileHover={{ scale: 1.02 }}
           >
             <Link
               href="/support#faqs"

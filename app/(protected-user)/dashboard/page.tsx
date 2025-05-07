@@ -1,14 +1,13 @@
-import LogoutButton from '@/components/button/logout-button'
-import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import ConnectWallet from '@/components/(protected-user)/dashboard/connect-wallet'
 import WalletCard from '@/components/(protected-user)/dashboard/wallet-card'
+import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Wallet } from '@prisma/client'
 import { getServerSession } from 'next-auth/next'
 import Link from 'next/link'
-import { Wallet } from '@prisma/client'
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
@@ -51,11 +50,6 @@ export default async function Dashboard() {
                 {user?.type}
               </p>
             </div>
-            {session && (
-              <div className="flex gap-4 max-md:ml-auto max-md:mt-4">
-                <LogoutButton />
-              </div>
-            )}
           </div>
         </OffWhiteHeadingContainer>
 

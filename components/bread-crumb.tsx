@@ -1,3 +1,4 @@
+'use client'
 import { cn } from '@/lib/utils'
 import { ChevronRight } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'

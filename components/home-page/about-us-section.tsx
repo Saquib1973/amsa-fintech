@@ -46,11 +46,11 @@ const AboutUsSection = () => {
     <div className="w-full h-full flex relative">
       <div className="flex max-md:flex-col justify-between max-w-[1400px] mx-auto w-full">
         <div className="p-10 xl:p-24 w-full md:w-1/2 h-full">
-          <div className="relative p-4 w-full h-full">
+          <div className="relative p-10 w-full h-full">
             {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className={`absolute w-full bg-gray-50 inset-0 transition-opacity duration-500 ${
+                className={`absolute w-full bg-gray-50 max-md:h-[300px] max-md:-translate-y-4 inset-0 transition-opacity duration-500 ${
                   index === isActive - 1 ? 'opacity-100' : 'opacity-0'
                 }`}
               >

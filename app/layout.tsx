@@ -17,6 +17,24 @@ export const metadata: Metadata = {
   title: 'AMSA Fintech and IT Solutions',
   description:
     'AmsaFintech offers cutting-edge financial technology solutions, empowering businesses and individuals with secure, efficient, and innovative tools for financial management and growth.',
+  keywords: 'fintech, financial technology, crypto, blockchain, digital finance, financial solutions',
+  robots: 'index, follow',
+  viewport: 'width=device-width, initial-scale=1',
+  openGraph: {
+    title: 'AMSA Fintech and IT Solutions',
+    description: 'Cutting-edge financial technology solutions for businesses and individuals',
+    type: 'website',
+    locale: 'en_AU',
+    siteName: 'AMSA Fintech',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AMSA Fintech and IT Solutions',
+    description: 'Cutting-edge financial technology solutions for businesses and individuals',
+  },
+  alternates: {
+    canonical: 'https://amsafintech.com',
+  },
 }
 
 export default async function RootLayout({

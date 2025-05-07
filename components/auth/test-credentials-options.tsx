@@ -39,7 +39,7 @@ const TestCredentialsOptions = ({ onSelectCredentials }: TestCredentialsOptionsP
           e.preventDefault()
           setIsOpen(!isOpen)
         }}
-        className="flex items-center gap-1 text-primary-main text-sm hover:underline cursor-pointer"
+        className="flex items-center gap-1 bg-gray-100 border border-gray-200 rounded-lg px-2 py-1 text-sm cursor-pointer"
       >
         Use test credentials
         <ChevronRight className={`size-4 transition-transform duration-200 ${isOpen ? '-rotate-90' : ''}`} />
@@ -50,10 +50,10 @@ const TestCredentialsOptions = ({ onSelectCredentials }: TestCredentialsOptionsP
           <React.Fragment>
             <motion.div
               initial={{ opacity: 0, y: 0 }}
-              animate={{ opacity: 1, y: -5 }}
+              animate={{ opacity: 1, y: -8 }}
               exit={{ opacity: 0, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="absolute z-10 bottom-[22px] rounded-lg left-0 bg-white shadow-lg min-w-[400px] border border-gray-100 duration-200"
+              className="absolute z-10 bottom-[28px] rounded-lg left-0 bg-white shadow-lg min-w-[400px] border border-gray-100 duration-200"
             >
               <div className="p-4">
               <h3 className="text-xl font-light  mb-4">Test Credentials</h3>
