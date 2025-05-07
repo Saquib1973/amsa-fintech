@@ -21,7 +21,7 @@ const SecondaryButton = ({
   disabled?: boolean
   link?: string
 }) => {
-  const button_css = 'rounded-full text-base w-fit tracking-wide flex items-center justify-center gap-2 bg-surface-main border border-primary-alt-hover dark:bg-primary-main-dark dark:text-white p-3 px-6 text-black transition-all cursor-pointer'
+  const button_css = 'rounded-full text-base w-fit tracking-wide flex items-center justify-center gap-2 bg-surface-main hover:bg-surface-hover transition-all border border-primary-alt-hover dark:bg-primary-main-dark dark:text-white p-3 px-6 text-black transition-all cursor-pointer'
   if(link){
     return (
       <Link href={link} className={cn(

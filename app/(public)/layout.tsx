@@ -7,9 +7,7 @@ export default function RootLayout({
 }) {
   return (
     <div className="relative">
-      <div className="sticky top-0 z-50">
-        <NavbarHome />
-      </div>
+      <NavbarHome />
       {children}
       <Footer />
     </div>

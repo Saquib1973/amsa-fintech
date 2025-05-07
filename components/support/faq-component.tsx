@@ -24,7 +24,7 @@ const FAQComponent: React.FC<FAQProps> = ({ faqData }) => {
         <h2 className="text-6xl flex flex-col gap-2 font-light mb-6 text-gray-800">
           Frequently <br />
           asked questions
-          <span className="text-base ml-1">Still have more questions?</span>
+          <span className="text-lg ml-1 mt-2">Still have more questions?</span>
         </h2>
         <div className="col-span-2 flex flex-col gap-2">
           {faqData.map((faq, index) => (

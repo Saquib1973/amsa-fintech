@@ -40,13 +40,11 @@ const NavbarHome = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="w-full py-2 md:py-4 max-xl:px-4 px-6 bg-white dark:bg-black border border-gray-100 dark:border-gray-900 dark:text-white flex-1 relative"
+      className="w-full py-2 md:py-4 max-xl:px-4 px-6 bg-white dark:bg-black border-gray-200 dark:border-gray-900 dark:text-white flex-1 sticky top-0 z-50 border-b"
       ref={navbarRef}
     >
       <div className="w-full xl:max-w-[1400px] text-lg mx-auto flex items-center justify-between xl:justify-around">
-        <motion.div
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
-        >
+        <motion.div>
           <Link
             href={'/'}
             className="text-3xl flex-col text-center font-light flex items-center"
@@ -60,9 +58,7 @@ const NavbarHome = () => {
                 height={30}
               />
               {/* <span className="text-primary-main font-bold ">A</span> */}
-              <span className='max-md:hidden'>
-                MSA
-              </span>
+              <span className="max-md:hidden">MSA</span>
             </span>
             <span className="text-xs font-normal tracking-normal">
               Fintech and IT Solutions
@@ -77,6 +73,7 @@ const NavbarHome = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.02 }}
             >
               <div id={item.title} className="relative">
                 <button
@@ -90,7 +87,9 @@ const NavbarHome = () => {
                 >
                   {item.title}
                   <motion.span
-                    animate={{ rotate: activeDropdown === item.title ? 180 : 0 }}
+                    animate={{
+                      rotate: activeDropdown === item.title ? 180 : 0,
+                    }}
                     transition={{ duration: 0.2 }}
                   >
                     <DownSmallArrow className="size-5" />

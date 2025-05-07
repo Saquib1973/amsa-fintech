@@ -11,6 +11,7 @@ import {
 import FAQComponent from '@/components/support/faq-component'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import BlueHeadingContainer from '@/components/containers/blue-heading-container'
+import PrimaryButton from '@/components/button/primary-button'
 
 const faqData = [
   {
@@ -68,14 +69,22 @@ const faqData = [
 const SupportPage = () => {
   return (
     <AnimateWrapper>
-      <div className="w-full">
-        <BlueHeadingContainer className="">
-          <h1 className="text-6xl font-light">How can we help?</h1>
-          <input
-            type="text"
-            placeholder="Search..."
-            className="input-field text-black placeholder:text-gray-500 md:min-w-3xl max-md:max-w-3xl"
-          />
+      <div className="w-full min-h-screen">
+        <BlueHeadingContainer className="relative">
+          <div className="flex flex-col items-center gap-8 max-w-4xl mx-auto text-center">
+            <h1 className="text-6xl font-light">How can we help?</h1>
+            <p className="text-xl text-gray-300 max-w-2xl">
+              Find answers to your questions or get in touch with our support team
+            </p>
+            <div className="relative w-full max-w-2xl">
+              <input
+                type="text"
+                placeholder="Search for help..."
+                className="input-field text-black placeholder:text-gray-500 w-full pl-12 pr-4 py-4 rounded-xl transition-all"
+              />
+              <HelpCircle className="absolute left-4 top-1/2 mt-2 -translate-y-1/2 text-gray-400 size-5" />
+            </div>
+          </div>
         </BlueHeadingContainer>
         <div className="w-full">
           <HeaderSection />
@@ -87,81 +96,105 @@ const SupportPage = () => {
   )
 }
 
-export default SupportPage
-
-
 const HeaderSection = () => {
   return (
-    <div className="width-1600 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6 py-16">
-      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
-        <Info className="text-blue-500 size-10" />
-        <h2 className="text-3xl font-light">Learn Crypto Trading</h2>
-        <p className="text-gray-500 text-center">
-          Master the basics of cryptocurrency trading with our comprehensive
-          guides.
-        </p>
-      </div>
-      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
-        <Wallet className="text-blue-500 size-10" />
-        <h2 className="text-3xl font-light">Account & Wallet</h2>
-        <p className="text-gray-500 text-center">
-          Manage your account settings and wallet preferences.
-        </p>
-      </div>
-      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
-        <Shield className="text-blue-500 size-10" />
-        <h2 className="text-3xl font-light">Security</h2>
-        <p className="text-gray-500 text-center">
-          Learn about our security measures and how to protect your account.
-        </p>
-      </div>
-      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
-        <HelpCircle className="text-blue-500 size-10" />
-        <h2 id="faqs" className="text-3xl font-light">
-          FAQs
-        </h2>
-        <p className="text-gray-500 text-center">
-          Find answers to commonly asked questions.
-        </p>
-      </div>
-      <div className="bg-white flex items-center gap-2 b-200 justify-center flex-col rounded-lg p-4 py-12  ">
-        <MessageSquare className="text-blue-500 size-10" />
-        <h2 className="text-3xl font-light">Live Chat</h2>
-        <p className="text-gray-500 text-center">
-          Chat with our support team in real-time.
-        </p>
-      </div>
+    <div className="width-1600 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 py-16">
+      {[
+        {
+          icon: Info,
+          title: "Learn Crypto Trading",
+          description: "Master the basics of cryptocurrency trading with our comprehensive guides.",
+          link: "/guides"
+        },
+        {
+          icon: Wallet,
+          title: "Account & Wallet",
+          description: "Manage your account settings and wallet preferences.",
+          link: "/account"
+        },
+        {
+          icon: Shield,
+          title: "Security",
+          description: "Learn about our security measures and how to protect your account.",
+          link: "/security"
+        },
+        {
+          icon: HelpCircle,
+          title: "FAQs",
+          description: "Find answers to commonly asked questions.",
+          link: "#faqs"
+        },
+        {
+          icon: MessageSquare,
+          title: "Live Chat",
+          description: "Chat with our support team in real-time.",
+          link: "#chat"
+        }
+      ].map((item, index) => (
+        <div
+          key={index}
+          className="bg-white transition-all duration-300 flex items-center gap-4 justify-start flex-col rounded-xl p-6 py-12 border border-gray-200"
+        >
+          <item.icon className="text-blue-500 size-12" />
+          <h2 className="text-2xl font-light text-center">{item.title}</h2>
+          <p className="text-gray-500 text-center">{item.description}</p>
+          <PrimaryButton className="mt-4" link={item.link}>
+            Learn More
+          </PrimaryButton>
+        </div>
+      ))}
     </div>
   )
 }
 
 const ContactSection = () => {
   return (
-    <div className="p-6 py-16 flex items-center justify-center flex-col width-1600">
-      <h2 className="text-6xl mb-6 font-light text-gray-800">Contact Us</h2>
-      <div className="flex max-md:flex-col w-full items-center md:justify-around gap-6">
-        <div className="flex items-center gap-3 p-4">
-          <Phone className="text-blue-500 size-6" />
-          <div>
-            <h3 className="text-xl">Phone Support</h3>
-            <p className="text-sm text-gray-400">+1 (555) 123-4567</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 p-4">
-          <Mail className="text-blue-500 size-6" />
-          <div>
-            <h3 className="text-xl">Email Support</h3>
-            <p className="text-sm text-gray-400">support@Amsafintech.com</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 p-4">
-          <MessageSquare className="text-blue-500 size-6" />
-          <div>
-            <h3 className="text-xl">Live Chat</h3>
-            <p className="text-sm text-gray-400">Available 24/7</p>
-          </div>
+    <div className="p-6 py-20 flex items-center justify-center flex-col width-1600 bg-gray-50">
+      <div className="max-w-6xl w-full">
+        <h2 className="text-5xl mb-12 font-light text-gray-800 text-center">Contact Us</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              icon: Phone,
+              title: "Phone Support",
+              description: "+1 (555) 123-4567",
+              action: "Call Now"
+            },
+            {
+              icon: Mail,
+              title: "Email Support",
+              description: "support@Amsafintech.com",
+              action: "Send Email"
+            },
+            {
+              icon: MessageSquare,
+              title: "Live Chat",
+              description: "Available 24/7",
+              action: "Start Chat"
+            }
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="bg-white p-8 rounded-xl transition-all duration-300"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <item.icon className="text-blue-500 size-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-medium">{item.title}</h3>
+                  <p className="text-gray-500">{item.description}</p>
+                </div>
+              </div>
+              <PrimaryButton className="w-full mt-4">
+                {item.action}
+              </PrimaryButton>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   )
 }
+
+export default SupportPage

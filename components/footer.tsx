@@ -40,7 +40,7 @@ const Footer = () => {
   return (
     <footer className="">
       <div className="width-1600 flex gap-4  py-16">
-        <div className="flex max-md:flex-col md:justify-center w-full px-6 gap-6">
+        <div className="flex max-md:flex-col md:justify-between w-full px-6 gap-6">
           <div className=" flex flex-col max-w-[300px]">
             <Link href="/" className="mb-5">
               <Image
@@ -58,7 +58,7 @@ const Footer = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 w-full lg:grid-cols-4 gap-4">
             {Object.entries(footerLinks).map(([section, links]) => (
               <div key={section} className="">
                 <h3 className="text-primary-main text-2xl mb-4 capitalize">
@@ -66,7 +66,7 @@ const Footer = () => {
                 </h3>
                 <ul>
                   {links.map((link) => (
-                    <li key={link.href} className="font-light text-lg mb-2">
+                    <li key={link.href} className="font-light text-lg mb-1">
                       <Link href={link.href}>{link.label}</Link>
                     </li>
                   ))}
@@ -90,10 +90,10 @@ const Footer = () => {
               <Link href="/terms">Terms of Use</Link>
             </li>
             <li>
-              <Link href="/sitemap">Sitemap</Link>
+              <Link href="/sitemap.xml">Sitemap</Link>
             </li>
             <li>
-              <Link href="/privacy">Privacy Policy</Link>
+              <Link href="/privacy-policy">Privacy Policy</Link>
             </li>
           </ul>
         </nav>

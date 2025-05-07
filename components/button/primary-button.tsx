@@ -23,7 +23,7 @@ const PrimaryButton = ({
   if (link) {
     return (
       <Link href={link} className={cn(
-        'rounded-full text-base tracking-wide flex items-center justify-center gap-2 bg-primary-main min-w-max text-white p-3 px-6 transition-all cursor-pointer w-fit',
+        'rounded-full text-base tracking-wide flex items-center justify-center gap-2 bg-primary-main hover:bg-primary-main-hover trnasition-all min-w-max text-white p-3 px-6 transition-all cursor-pointer w-fit',
         className,
         disabled && 'opacity-50 cursor-not-allowed'
       )}
@@ -37,7 +37,7 @@ const PrimaryButton = ({
       disabled={disabled}
       type={type}
       className={cn(
-        'rounded-full text-base tracking-wide flex items-center justify-center gap-2 bg-primary-main min-w-max text-white p-3 px-6 transition-all cursor-pointer w-fit',
+        'rounded-full text-base tracking-wide flex items-center justify-center gap-2 bg-primary-main hover:bg-primary-main-hover trnasition-all min-w-max text-white p-3 px-6 transition-all cursor-pointer w-fit',
         className,
         disabled && 'opacity-50 cursor-not-allowed'
       )}
