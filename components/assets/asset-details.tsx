@@ -2,7 +2,7 @@
 import Loader from '@/components/loader-component'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
-import useCoingecko from '@/context/coingecko-context'
+import { useCoingecko } from '@/hooks/use-coingecko'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import AssetCalculator from './asset-calculator'

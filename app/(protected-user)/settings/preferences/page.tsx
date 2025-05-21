@@ -3,16 +3,16 @@
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
-import { useGlobalContext } from '@/context/global-context'
 import {
   Monitor,
   Moon,
   Sun
 } from 'lucide-react'
+import { useTheme } from '@/hooks/use-theme'
 
 export default function PreferencesPage() {
-  const { theme, setTheme } = useGlobalContext()
-
+  const { theme, handleThemeChange } = useTheme()
+  const mode = typeof theme === 'string' ? theme : theme;
   return (
     <AnimateWrapper>
       <div className="min-h-screen bg-white text-black dark:text-white dark:bg-black">
@@ -41,42 +41,42 @@ export default function PreferencesPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <button
                       className={`flex flex-col items-center justify-center p-4 border rounded-md ${
-                        theme.mode === 'light'
+                        mode === 'light'
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-800'
                           : 'border-gray-300 dark:border-gray-800'
                       }`}
-                      onClick={() => setTheme('light')}
+                      onClick={() => handleThemeChange('light')}
                     >
-                      <Sun className={`w-8 h-8 mb-2 ${theme.mode === 'light' ? 'text-blue-500' : 'text-gray-500'}`} />
-                      <span className={`text-sm ${theme.mode === 'light' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
+                      <Sun className={`w-8 h-8 mb-2 ${mode === 'light' ? 'text-blue-500' : 'text-gray-500'}`} />
+                      <span className={`text-sm ${mode === 'light' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
                         Light
                       </span>
                     </button>
 
                     <button
                       className={`flex flex-col items-center justify-center p-4 border rounded-md ${
-                        theme.mode === 'dark'
+                        mode === 'dark'
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-800'
                           : 'border-gray-300 dark:border-gray-800'
                       }`}
-                      onClick={() => setTheme('dark')}
+                      onClick={() => handleThemeChange('dark')}
                     >
-                      <Moon className={`w-8 h-8 mb-2 ${theme.mode === 'dark' ? 'text-blue-500' : 'text-gray-500'}`} />
-                      <span className={`text-sm ${theme.mode === 'dark' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
+                      <Moon className={`w-8 h-8 mb-2 ${mode === 'dark' ? 'text-blue-500' : 'text-gray-500'}`} />
+                      <span className={`text-sm ${mode === 'dark' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
                         Dark
                       </span>
                     </button>
 
                     <button
                       className={`flex flex-col items-center justify-center p-4 border rounded-md ${
-                        theme.mode === 'system'
+                        mode === 'system'
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-800'
                           : 'border-gray-300 dark:border-gray-800'
                       }`}
-                      onClick={() => setTheme('system')}
+                      onClick={() => handleThemeChange('system')}
                     >
-                      <Monitor className={`w-8 h-8 mb-2 ${theme.mode === 'system' ? 'text-blue-500' : 'text-gray-500'}`} />
-                      <span className={`text-sm ${theme.mode === 'system' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
+                      <Monitor className={`w-8 h-8 mb-2 ${mode === 'system' ? 'text-blue-500' : 'text-gray-500'}`} />
+                      <span className={`text-sm ${mode === 'system' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
                         System
                       </span>
                     </button>

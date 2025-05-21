@@ -1,5 +1,5 @@
 'use client'
-import useCoingecko from '@/context/coingecko-context'
+import { useCoingecko } from '@/hooks/use-coingecko'
 import React from 'react'
 import Loader from '../loader-component'
 import { ChevronLeft, ChevronRight } from 'lucide-react'

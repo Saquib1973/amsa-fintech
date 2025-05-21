@@ -21,7 +21,7 @@ export default function AuthCheckWrapper({
 
   if (status === 'loading') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="flex flex-col bg-white dark:bg-black items-center justify-center min-h-screen">
         <Loader message="Verifying your session..." />
       </div>
     )

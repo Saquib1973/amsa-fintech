@@ -1,5 +1,5 @@
 'use client'
-import useCoingecko from '@/context/coingecko-context'
+import { useCoingecko } from '@/hooks/use-coingecko'
 import Loader from '../loader-component'
 import Link from 'next/link'
 import Image from 'next/image'

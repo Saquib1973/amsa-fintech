@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState, useRef } from 'react'
-import useCoingecko from '@/context/coingecko-context'
+import { useCoingecko } from '@/hooks/use-coingecko'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 const SearchCoins = () => {

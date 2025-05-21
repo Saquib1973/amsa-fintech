@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import { motion } from 'framer-motion'
-import useCoingecko from '@/context/coingecko-context'
+import { useCoingecko } from '@/hooks/use-coingecko'
 import Loader from '../loader-component'
 import SectionWrapper from '../wrapper/section-wrapper'
 import Image from 'next/image'
