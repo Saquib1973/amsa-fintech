@@ -110,9 +110,6 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signIn({ user, account }) {
       if (account?.provider === 'google') {
-        console.log(`User ${user.email} signed in with Google`)
-
-        // Update user to be verified
         await prisma.user.update({
           where: { id: user.id },
           data: { isVerified: true },

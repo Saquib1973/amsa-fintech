@@ -2,12 +2,15 @@
 import React, { useEffect, useRef } from 'react'
 import SecondaryButton from './button/secondary-button'
 import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 const Modal = ({
+  className,
   message,
   closeModal,
   onSubmit,
 }: {
+  className?:string
   message: string | React.ReactNode
   closeModal: () => void
   onSubmit: () => void
@@ -37,7 +40,7 @@ const Modal = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           ref={ref}
-          className="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg"
+          className={cn("bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg", className)}
         >
           <div className="text-2xl font-bold mb-4">
             {typeof message === 'string' ? message : message}
@@ -47,7 +50,7 @@ const Modal = ({
               Close
             </SecondaryButton>
             <SecondaryButton
-              className="max-w-fit bg-green-500 text-white border-green-800"
+              className="max-w-fit bg-green-500 hover:bg-green-600 text-white border-green-800"
               onClick={() => {
                 onSubmit()
                 closeModal()

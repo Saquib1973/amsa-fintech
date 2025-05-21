@@ -1,3 +1,4 @@
+import { prisma } from '@/lib/prisma'
 import transak from '@api/transak'
 import { NextResponse } from 'next/server'
 
@@ -12,6 +13,13 @@ export async function GET(request: Request) {
         { status: 400 }
       )
     }
+    const accessToken = await prisma.config.findFirst({
+      where: {
+        key: 'TRANSAK_ACCESS_TOKEN',
+      },
+    })
+
+    const parsedToken = JSON.parse(accessToken?.value || '{}')
 
     const { data } = await transak.getOrders({
       limit: 100,
@@ -20,7 +28,7 @@ export async function GET(request: Request) {
       'filter[status]': 'COMPLETED',
       'filter[sortOrder]': 'desc',
       'filter[walletAddress]': walletAddress,
-      'access-token': process.env.TRANSAK_ACCESS_TOKEN || '',
+      'access-token': parsedToken.accessToken || '',
     })
     return NextResponse.json(data)
   } catch (err) {

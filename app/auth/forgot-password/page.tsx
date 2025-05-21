@@ -33,7 +33,7 @@ const ForgotPasswordPage = () => {
         toast.error(data.error, { id: toastId })
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to send reset link')
     }
   }

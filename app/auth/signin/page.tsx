@@ -31,7 +31,6 @@ export default function SignInPage() {
         password,
         redirect: false,
       })
-      console.log(result)
 
       if (result?.error) {
         toast.error(result.error)

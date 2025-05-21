@@ -102,7 +102,7 @@ export default function SecurityPage() {
   const renderLoginHistory = () => {
     if (isLoading) {
       return <Loader message="loading history" size="sm" />
-    } else if (sessions.length === 0) {
+    } else if (Array.isArray(sessions) && sessions?.length === 0) {
       return (
         <div className="text-center py-4 text-primary-alt">
           No login history found

@@ -60,7 +60,6 @@ export default function ProfilePage() {
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target)
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,

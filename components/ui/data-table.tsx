@@ -1,6 +1,6 @@
 import React from 'react';
 
-type CellValue = string | number | boolean | null | undefined;
+export type CellValue = string | number | boolean | null | undefined;
 
 interface Column<T> {
   header: string;
@@ -12,9 +12,15 @@ interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
   isLoading?: boolean;
+  emptyMessage?: string;
 }
 
-export function DataTable<T>({ columns, data, isLoading }: DataTableProps<T>) {
+export function DataTable<T>({
+  columns,
+  data,
+  isLoading,
+  emptyMessage = "No data available"
+}: DataTableProps<T>) {
   if (isLoading) {
     return (
       <div className="w-full animate-pulse">
@@ -24,6 +30,14 @@ export function DataTable<T>({ columns, data, isLoading }: DataTableProps<T>) {
             <div key={i} className="h-12 bg-gray-200 rounded"></div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="w-full text-center py-8">
+        <div className="text-gray-500 text-sm">{emptyMessage}</div>
       </div>
     );
   }
@@ -49,7 +63,7 @@ export function DataTable<T>({ columns, data, isLoading }: DataTableProps<T>) {
               {columns.map((column, colIndex) => (
                 <td
                   key={colIndex}
-                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                  className="px-6 py-4 max-w-[100px] truncate whitespace-nowrap text-sm text-gray-900"
                 >
                   {column.cell
                     ? column.cell(row[column.accessorKey] as CellValue, row)

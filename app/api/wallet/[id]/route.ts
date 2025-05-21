@@ -24,7 +24,6 @@ export async function DELETE(
 
     try {
       const wallet = await walletService.getWalletById(walletId)
-      console.log(wallet)
 
       if (wallet.type === 'fiat') {
         return NextResponse.json(

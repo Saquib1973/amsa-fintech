@@ -1,10 +1,10 @@
+import SearchCoins from '@/components/assets/search-coins'
+import TrendingCoins from '@/components/assets/trending-coins'
+import CtaSectionTwo from '@/components/home-page/cta-section-two'
 import AssetsTable from '@/components/table/assets-table'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
-import Image from 'next/image'
-import CtaSectionTwo from '@/components/home-page/cta-section-two'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
-import TrendingCoins from '@/components/assets/trending-coins'
-import SearchCoins from '@/components/assets/search-coins'
+import Image from 'next/image'
 import { Suspense } from 'react'
 
 const AssetsPage = () => {

@@ -240,6 +240,7 @@ const AssetsTable: React.FC = () => {
           </nav>
         </div>
       )}
+
     </div>
   )
 }

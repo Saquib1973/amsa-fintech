@@ -1,13 +1,13 @@
 'use client'
-import { navItems, type UserRole } from '@/lib/dashboard-data'
+import { navSections, type UserRole } from '@/lib/dashboard-data'
 import {
-  ChevronDown,
   ChevronLeft,
-  ChevronRight,
   ChevronRight as ChevronRightIcon,
   Menu,
   Power,
   X,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
@@ -15,15 +15,15 @@ import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import AnimateWrapper from '../wrapper/animate-wrapper'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const DashboardSidebar = () => {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({})
   const [userRole, setUserRole] = useState<UserRole>('USER')
   const [loading, setLoading] = useState(false)
+  const [expandedSections, setExpandedSections] = useState<{ [title: string]: boolean }>({})
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -41,6 +41,12 @@ const DashboardSidebar = () => {
     fetchUserRole()
   }, [])
 
+  useEffect(() => {
+    if (navSections.length > 0) {
+      setExpandedSections({ [navSections[0].title]: true })
+    }
+  }, [])
+
   const toggleSidebar = useCallback(() => {
     setIsOpen((prevState) => !prevState)
   }, [])
@@ -51,13 +57,6 @@ const DashboardSidebar = () => {
     }
   }, [isOpen])
 
-  const toggleSubmenu = useCallback((menuName: string) => {
-    setOpenSubmenus((prev) => ({
-      ...prev,
-      [menuName]: !prev[menuName],
-    }))
-  }, [])
-
   const handleNavItemClick = useCallback(() => {
     closeSidebar()
   }, [closeSidebar])
@@ -67,106 +66,75 @@ const DashboardSidebar = () => {
     await signOut({ callbackUrl: '/' })
   }
 
-  const hasAccess = (roles?: UserRole[]) => {
-    if (!roles) return true
-    return roles.includes(userRole)
+  const toggleSection = (title: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }))
   }
 
-  const renderNavItem = (item: (typeof navItems)[0]) => {
-    if (loading) {
+  const LoadingSkeleton = () => {
+    if (isCollapsed) {
       return (
-        <div
-          key={item.name}
-          className={`relative ${isCollapsed ? 'w-[90px]' : 'max-w-full xl:w-[250px]'}`}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          className="flex flex-col items-center w-full space-y-4 py-2"
         >
-          <div
-            className={`flex w-full text-lg items-center px-8 py-4 gap-4 ${isCollapsed ? 'justify-center' : ''}`}
-          >
-            <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-            {!isCollapsed && (
-              <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded animate-pulse flex-1" />
-            )}
-          </div>
-        </div>
-      )
-    }
-
-    if (!hasAccess(item.roles)) return null
-
-    const isActive =
-      pathname === item.href || pathname?.startsWith(`${item.href}/`)
-    const isSubmenuOpen = openSubmenus[item.name]
-
-    if (item.hasSubmenu) {
-      return (
-        <div key={item.name} className="relative">
-          <button
-            onClick={() => toggleSubmenu(item.name)}
-            className={`flex w-full text-lg items-center px-8 py-4 font-light transition-colors gap-4 ${
-              isSubmenuOpen
-                ? 'text-gray-900 dark:text-gray-100'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
-            }`}
-          >
-            <span className="mr-2">{item.icon}</span>
-            {!isCollapsed && (
-              <>
-                {item.name}
-                <span className="ml-auto">
-                  {isSubmenuOpen ? (
-                    <ChevronDown className="w-5 h-5" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5" />
-                  )}
-                </span>
-              </>
-            )}
-          </button>
-
-          {isSubmenuOpen && (
-            <div
-              className={`${isCollapsed ? 'bg-white dark:bg-black ml-4' : ''}`}
-            >
-              {item.submenuItems?.map((subItem) => {
-                if (!hasAccess(subItem.roles)) return null
-                const isSubItemActive = pathname === subItem.href
-                return (
-                  <Link
-                    key={subItem.name}
-                    href={subItem.href || '#'}
-                    className={`${isCollapsed ? 'pl-4' : 'pl-14'} flex text-base items-center py-3 font-light transition-colors gap-3 w-full ${
-                      isSubItemActive
-                        ? 'text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
-                    }`}
-                    onClick={handleNavItemClick}
-                  >
-                    <span className="mr-2">{subItem.icon}</span>
-                    {!isCollapsed && subItem.name}
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: i * 0.05 }}
+              className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
+            />
+          ))}
+        </motion.div>
       )
     }
 
     return (
-      <Link
-        key={item.name}
-        href={item.href ?? '#'}
-        className={`flex text-lg items-center px-8 py-4 font-light transition-colors gap-4 w-full ${
-          isActive
-            ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
-        }`}
-        onClick={handleNavItemClick}
-        title={isCollapsed ? item.name : ''}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="space-y-6 px-6"
       >
-        <span className="mr-2">{item.icon}</span>
-        {!isCollapsed && item.name}
-      </Link>
+        {[...Array(4)].map((_, sectionIndex) => (
+          <motion.div
+            key={sectionIndex}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: sectionIndex * 0.1 }}
+            className="space-y-4"
+          >
+            {/* Section header skeleton */}
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+              <div className="w-24 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+            </div>
+            {/* Section items skeleton */}
+            <div className="space-y-2 pl-2">
+              {[...Array(3)].map((_, itemIndex) => (
+                <motion.div
+                  key={itemIndex}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: (sectionIndex * 0.1) + (itemIndex * 0.05) }}
+                  className="flex items-center space-x-4 px-4 py-3"
+                >
+                  <div className="w-5 h-5 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="flex-1 h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
     )
   }
 
@@ -193,7 +161,9 @@ const DashboardSidebar = () => {
       )}
 
       <motion.div
-        className={`fixed lg:sticky top-0 left-0 h-screen w-full ${isCollapsed ? 'w-[90px]' : 'max-w-full xl:w-[250px]'} lg:h-[calc(100vh-0px)] bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50 ${
+        className={`fixed lg:sticky top-0 left-0 h-screen w-full ${
+          isCollapsed ? 'w-[90px]' : 'max-w-full xl:w-[250px]'
+        } lg:h-[calc(100vh-0px)] bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -231,7 +201,81 @@ const DashboardSidebar = () => {
           </div>
 
           <nav className="flex-1 overflow-y-auto py-6">
-            {navItems.map(renderNavItem)}
+            <AnimatePresence mode="wait">
+              {loading ? (
+                <LoadingSkeleton />
+              ) : isCollapsed ? (
+                <div className="flex flex-col items-center">
+                  {navSections
+                    .filter(section => !section.roles || section.roles.includes(userRole))
+                    .flatMap(section =>
+                      section.items
+                        .filter(item => !item.roles || item.roles.includes(userRole))
+                        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                    )
+                    .map(item => (
+                      <div key={item.name} className="flex justify-center w-full">
+                        <Link
+                          href={item.href ?? '#'}
+                          className={`flex text-lg items-center justify-center py-4 w-full transition-colors ${
+                            pathname === item.href || pathname?.startsWith(`${item.href}/`)
+                              ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
+                          }`}
+                          onClick={handleNavItemClick}
+                          title={item.name}
+                        >
+                          {item.icon}
+                        </Link>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                navSections
+                  .filter(section => !section.roles || section.roles.includes(userRole))
+                  .map((section) => {
+                    const isExpanded = expandedSections[section.title] || false;
+                    return (
+                      <div key={section.title} className="mb-4">
+                        <button
+                          className="flex items-center w-full px-8 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider focus:outline-none"
+                          onClick={() => toggleSection(section.title)}
+                          aria-expanded={isExpanded}
+                        >
+                          <span className="mr-2">
+                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </span>
+                          {section.title}
+                        </button>
+                        {isExpanded && (
+                          <div className="w-full">
+                            {section.items
+                              .filter(item => !item.roles || item.roles.includes(userRole))
+                              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                              .map((item) => (
+                                <div key={item.name}>
+                                  <Link
+                                    href={item.href ?? '#'}
+                                    className={`flex text-lg items-center px-8 py-4 font-light transition-colors gap-4 w-full ${
+                                      pathname === item.href || pathname?.startsWith(`${item.href}/`)
+                                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
+                                    }`}
+                                    onClick={handleNavItemClick}
+                                    title={item.name}
+                                  >
+                                    <span className="mr-2">{item.icon}</span>
+                                    {item.name}
+                                  </Link>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+              )}
+            </AnimatePresence>
           </nav>
           <button
             className="bg-red-500 px-8 py-4 text-white cursor-pointer flex items-center justify-center hover:bg-red-600 transition-colors w-full gap-3"

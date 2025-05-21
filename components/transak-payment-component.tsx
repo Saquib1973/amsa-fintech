@@ -90,7 +90,6 @@ const TransakPaymentComponent = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      console.log('Transaction saved successfully')
     } catch (error) {
       console.error('Error saving transaction:', error)
     }
@@ -99,7 +98,6 @@ const TransakPaymentComponent = ({
   const initializeTransak = () => {
     setIsLoading(true)
     const apiKey = process.env.NEXT_PUBLIC_TRANSAK_API || ''
-    console.log(apiKey)
     const transakConfig: TransakConfig = {
       apiKey: apiKey,
       themeColor: '#0099ff',
@@ -123,7 +121,6 @@ const TransakPaymentComponent = ({
     })
 
     Transak.on(Transak.EVENTS.TRANSAK_WIDGET_CLOSE, () => {
-      console.log('Transak SDK closed!')
       newTransak.close()
       setTransak(null)
       setIsLoading(false)
@@ -136,7 +133,6 @@ const TransakPaymentComponent = ({
 
     Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, async (orderData ) => {
 
-      console.log(orderData)
       await saveTransaction(orderData as TransakOrderData)
       newTransak.close()
       setTransak(null)
