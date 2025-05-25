@@ -130,19 +130,31 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
+      // Get client IP address for location
+      const location = await getClientIpAddress()
+
       // Create new session
       await prisma.session.create({
         data: {
           userId: user.id,
           sessionToken: crypto.randomUUID(),
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-          location: await getClientIpAddress(),
+          location,
+        },
+      })
+
+      // Create login notification
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: 'NEW_LOGIN_DETECTED',
+          message: `New login detected from ${location}. If this wasn't you, please check your account security.`,
+          link: '/settings/security',
         },
       })
     },
     async signOut({ token }) {
       if (token?.id) {
-        // Delete all sessions for the user
         await prisma.session.deleteMany({
           where: {
             userId: token.id as string,

@@ -19,24 +19,38 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Fetch all users with basic information
-    const users = await prisma.user.findMany({
+    // Fetch all broadcast notifications
+    const notifications = await prisma.notification.findMany({
+      where: {
+        // Only get notifications created by super admins
+        createdBy: {
+          type: 'SUPER_ADMIN',
+        },
+      },
       select: {
         id: true,
-        name: true,
-        email: true,
         type: true,
+        message: true,
+        link: true,
+        createdAt: true,
+        read: true,
+        createdBy: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
       },
       orderBy: {
-        name: 'asc',
+        createdAt: 'desc',
       },
     })
 
-    return NextResponse.json({ user: users })
+    return NextResponse.json({ notifications })
   } catch (error) {
-    console.error('Error fetching users:', error)
+    console.error('Error fetching notifications:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch users' },
+      { error: 'Failed to fetch notifications' },
       { status: 500 }
     )
   }

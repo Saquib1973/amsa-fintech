@@ -4,7 +4,6 @@ import AuthProvider from '../components/providers/session-provider'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
 import ServiceWorkerUnregister from '@/components/service-worker-unregister'
-
 import { store } from '@/lib/store/store.'
 import { Provider } from 'react-redux'
 /**
@@ -30,11 +29,11 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
          * - Theme toggle functionality
          * - Other global application settings ( to be added )
          */}
-        <Toaster position="top-center" />
-        {/* Service worker management for PWA functionality */}
-        <ServiceWorkerUnregister />
-        {children}
-        <Analytics />
+          <Toaster position="top-center" />
+          {/* Service worker management for PWA functionality */}
+          <ServiceWorkerUnregister />
+          {children}
+          <Analytics />
       </AuthProvider>
     </Provider>
   )

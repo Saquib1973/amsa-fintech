@@ -1,4 +1,4 @@
-import { Bitcoin, ChartBar, Coins, CreditCard, Database, Globe, Home, Lock, Settings, User, Users } from 'lucide-react';
+import { Bitcoin, ChartBar, Coins, CreditCard, Database, Globe, Home, Lock, Settings, User, Users, Megaphone } from 'lucide-react';
 import React from 'react';
 
 export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
@@ -97,6 +97,13 @@ export const navSections: NavSection[] = [
         icon: <Bitcoin className="w-5 h-5" />,
         roles: ['SUPER_ADMIN'],
         order: 1,
+      },
+      {
+        name: 'Broadcast',
+        href: '/broadcast',
+        icon: <Megaphone className="w-5 h-5" />,
+        roles: ['SUPER_ADMIN'],
+        order: 2,
       },
     ],
     roles: ['SUPER_ADMIN'],

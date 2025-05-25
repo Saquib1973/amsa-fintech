@@ -1,39 +1,48 @@
-import ConnectWallet from '@/components/(protected-user)/dashboard/connect-wallet'
-import WalletCard from '@/components/(protected-user)/dashboard/wallet-card'
-import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
+import TransactionHistory from '@/components/(protected-user)/analytics/transaction-history'
+import { getSession } from '@/lib/auth'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
-import SectionWrapper from '@/components/wrapper/section-wrapper'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { Wallet } from '@prisma/client'
-import { getServerSession } from 'next-auth/next'
+import {
+  Coins,
+  CreditCard,
+  User,
+  Wallet,
+} from 'lucide-react'
 import Link from 'next/link'
+import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 
-export default async function Dashboard() {
-  const session = await getServerSession(authOptions)
+const quickLinks = [
+  {
+    label: 'Assets',
+    href: '/assets',
+    icon: <Coins className="w-7 h-7 text-blue-600" />,
+    desc: 'View and manage your assets',
+  },
+  {
+    label: 'Transactions',
+    href: '/transactions',
+    icon: <CreditCard className="w-7 h-7 text-blue-600" />,
+    desc: 'See your transaction history',
+  },
+  {
+    label: 'Profile',
+    href: '/profile',
+    icon: <User className="w-7 h-7 text-blue-600" />,
+    desc: 'Manage your profile',
+  },
+  {
+    label: 'Wallets',
+    href: '/wallets',
+    icon: <Wallet className="w-7 h-7 text-blue-600" />,
+    desc: 'Manage your wallets',
+  },
+]
 
-  if (!session?.user?.email) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-2xl font-light text-gray-400 dark:text-gray-500">
-          Please sign in to access your dashboard.
-        </p>
-      </div>
-    )
-  }
-
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session?.user?.email,
-    },
-    include: {
-      wallets: true,
-    },
-  })
+const DashboardPage = async () => {
+  const session = await getSession()
 
   return (
     <AnimateWrapper>
-      <div className="min-h-screen">
+      <div className="bg-white dark:bg-black">
         <OffWhiteHeadingContainer>
           <div className="flex max-md:flex-col justify-between items-center">
             <div>
@@ -46,42 +55,37 @@ export default async function Dashboard() {
               <p className="text-xl text-gray-600 dark:text-gray-400 text-left mt-2 font-light">
                 Welcome back, {session?.user?.email}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 text-left mt-2 font-light">
-                {user?.type}
-              </p>
             </div>
           </div>
         </OffWhiteHeadingContainer>
-
-        {session ? (
-          <SectionWrapper className="p-2 py-6 md:py-16">
-            <div className="space-y-12">
-              <div className="flex justify-center">
-                <ConnectWallet />
-              </div>
-              {user?.wallets.length ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {user.wallets.map((wallet: Wallet) => (
-                    <WalletCard key={wallet.id} wallet={wallet} />
-                  ))}
+        <div className="px-8 my-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {quickLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="rounded-xl p-6 flex flex-col items-center text-center border border-gray-200 bg-surface-main transition group shadow-sm"
+                title={link.desc}
+              >
+                <div className="mb-3 transition-transform">{link.icon}</div>
+                <div className="font-semibold text-lg mb-1">
+                  {link.label}
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-2xl font-light text-gray-400 dark:text-gray-500">
-                    Please sign in to access your dashboard.
-                  </p>
-                </div>
-              )}
-            </div>
-          </SectionWrapper>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-2xl font-light text-gray-400 dark:text-gray-500">
-              Please sign in to access your dashboard.
-            </p>
+                <div className="text-xs text-gray-500">{link.desc}</div>
+              </Link>
+            ))}
           </div>
-        )}
+        </div>
+
+        <div className="px-8 mb-12">
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+            Recent Activity
+          </h2>
+          <TransactionHistory />
+        </div>
       </div>
     </AnimateWrapper>
   )
 }
+
+export default DashboardPage
