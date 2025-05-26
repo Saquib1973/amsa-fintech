@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Bell, Check, AlertCircle, MessageSquare, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { toast } from "react-hot-toast";
-import { NotificationType } from "@prisma/client";
-import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/hooks/useNotifications";
+import { NotificationType } from "@prisma/client";
+import { formatDistanceToNow } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, ArrowLeft, Bell, Check, ChevronDown, ChevronUp, MailOpen, MessageSquare, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "react-hot-toast";
+import NotificationLoader from "@/components/loader-skeletons/notification-loader";
 
 type NotificationTab = "all" | "unread" | "broadcast";
 
@@ -27,122 +29,161 @@ interface Notification {
   };
 }
 
+// Constants
+const BROADCAST_NOTIFICATION_TYPES = [
+  NotificationType.BROADCAST_MESSAGE,
+  NotificationType.BROADCAST_ALERT,
+  NotificationType.BROADCAST_UPDATE,
+] as const;
+
+const NOTIFICATION_ICONS: Record<NotificationType, React.ComponentType<{ className?: string }>> = {
+  [NotificationType.SYSTEM_MESSAGE]: Bell,
+  [NotificationType.TRANSACTION_CREATED]: MessageSquare,
+  [NotificationType.TRANSACTION_SUCCESSFUL]: MessageSquare,
+  [NotificationType.TRANSACTION_FAILED]: MessageSquare,
+  [NotificationType.WALLET_CREDITED]: MessageSquare,
+  [NotificationType.WALLET_DEBITED]: MessageSquare,
+  [NotificationType.NEW_LOGIN_DETECTED]: AlertCircle,
+  [NotificationType.PASSWORD_CHANGED]: AlertCircle,
+  [NotificationType.KYC_VERIFIED]: Check,
+  [NotificationType.KYC_REJECTED]: Check,
+  [NotificationType.ACCOUNT_VERIFICATION]: Check,
+  [NotificationType.PRICE_ALERT]: AlertCircle,
+  [NotificationType.BROADCAST_MESSAGE]: MessageSquare,
+  [NotificationType.BROADCAST_ALERT]: MessageSquare,
+  [NotificationType.BROADCAST_UPDATE]: MessageSquare,
+};
+
+const isBroadcastNotification = (type: NotificationType): boolean => {
+  return BROADCAST_NOTIFICATION_TYPES.includes(type as typeof BROADCAST_NOTIFICATION_TYPES[number]);
+};
+
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<NotificationTab>("all");
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [expandedNotifications, setExpandedNotifications] = useState<Record<string, boolean>>({});
   const { notifications, loading, refetch } = useNotifications();
   const bellRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Click outside logic
+  // Memoized values
+  const unreadCount = useMemo(() =>
+    notifications.filter((n) => !n.read).length,
+    [notifications]
+  );
+
+  const broadcastCount = useMemo(() =>
+    notifications.filter((n) => isBroadcastNotification(n.type)).length,
+    [notifications]
+  );
+
+  const filteredNotifications = useMemo(() =>
+    notifications.filter((notification) => {
+      switch (activeTab) {
+        case "unread":
+          return !notification.read;
+        case "broadcast":
+          return isBroadcastNotification(notification.type);
+        default:
+          return true;
+      }
+    }),
+    [notifications, activeTab]
+  );
+
+  // Click outside handler
   useEffect(() => {
     if (!open) return;
-    function handleClickOutside(event: MouseEvent) {
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
+        !dropdownRef.current.contains(target) &&
         bellRef.current &&
-        !bellRef.current.contains(event.target as Node)
+        !bellRef.current.contains(target)
       ) {
         setOpen(false);
       }
-    }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  const markAsRead = async (notificationId: string) => {
+  // API handlers
+  const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      await fetch(`/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
         method: "POST",
       });
-      refetch();
+
+      if (!response.ok) {
+        throw new Error('Failed to mark notification as read');
+      }
+
+      await refetch();
     } catch (error) {
       console.error("Error marking notification as read:", error);
       toast.error("Failed to mark notification as read");
     }
-  };
+  }, [refetch]);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     try {
       const unreadNotifications = notifications.filter((n) => !n.read);
-      await Promise.all(
+      const responses = await Promise.all(
         unreadNotifications.map((n) =>
           fetch(`/api/notifications/${n.id}/read`, {
             method: "POST",
           })
         )
       );
-      refetch();
+
+      const hasError = responses.some(response => !response.ok);
+      if (hasError) {
+        throw new Error('Some notifications failed to be marked as read');
+      }
+
+      await refetch();
       toast.success("All notifications marked as read");
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
       toast.error("Failed to mark all notifications as read");
     }
-  };
+  }, [notifications, refetch]);
 
-  const getNotificationIcon = (type: NotificationType) => {
-    switch (type) {
-      case NotificationType.SYSTEM_MESSAGE:
-        return <Bell className="w-5 h-5" />;
-      case NotificationType.TRANSACTION_CREATED:
-      case NotificationType.TRANSACTION_SUCCESSFUL:
-      case NotificationType.TRANSACTION_FAILED:
-        return <MessageSquare className="w-5 h-5" />;
-      case NotificationType.WALLET_CREDITED:
-      case NotificationType.WALLET_DEBITED:
-        return <MessageSquare className="w-5 h-5" />;
-      case NotificationType.NEW_LOGIN_DETECTED:
-      case NotificationType.PASSWORD_CHANGED:
-        return <AlertCircle className="w-5 h-5" />;
-      case NotificationType.KYC_VERIFIED:
-      case NotificationType.KYC_REJECTED:
-        return <Check className="w-5 h-5" />;
-      case NotificationType.ACCOUNT_VERIFICATION:
-        return <Check className="w-5 h-5" />;
-      case NotificationType.PRICE_ALERT:
-        return <AlertCircle className="w-5 h-5" />;
-      case NotificationType.BROADCAST_MESSAGE:
-      case NotificationType.BROADCAST_ALERT:
-      case NotificationType.BROADCAST_UPDATE:
-        return <MessageSquare className="w-5 h-5" />;
-      default:
-        return <Bell className="w-5 h-5" />;
-    }
-  };
+  const getNotificationIcon = useCallback((type: NotificationType) => {
+    const Icon = NOTIFICATION_ICONS[type] || Bell;
+    return <Icon className="w-5 h-5" />;
+  }, []);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
-  const broadcastCount = notifications.filter((n) =>
-    n.type === NotificationType.BROADCAST_MESSAGE ||
-    n.type === NotificationType.BROADCAST_ALERT ||
-    n.type === NotificationType.BROADCAST_UPDATE
-  ).length;
-
-  const filteredNotifications = notifications.filter((notification) => {
-    switch (activeTab) {
-      case "unread":
-        return !notification.read;
-      case "broadcast":
-        return (
-          notification.type === NotificationType.BROADCAST_MESSAGE ||
-          notification.type === NotificationType.BROADCAST_ALERT ||
-          notification.type === NotificationType.BROADCAST_UPDATE
-        );
-      default:
-        return true;
-    }
-  });
-
-  const handleNotificationClick = (notification: Notification) => {
-    if (!notification.read) {
-      markAsRead(notification.id);
-    }
-    setSelectedNotification(notification);
-  };
-
-  const handleBackClick = () => {
+  const handleBackClick = useCallback(() => {
     setSelectedNotification(null);
+  }, []);
+
+  const getNotificationStateClass = (isRead: boolean): string => {
+    return isRead ? "bg-gray-100" : "bg-blue-100";
+  };
+
+  const handleExpandToggle = (id: string) => {
+    setExpandedNotifications((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleDelete = async (notificationId: string) => {
+    try {
+      await fetch(`/api/notifications/${notificationId}`, {
+        method: "DELETE",
+      });
+      await refetch();
+      toast.success("Notification deleted");
+    } catch {
+      toast.error("Failed to delete notification");
+    }
   };
 
   const renderNotificationDetail = (notification: Notification) => {
@@ -160,9 +201,7 @@ export default function NotificationBell() {
 
         <div className="space-y-4">
           <div className="flex items-start gap-3">
-            <div className={`p-3 rounded-full ${
-              notification.read ? "bg-gray-100" : "bg-blue-100"
-            }`}>
+            <div className={`p-3 rounded-full ${getNotificationStateClass(notification.read)}`}>
               {getNotificationIcon(notification.type)}
             </div>
             <div className="flex-1">
@@ -193,17 +232,117 @@ export default function NotificationBell() {
     );
   };
 
+  const renderNotificationListContent = () => {
+    if (loading) {
+      return <NotificationLoader />;
+    }
+    if (filteredNotifications.length === 0) {
+      return <div className="text-center py-8 text-gray-500">No {activeTab} notifications</div>;
+    }
+    return (
+      <div className="divide-y divide-gray-200">
+        {filteredNotifications.map((notification) => {
+          const expanded = expandedNotifications[notification.id];
+          return (
+            <div
+              key={notification.id}
+              className={`group p-4 flex flex-col gap-2 transition ${!notification.read ? 'text-black' : 'text-gray-700'}`}
+              tabIndex={0}
+            >
+              <div className="flex items-start justify-between gap-2 w-full">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className={`p-2 rounded-full ${getNotificationStateClass(notification.read)}`}>{getNotificationIcon(notification.type)}</div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-medium text-sm truncate max-w-xs">{notification.type.replace(/_/g, ' ')}</span>
+                    <span className="text-xs text-gray-400 mt-0.5">{formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}</span>
+                  </div>
+                  {!notification.read && (
+                    <Badge variant="secondary" className="text-xs ml-1">New</Badge>
+                  )}
+                </div>
+                <div className="flex gap-1 ml-2">
+                  {!notification.read && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => markAsRead(notification.id)}
+                      aria-label="Mark as Read"
+                      title="Mark as Read"
+                    >
+                      <MailOpen className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleDelete(notification.id)}
+                    aria-label="Delete"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleExpandToggle(notification.id)}
+                    aria-label={expanded ? 'Show less' : 'Show more'}
+                    title={expanded ? 'Show less' : 'Show more'}
+                  >
+                    {expanded ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <AnimatePresence initial={false}>
+                {expanded && (
+                  <motion.div
+                    className="mt-2 text-sm text-gray-600"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {notification.message}
+                    {notification.link && (
+                      <div className="mt-1">
+                        <Link
+                          href={notification.link}
+                          className="inline-flex items-center text-blue-600 hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          View Details →
+                        </Link>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="relative inline-block">
       <button
         ref={bellRef}
-        className="relative p-2 rounded-full hover:bg-gray-100"
+        className="relative p-2 rounded-full hover:bg-gray-100 outline-none focus:bg-gray-100"
         onClick={() => setOpen((prev) => !prev)}
         aria-label="Notifications"
+        aria-expanded={open}
+        aria-haspopup="true"
       >
         <Bell className="w-6 h-6" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+          <span
+            className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
+            aria-label={`${unreadCount} unread notifications`}
+          >
             {unreadCount}
           </span>
         )}
@@ -212,8 +351,11 @@ export default function NotificationBell() {
       {open && (
         <div
           ref={dropdownRef}
-          className="absolute right-2 mt-1 w-[450px] h-[600px] max-w-[90vw] bg-white rounded-lg shadow-lg z-50 border"
+          className="absolute right-2 mt-1 w-[450px] h-[600px] max-w-[90vw] bg-white rounded-lg shadow-lg z-50 border p-0"
           style={{ minWidth: 320 }}
+          role="dialog"
+          aria-label="Notifications panel"
+          tabIndex={-1}
         >
           {selectedNotification ? (
             renderNotificationDetail(selectedNotification)
@@ -260,55 +402,7 @@ export default function NotificationBell() {
 
                 <ScrollArea className="h-[470px]">
                   <div className="p-4">
-                    {loading ? (
-                      <div className="text-center py-8 text-gray-500">Loading...</div>
-                    ) : filteredNotifications.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        No {activeTab} notifications
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {filteredNotifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            onClick={() => handleNotificationClick(notification)}
-                            className={`p-4 rounded-lg border cursor-pointer hover:bg-gray-50 transition-colors ${
-                              notification.read ? "bg-white" : "bg-gray-50"
-                            }`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`p-2 rounded-full ${
-                                notification.read ? "bg-gray-100" : "bg-blue-100"
-                              }`}>
-                                {getNotificationIcon(notification.type)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <p className="font-medium text-sm">
-                                      {notification.type.replace(/_/g, " ")}
-                                    </p>
-                                    {!notification.read && (
-                                      <Badge variant="secondary" className="text-xs">
-                                        New
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <span className="text-xs text-gray-500">
-                                    {formatDistanceToNow(new Date(notification.createdAt), {
-                                      addSuffix: true,
-                                    })}
-                                  </span>
-                                </div>
-                                <p className="mt-1 text-sm text-gray-600">
-                                  {notification.message}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {renderNotificationListContent()}
                   </div>
                 </ScrollArea>
               </Tabs>

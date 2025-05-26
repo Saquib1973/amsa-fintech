@@ -1,4 +1,5 @@
 import React from 'react';
+import { Skeleton } from './skeleton';
 
 export type CellValue = string | number | boolean | null | undefined;
 
@@ -23,12 +24,28 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
-      <div className="w-full animate-pulse">
-        <div className="h-8 bg-gray-200 rounded mb-4"></div>
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-12 bg-gray-200 rounded"></div>
-          ))}
+      <div className="w-full">
+        <div className="w-full border-collapse">
+          <div className="bg-surface-main">
+            <div className="flex">
+              {columns.map((_, index) => (
+                <div key={index} className="px-6 py-3 flex-1">
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2 mt-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex">
+                {columns.map((_, colIndex) => (
+                  <div key={colIndex} className="px-6 py-4 flex-1">
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

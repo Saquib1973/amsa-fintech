@@ -54,7 +54,11 @@ const getErrorTemplate = (title: string) => `<!DOCTYPE html>
   </body>
 </html>`
 
-const getPasswordFormTemplate = (email: string, secret: string, timestamp: string) => `<!DOCTYPE html>
+const getPasswordFormTemplate = (
+  email: string,
+  secret: string,
+  timestamp: string
+) => `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
@@ -236,17 +240,18 @@ export async function GET(req: Request) {
   if (!email || !secret || !timestamp) {
     return new NextResponse(getErrorTemplate('Invalid URL'), {
       headers: { 'Content-Type': 'text/html' },
-      status: 400
+      status: 400,
     })
   }
 
   // Check if the link has expired (5 minutes)
-  const currentTime = Date.now();
-  const linkAge = currentTime - parseInt(timestamp);
-  if (linkAge > 300000) { // 5 minutes in milliseconds
+  const currentTime = Date.now()
+  const linkAge = currentTime - parseInt(timestamp)
+  if (linkAge > 300000) {
+    // 5 minutes in milliseconds
     return new NextResponse(getErrorTemplate('Reset link has expired'), {
       headers: { 'Content-Type': 'text/html' },
-      status: 400
+      status: 400,
     })
   }
 
@@ -257,30 +262,30 @@ export async function GET(req: Request) {
   if (!user) {
     return new NextResponse(getErrorTemplate('Invalid URL'), {
       headers: { 'Content-Type': 'text/html' },
-      status: 404
+      status: 404,
     })
   }
 
   if (!process.env.UNIVERSAL_SECRET) {
     return new NextResponse(getErrorTemplate('Server Error'), {
       headers: { 'Content-Type': 'text/html' },
-      status: 500
+      status: 500,
     })
   }
 
-  const dataToVerify = `${email}${process.env.UNIVERSAL_SECRET}${timestamp}`;
+  const dataToVerify = `${email}${process.env.UNIVERSAL_SECRET}${timestamp}`
   const isSecretValid = await bcrypt.compare(dataToVerify, secret)
 
   if (!isSecretValid) {
     return new NextResponse(getErrorTemplate('Not Authorized'), {
       headers: { 'Content-Type': 'text/html' },
-      status: 401
+      status: 401,
     })
   }
 
   return new NextResponse(getPasswordFormTemplate(email, secret, timestamp), {
     headers: { 'Content-Type': 'text/html' },
-    status: 200
+    status: 200,
   })
 }
 
@@ -307,9 +312,10 @@ export async function POST(req: Request) {
   }
 
   // Validate the reset link again
-  const currentTime = Date.now();
-  const linkAge = currentTime - parseInt(timestamp);
-  if (linkAge > 300000) { // 5 minutes in milliseconds
+  const currentTime = Date.now()
+  const linkAge = currentTime - parseInt(timestamp)
+  if (linkAge > 300000) {
+    // 5 minutes in milliseconds
     return NextResponse.json(
       { error: 'Reset link has expired' },
       { status: 400 }
@@ -321,41 +327,29 @@ export async function POST(req: Request) {
   })
 
   if (!user) {
-    return NextResponse.json(
-      { error: 'User not found' },
-      { status: 404 }
-    )
+    return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
   if (!process.env.UNIVERSAL_SECRET) {
-    return NextResponse.json(
-      { error: 'Server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 
-  const dataToVerify = `${email}${process.env.UNIVERSAL_SECRET}${timestamp}`;
+  const dataToVerify = `${email}${process.env.UNIVERSAL_SECRET}${timestamp}`
   const isSecretValid = await bcrypt.compare(dataToVerify, secret)
 
   if (!isSecretValid) {
-    return NextResponse.json(
-      { error: 'Invalid reset link' },
-      { status: 401 }
-    )
+    return NextResponse.json({ error: 'Invalid reset link' }, { status: 401 })
   }
 
   const account = await prisma.account.findFirst({
     where: {
       userId: user.id,
-      provider: 'credentials'
-    }
+      provider: 'credentials',
+    },
   })
 
   if (!account) {
-    return NextResponse.json(
-      { error: 'Account not found' },
-      { status: 404 }
-    )
+    return NextResponse.json({ error: 'Account not found' }, { status: 404 })
   }
 
   const hashedPassword = await bcrypt.hash(password, 10)
@@ -367,6 +361,6 @@ export async function POST(req: Request) {
 
   return new NextResponse(getSuccessTemplate(), {
     headers: { 'Content-Type': 'text/html' },
-    status: 200
+    status: 200,
   })
 }

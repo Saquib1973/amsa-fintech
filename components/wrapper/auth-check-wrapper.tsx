@@ -1,14 +1,13 @@
 'use client'
-
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import Loader from '../loader-component'
+import AuthCheckLoader from '../auth-check-loader'
 
 export default function AuthCheckWrapper({
   children,
 }: {
-  children: React.ReactNode
+  readonly children: React.ReactNode
 }) {
   const { status } = useSession()
   const router = useRouter()
@@ -22,7 +21,7 @@ export default function AuthCheckWrapper({
   if (status === 'loading') {
     return (
       <div className="flex flex-col bg-white dark:bg-black items-center justify-center min-h-screen">
-        <Loader message="Verifying your session..." />
+        <AuthCheckLoader />
       </div>
     )
   }
