@@ -113,7 +113,7 @@ export const navSections: NavSection[] = [
     items: [
       {
         name: 'Security',
-        href: '/settings/security',
+        href: '/settings/security/password',
         icon: <Lock className="w-5 h-5" />,
         roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
         order: 1,

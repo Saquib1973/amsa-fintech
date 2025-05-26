@@ -1,6 +1,8 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
+
 const features = [
   {
     title: 'Sign up for free',
@@ -47,22 +49,24 @@ const AboutUsSection = () => {
       <div className="flex max-md:flex-col justify-between max-w-[1400px] mx-auto w-full">
         <div className="p-10 xl:p-24 w-full md:w-1/2 h-full">
           <div className="relative p-10 w-full h-full">
-            {features.map((feature, index) => (
-              <div
-                key={feature.title}
-                className={`absolute w-full bg-gray-50 max-md:h-[300px] max-md:-translate-y-4 inset-0 transition-opacity duration-500 ${
-                  index === isActive - 1 ? 'opacity-100' : 'opacity-0'
-                }`}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={features[isActive - 1].title}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.5 }}
+                className="absolute w-full bg-gray-50 max-md:h-[300px] max-md:-translate-y-4 inset-0 flex items-center justify-center"
               >
                 <Image
                   width={1000}
                   height={1000}
-                  src={feature.image}
-                  alt={feature.title}
+                  src={features[isActive - 1].image}
+                  alt={features[isActive - 1].title}
                   className="w-full h-full object-contain"
                 />
-              </div>
-            ))}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
         <div className="p-10 xl:p-24 md:w-1/2 h-full">
@@ -91,7 +95,7 @@ const AboutUsSection = () => {
                   <div
                     className="absolute top-0 left-0 h-full bg-red-600 transition-all duration-100 ease-linear"
                     style={{
-                      width: `${index === isActive - 1 ? progress + 5 : 0}%`, // 5 is a padding for improved user experience
+                      width: `${index === isActive - 1 ? progress + 8 : 0}%`, // 5 is a padding for improved user experience
                     }}
                   />
                 </div>

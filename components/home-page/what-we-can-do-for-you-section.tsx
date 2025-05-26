@@ -1,6 +1,36 @@
+'use client'
 import SectionWrapper from '../wrapper/section-wrapper'
 import Image from 'next/image'
 import React from 'react'
+import { motion } from 'framer-motion'
+
+const headingContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.07,
+    },
+  },
+}
+
+const headingChar = {
+  hidden: { opacity: 0, x: 12 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+}
+
+const serviceContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.18,
+    },
+  },
+}
+
+const serviceCard = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
+}
 
 const WhatWeCanDoForYouSection = () => {
   const services = [
@@ -41,40 +71,70 @@ const WhatWeCanDoForYouSection = () => {
       <div className="relative max-2xl:min-h-screen bg-surface-alt py-20 md:py-40">
         <div className="max-w-4xl mx-auto px-4">
           <div className="space-y-24">
-            <h1 className="text-5xl text-black">
-              WHAT WE CAN DO FOR YOU ?
-            </h1>
-            {services.map((service, index) => (
-              <React.Fragment key={service.id}>
-                <div
-                  className={`flex flex-col md:flex-row gap-8 ${index % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}
-                >
-                  <div className="relative w-full">
-                    <Image
-                      src={service.image}
-                      alt={service.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <h2 className="text-3xl text-gray-900">{service.title}</h2>
-                    <h3 className="text-xl font-light text-gray-700">
-                      {service.subtitle}
-                    </h3>
-                    <p className="text-gray-600 font-extralight leading-relaxed">
-                      {service.description}
-                    </p>
-                    <p className="text-gray-600 font-extralight leading-relaxed">
-                      {service.additionalInfo}
-                    </p>
-                  </div>
-                </div>
-                {index < services.length - 1 && (
-                  <div className="h-px w-full bg-gray-300 mb-12" />
-                )}
-              </React.Fragment>
-            ))}
+            <div>
+              <motion.h1
+                className="text-6xl font-light text-black"
+                style={{ whiteSpace: 'nowrap' }}
+                variants={headingContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+              >
+                {
+                  'WHAT WE CAN DO FOR YOU ?'.split("").map((char, index) =>
+                    char === ' '
+                      ? <span key={index} style={{ display: 'inline-block', width: '0.3em' }}>&nbsp;</span>
+                      : <motion.span key={index} className="inline-block" variants={headingChar}>{char}</motion.span>
+                  )
+                }
+              </motion.h1>
+              <motion.div
+                className='h-1.5 ml-4 my-2 rounded-full bg-primary-main'
+                initial={{ width: "20%", opacity: 0 }}
+                whileInView={{ width: '80%', opacity: 1 }}
+                transition={{ duration: 2, delay: 1.2, ease: 'easeOut' }}
+                viewport={{ once: true }}
+              />
+            </div>
+            <motion.div
+              variants={serviceContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              {services.map((service, index) => (
+                <React.Fragment key={service.id}>
+                  <motion.div
+                    variants={serviceCard}
+                    className={`flex flex-col md:flex-row gap-8 ${index % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}
+                  >
+                    <div className="relative w-full">
+                      <Image
+                        src={service.image}
+                        alt={service.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <h2 className="text-3xl text-gray-900">{service.title}</h2>
+                      <h3 className="text-xl font-light text-gray-700">
+                        {service.subtitle}
+                      </h3>
+                      <p className="text-gray-600 font-extralight leading-relaxed">
+                        {service.description}
+                      </p>
+                      <p className="text-gray-600 font-extralight leading-relaxed">
+                        {service.additionalInfo}
+                      </p>
+                    </div>
+                  </motion.div>
+                  {index < services.length - 1 && (
+                    <div className="h-px w-full bg-gray-300 my-12" />
+                  )}
+                </React.Fragment>
+              ))}
+            </motion.div>
           </div>
         </div>
       </div>

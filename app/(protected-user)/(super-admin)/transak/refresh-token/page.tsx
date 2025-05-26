@@ -134,9 +134,9 @@ export default function TransakRefreshPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-130px)] md:min-h-[calc(100vh-70px)] bg-gray-50 flex px-2 sm:px-4">
+    <div className="min-h-[calc(100vh-130px)] md:min-h-[calc(100vh-70px)] flex px-2 sm:px-4">
       <div className="w-full max-w-2xl mx-auto py-8 sm:py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 sticky top-0 bg-gray-50 z-10 pb-2">Refresh Transak Access Token</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 sticky top-0 z-10 pb-2">Refresh Transak Access Token</h1>
         <div className="flex flex-wrap items-center gap-4 mb-6">
           {loading && (
             <span className="text-sm text-blue-600 flex items-center gap-1">

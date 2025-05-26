@@ -1,6 +1,7 @@
 "use client"
 import Image from 'next/image'
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
 
 const testimonials = [
   {
@@ -53,6 +54,19 @@ const testimonials = [
   },
 ]
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
+}
+
+const gridVariants = {
+  visible: {
+    transition: {
+      staggerChildren: 0.12
+    }
+  }
+}
+
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -67,7 +81,7 @@ const Testimonials = () => {
   return (
     <section className="py-16 px-4 rounded-2xl">
       <div className="max-w-5xl mx-auto text-center mb-12">
-        <h2 className="text-5xl mb-2">Proven track of satisfied clients</h2>
+        <h2 className="text-5xl font-light mb-2">Proven track of satisfied clients</h2>
         <p className="text-lg text-gray-500">
           We cherish relations to blossom and last
         </p>
@@ -76,7 +90,9 @@ const Testimonials = () => {
       <div className="md:hidden flex flex-col-reverse gap-8">
         <div className="flex items-center justify-end">
           <div className="flex gap-2">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              whileHover={{ scale: 1.06 }}
               onClick={prevTestimonial}
               className="h-fit bg-primary-main p-4 text-2xl text-white transition-colors"
             >
@@ -93,8 +109,10 @@ const Testimonials = () => {
               >
                 <polyline points="15 18 9 12 15 6"></polyline>
               </svg>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              whileHover={{ scale: 1.06 }}
               onClick={nextTestimonial}
               className="h-fit bg-primary-main p-4 text-2xl text-white transition-colors"
             >
@@ -111,7 +129,7 @@ const Testimonials = () => {
               >
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
-            </button>
+            </motion.button>
           </div>
         </div>
         <div className="relative overflow-hidden">
@@ -120,7 +138,14 @@ const Testimonials = () => {
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
             {testimonials.map((t, i) => (
-              <div key={i} className="w-full flex-shrink-0 px-2">
+              <motion.div
+                key={i}
+                className="w-full flex-shrink-0 px-2"
+                variants={cardVariants}
+                initial="hidden"
+                animate={currentIndex === i ? "visible" : "hidden"}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+              >
                 <div className="bg-white rounded-2xl shadow p-6 flex flex-col h-full border border-gray-100">
                   <p className="text-gray-900 text-base mb-6">{t.text}</p>
                   <div className="flex items-center mt-auto">
@@ -139,18 +164,25 @@ const Testimonials = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </div>
 
       {/* Desktop Grid */}
-      <div className="hidden md:block columns-1 md:columns-2 lg:columns-3 gap-8 max-w-6xl mx-auto space-y-8">
+      <motion.div
+        className="hidden md:block columns-1 md:columns-2 lg:columns-3 gap-8 max-w-6xl mx-auto space-y-8"
+        variants={gridVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
         {testimonials.map((t, i) => (
-          <div
+          <motion.div
             key={i}
             className="bg-white rounded-2xl shadow p-6 flex flex-col h-full border border-gray-100 mb-8 break-inside-avoid"
+            variants={cardVariants}
           >
             <p className="text-gray-900 text-base mb-6">{t.text}</p>
             <div className="flex items-center mt-auto">
@@ -166,9 +198,9 @@ const Testimonials = () => {
                 <div className="text-sm text-gray-500">{t.title}</div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   )
 }
