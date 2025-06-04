@@ -92,7 +92,21 @@ export default function UserSelector({ onUsersSelect, selectedUsers }: UserSelec
 
       <div className="border rounded-lg divide-y max-h-60 overflow-y-auto">
         {isLoading ? (
-          <div className="p-4 text-center text-gray-500">Loading users...</div>
+          <div className="divide-y">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="p-3 flex items-center gap-3 animate-pulse">
+                <div className="h-4 w-4 rounded border-gray-200 bg-gray-200" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full bg-gray-200" />
+                    <div className="h-4 w-32 bg-gray-200 rounded" />
+                  </div>
+                  <div className="h-3 w-48 bg-gray-200 rounded mt-1" />
+                </div>
+                <div className="h-5 w-16 bg-gray-200 rounded-full" />
+              </div>
+            ))}
+          </div>
         ) : filteredUsers.length === 0 ? (
           <div className="p-4 text-center text-gray-500">No users found</div>
         ) : (

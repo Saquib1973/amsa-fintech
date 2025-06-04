@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { NotificationType } from '@prisma/client'
-import { initSocket, broadcastToAll, sendNotification } from '@/lib/socket'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
@@ -12,7 +11,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is super admin
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
     })
@@ -37,15 +35,6 @@ export async function POST(req: Request) {
       )
     }
 
-    // Initialize socket if not already initialized
-    const io = initSocket()
-    if (!io) {
-      return NextResponse.json(
-        { error: 'Socket server not initialized' },
-        { status: 500 }
-      )
-    }
-
     // Create notifications in database for selected users
     const notifications = await Promise.all(
       userIds.map(userId =>
@@ -60,17 +49,6 @@ export async function POST(req: Request) {
         })
       )
     )
-
-    // Send notifications to selected users
-    if (userIds.length === (await prisma.user.count())) {
-      // If all users are selected, use broadcast
-      broadcastToAll(type, message, link)
-    } else {
-      // Otherwise, send to specific users
-      userIds.forEach(userId => {
-        sendNotification(userId, type, message, link)
-      })
-    }
 
     return NextResponse.json({ success: true, notifications })
   } catch (error) {

@@ -65,8 +65,6 @@ export default function WalletCard({ wallet }: WalletCardProps) {
             <motion.button
               onClick={handleCopyAddress}
               className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
               {copied ? (
                 <motion.div

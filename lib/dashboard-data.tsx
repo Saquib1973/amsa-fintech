@@ -1,4 +1,4 @@
-import { Bitcoin, ChartBar, Coins, CreditCard, Database, Globe, Home, Lock, Settings, User, Users, Megaphone } from 'lucide-react';
+import { Bitcoin, ChartBar, Coins, CreditCard, Database, Globe, Home, Lock, Settings, User, Users, Megaphone, Wallet, RefreshCw, History } from 'lucide-react';
 import React from 'react';
 
 export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
@@ -95,6 +95,21 @@ export const navSections: NavSection[] = [
         name: 'Transak',
         href: '/transak',
         icon: <Bitcoin className="w-5 h-5" />,
+        hasSubmenu: true,
+        submenuItems: [
+          {
+            name: 'Transak',
+            href: '/transak',
+            icon: <Wallet className="w-5 h-5" />,
+            order: 1,
+          },
+          {
+            name: 'Refresh Token',
+            href: '/transak/refresh-token',
+            icon: <RefreshCw className="w-5 h-5" />,
+            order: 2,
+          },
+        ],
         roles: ['SUPER_ADMIN'],
         order: 1,
       },
@@ -115,6 +130,21 @@ export const navSections: NavSection[] = [
         name: 'Security',
         href: '/settings/security/password',
         icon: <Lock className="w-5 h-5" />,
+        hasSubmenu: true,
+        submenuItems: [
+          {
+            name: 'Change Password',
+            href: '/settings/security/password',
+            icon: <Lock className="w-5 h-5" />,
+            order: 1,
+          },
+          {
+            name: 'Login History',
+            href: '/settings/security/history',
+            icon: <History className="w-5 h-5" />,
+            order: 2,
+          },
+        ],
         roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
         order: 1,
       },

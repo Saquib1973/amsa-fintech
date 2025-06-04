@@ -6,7 +6,7 @@ import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import { Calendar, Download, Search } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Wallet {
@@ -35,6 +35,7 @@ export default function TransactionsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const urlWalletAddress = searchParams.get('wallet') || ''
+
   const [walletAddress, setWalletAddress] = useState(urlWalletAddress)
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [orders, setOrders] = useState<Order[]>([])
@@ -42,12 +43,12 @@ export default function TransactionsPage() {
   const [walletsLoading, setWalletsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const isWalletAccessible = (address: string, walletsList: Wallet[]) => {
+  const isWalletAccessible = useCallback((address: string, walletsList: Wallet[]) => {
     return walletsList.some((wallet) => wallet.address === address)
-  }
+  }, [])
 
-  const fetchOrders = async () => {
-    if (!walletAddress || !isWalletAccessible(walletAddress, wallets)) {
+  const fetchOrders = useCallback(async (address: string) => {
+    if (!address || !isWalletAccessible(address, wallets)) {
       setError('Wallet not accessible')
       return
     }
@@ -56,10 +57,9 @@ export default function TransactionsPage() {
     setError('')
     try {
       const response = await fetch(
-        `/api/transaction/transak?walletAddress=${walletAddress}`
+        `/api/transaction/transak?walletAddress=${address}`
       )
       const data = await response.json()
-      console.log('RESPONSE DATA', data)
 
       if (response.ok) {
         const ordersData = Array.isArray(data.data) ? data.data : []
@@ -73,56 +73,60 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [wallets, isWalletAccessible])
 
-  useEffect(() => {
-    const fetchWallets = async () => {
-      if (!session?.user?.id) return
+  const fetchWallets = useCallback(async () => {
+    if (!session?.user?.id) return
 
-      setWalletsLoading(true)
-      setError('')
-      try {
-        const response = await fetch('/api/wallet')
-        const data = await response.json()
-        if (response.ok) {
-          const walletsData = data.wallets || []
-          setWallets(walletsData)
+    setWalletsLoading(true)
+    setError('')
+    try {
+      const response = await fetch('/api/wallet')
+      const data = await response.json()
+      if (response.ok) {
+        // Filter only crypto wallets
+        const cryptoWallets = (data.wallets || []).filter((wallet: Wallet) => wallet.type === 'web3')
+        setWallets(cryptoWallets)
 
-          if (urlWalletAddress) {
-            if (isWalletAccessible(urlWalletAddress, walletsData)) {
-              setWalletAddress(urlWalletAddress)
-            } else {
-              setError('Wallet not accessible')
-              if (walletsData.length > 0 && walletsData[0].address) {
-                setWalletAddress(walletsData[0].address)
-                router.replace(`/transactions?wallet=${walletsData[0].address}`)
-              }
+        // Handle wallet selection logic
+        if (urlWalletAddress) {
+          if (isWalletAccessible(urlWalletAddress, cryptoWallets)) {
+            setWalletAddress(urlWalletAddress)
+          } else {
+            setError('Wallet not accessible')
+            if (cryptoWallets.length > 0 && cryptoWallets[0].address) {
+              setWalletAddress(cryptoWallets[0].address)
+              router.replace(`/transactions?wallet=${cryptoWallets[0].address}`)
             }
-          } else if (walletsData.length > 0 && walletsData[0].address) {
-            setWalletAddress(walletsData[0].address)
-            router.replace(`/transactions?wallet=${walletsData[0].address}`)
           }
-        } else {
-          setError(data.error || 'Failed to fetch wallets')
+        } else if (cryptoWallets.length > 0 && cryptoWallets[0].address) {
+          setWalletAddress(cryptoWallets[0].address)
+          router.replace(`/transactions?wallet=${cryptoWallets[0].address}`)
         }
-      } catch (err) {
-        console.error('Error fetching wallets:', err)
-        setError('An error occurred while fetching wallets')
-      } finally {
-        setWalletsLoading(false)
+      } else {
+        setError(data.error || 'Failed to fetch wallets')
       }
+    } catch (err) {
+      console.error('Error fetching wallets:', err)
+      setError('An error occurred while fetching wallets')
+    } finally {
+      setWalletsLoading(false)
     }
+  }, [session?.user?.id, urlWalletAddress, isWalletAccessible, router])
 
+  // Fetch wallets when authenticated
+  useEffect(() => {
     if (status === 'authenticated') {
       fetchWallets()
     }
-  }, [urlWalletAddress])
+  }, [status, fetchWallets])
 
+  // Fetch orders when wallet address changes
   useEffect(() => {
     if (walletAddress && !error && isWalletAccessible(walletAddress, wallets)) {
-      fetchOrders()
+      fetchOrders(walletAddress)
     }
-  }, [walletAddress])
+  }, [walletAddress, error, wallets, isWalletAccessible, fetchOrders])
 
   const handleWalletChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newWalletAddress = e.target.value
@@ -307,7 +311,6 @@ export default function TransactionsPage() {
                     <option value="">Select a wallet</option>
                     {wallets.map((wallet) => (
                       <option key={wallet.id} value={wallet.address}>
-                        {wallet.type === 'web3' ? 'Web3' : 'Fiat'} -{' '}
                         {wallet.address?.slice(0, 10)}...
                         {wallet.address?.slice(-4)}
                       </option>

@@ -1,10 +1,9 @@
 import React from 'react'
-import TransakSidebar from '@/components/(protected-user)/transak/transak-sidebar'
+
 const TransakLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex max-md:flex-col">
-      <TransakSidebar />
-      <div className="flex-1 bg-surface-main">{children}</div>
+    <div className="flex max-md:flex-col w-full">
+      {children}
     </div>
   )
 }

@@ -3,6 +3,7 @@ import React from 'react'
 import Image from 'next/image'
 import TrustSection from '@/components/home-page/trust-section'
 import BlueHeadingContainer from '@/components/containers/blue-heading-container'
+
 const AboutUsPage = () => {
   const content = [
     {
@@ -26,31 +27,43 @@ const AboutUsPage = () => {
         "Empowering your business through tailored IT solutions. At AMSA, we're dedicated to delivering reliable, innovative, and cost-effective IT services that drive your success. From managed IT support to cloud solutions and beyond, we're here to streamline your operations and elevate your digital infrastructure. Partner with us and unlock the full potential of technology for your business growth.",
     },
   ]
+
   return (
     <AnimateWrapper>
-      <div className="page-container">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
         <BlueHeadingContainer>About Us</BlueHeadingContainer>
-          <div className="flex max-md:flex-col-reverse items-start gap-10 w-full max-w-[1400px] max-md:px-8 p-16 mx-auto">
-          <div className="md:w-1/2 flex gap-4 flex-col space-y-8 justify-end">
-            {content.map((item) => (
-              <div className="flex flex-col gap-4" key={item.title}>
-                <h1 className="text-4xl text-blue-400 mb-2 underline underline-offset-4 font-light">
-                  {item.title}
-                </h1>
-                <p className="text-xl font-light">{item.description}</p>
-              </div>
-            ))}
-          </div>
-          <div className="w-full md:w-1/2">
-            <Image
-              src="/images/about-us.png"
-              className="bg-gray-100 h-[500px] w-[500px] object-cover"
-              alt="About Us"
-              width={500}
-              height={500}
-            />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            {/* Content Section */}
+            <div className="space-y-12">
+              {content.map((item) => (
+                <div key={item.title} className="group">
+                  <h2 className="text-4xl font-light text-blue-600 mb-4">
+                    {item.title}
+                  </h2>
+                  <p className="text-gray-600">
+                    {item.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Image Section */}
+            <div className="relative h-[600px] rounded-2xl overflow-hidden">
+              <Image
+                src="/images/about-us.png"
+                alt="About Us"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-gray-50" />
+            </div>
           </div>
         </div>
+
         <TrustSection />
       </div>
     </AnimateWrapper>

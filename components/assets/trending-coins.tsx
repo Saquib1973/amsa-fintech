@@ -1,27 +1,60 @@
 'use client'
 import { useCoingecko } from '@/hooks/use-coingecko'
-import Loader from '../loader-component'
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
 const TrendingCoins = () => {
   const { loadingTrendingCoinsData, trendingCoinsData } = useCoingecko()
   if (loadingTrendingCoinsData) {
     return (
-      <div className="w-full lg:w-1/3 gap-6 h-full flex flex-col items-center justify-center">
+      <div className="w-full lg:w-1/3 gap-6 h-full flex flex-col items-center justify-start">
         <div className="bg-white w-full flex items-center flex-col gap-6 h-fit">
           <h2 className="text-3xl font-light mb-4 p-3 border-b border-gray-200 w-full">
             Trending Assets
           </h2>
-          <div className="flex flex-col items-center justify-center min-h-[400px]">
-            <Loader />
+          <div className="flex flex-col divide-y divide-gray-100 p-2 w-full">
+            {[...Array(15)].map((_, index) => (
+              <div key={index} className="py-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse" />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-4 w-36 bg-gray-200 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="h-4 w-10 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-10 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         <div className="bg-white w-full flex items-center flex-col gap-6 h-fit">
           <h2 className="text-3xl font-light mb-4 p-3 border-b border-gray-200 w-full">
             Trending NFTs
           </h2>
-          <div className="flex flex-col items-center justify-center min-h-[400px]">
-            <Loader />
+          <div className="flex flex-col divide-y divide-gray-100 p-2 w-full">
+            {[...Array(7)].map((_, index) => (
+              <div key={index} className="py-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gray-200 animate-pulse" />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-4 w-36 bg-gray-200 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-10 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-10 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

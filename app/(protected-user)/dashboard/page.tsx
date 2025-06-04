@@ -1,39 +1,45 @@
 import TransactionHistory from '@/components/(protected-user)/analytics/transaction-history'
 import { getSession } from '@/lib/auth'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
-import {
-  Coins,
-  CreditCard,
-  User,
-  Wallet,
-} from 'lucide-react'
+import { History, Settings, BarChart3, Wallet, PiggyBank } from 'lucide-react'
 import Link from 'next/link'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 
-const quickLinks = [
+const actions = [
   {
     label: 'Assets',
     href: '/assets',
-    icon: <Coins className="w-7 h-7 text-blue-600" />,
+    icon: <PiggyBank className="w-7 h-7 text-blue-600" />,
     desc: 'View and manage your assets',
+    color: 'bg-blue-50 dark:bg-blue-900/30',
   },
   {
     label: 'Transactions',
     href: '/transactions',
-    icon: <CreditCard className="w-7 h-7 text-blue-600" />,
+    icon: <History className="w-7 h-7 text-orange-600" />,
     desc: 'See your transaction history',
-  },
-  {
-    label: 'Profile',
-    href: '/profile',
-    icon: <User className="w-7 h-7 text-blue-600" />,
-    desc: 'Manage your profile',
+    color: 'bg-orange-50 dark:bg-orange-900/30',
   },
   {
     label: 'Wallets',
     href: '/wallets',
-    icon: <Wallet className="w-7 h-7 text-blue-600" />,
+    icon: <Wallet className="w-7 h-7 text-gray-600" />,
     desc: 'Manage your wallets',
+    color: 'bg-gray-50 dark:bg-gray-700/50',
+  },
+  {
+    label: 'Analytics',
+    href: '/analytics',
+    icon: <BarChart3 className="w-7 h-7 text-gray-600" />,
+    desc: 'View financial insights',
+    color: 'bg-gray-50 dark:bg-gray-700/50',
+  },
+  {
+    label: 'Settings',
+    href: '/profile',
+    icon: <Settings className="w-7 h-7 text-gray-600" />,
+    desc: 'Account settings',
+    color: 'bg-gray-50 dark:bg-gray-700/50',
   },
 ]
 
@@ -42,46 +48,58 @@ const DashboardPage = async () => {
 
   return (
     <AnimateWrapper>
-      <div className="bg-white dark:bg-black">
+      <div className="bg-white dark:bg-black min-h-screen">
+        {/* Hero Section */}
         <OffWhiteHeadingContainer>
-          <div className="flex max-md:flex-col justify-between items-center">
-            <div>
-              <Link
-                href="/"
-                className="text-6xl font-light hover:text-blue-400 transition-colors"
-              >
-                AMSA Fintech
-              </Link>
-              <p className="text-xl text-gray-600 dark:text-gray-400 text-left mt-2 font-light">
-                Welcome back, {session?.user?.email}
-              </p>
-            </div>
+          <div className="flex flex-col items-center py-10">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1">
+              Welcome back
+              {session?.user?.email
+                ? `, ${session.user.email.split('@')[0]}!`
+                : '!'}
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 text-base">
+              AMSA Fintech
+            </p>
           </div>
         </OffWhiteHeadingContainer>
-        <div className="px-8 my-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {quickLinks.map((link) => (
+
+        {/* Unified Actions Grid */}
+        <div className="px-8 mt-10">
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+            Actions
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {actions.map((action) => (
               <Link
-                key={link.label}
-                href={link.href}
-                className="rounded-xl p-6 flex flex-col items-center text-center border border-gray-200 bg-surface-main transition group shadow-sm"
-                title={link.desc}
+                key={action.label}
+                href={action.href}
+                className="group rounded-2xl p-6 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all flex flex-col items-start"
               >
-                <div className="mb-3 transition-transform">{link.icon}</div>
-                <div className="font-semibold text-lg mb-1">
-                  {link.label}
+                <div
+                  className={`w-12 h-12 flex items-center justify-center rounded-xl mb-3 ${action.color}`}
+                >
+                  {action.icon}
                 </div>
-                <div className="text-xs text-gray-500">{link.desc}</div>
+                <div className="font-semibold text-lg text-gray-900 dark:text-white mb-1">
+                  {action.label}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {action.desc}
+                </div>
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="px-8 mb-12">
+        {/* Recent Activity */}
+        <div className="px-8 mt-10 mb-16">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
             Recent Activity
           </h2>
-          <TransactionHistory />
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-0 sm:p-4">
+            <TransactionHistory />
+          </div>
         </div>
       </div>
     </AnimateWrapper>

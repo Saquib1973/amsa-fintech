@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
-import { User, Lock, Settings, LogOut, ChevronDown } from 'lucide-react'
+import { User, Lock, Settings, LogOut, ChevronDown, Wallet } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
@@ -52,6 +52,14 @@ const UserOptions = () => {
           >
             <User className="w-4 h-4" />
             Profile
+          </Link>
+          <Link
+            href="/wallets"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            onClick={() => setIsOpen(false)}
+          >
+            <Wallet className="w-4 h-4" />
+            Wallets
           </Link>
           <Link
             href="/settings/security"

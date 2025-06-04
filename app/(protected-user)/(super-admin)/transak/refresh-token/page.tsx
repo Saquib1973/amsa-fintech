@@ -125,8 +125,8 @@ export default function TransakRefreshPage() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-[calc(100vh-130px)] md:min-h-[calc(100vh-70px)] bg-gray-50 p-4 py-12">
-        <div className="w-full max-w-2xl mx-auto">
+      <div className="min-h-[calc(100vh-130px)] w-full md:min-h-[calc(100vh-70px)] bg-gray-50 p-4 py-12">
+        <div className="w-full max-w-2xl p-6">
           <LoadingSkeleton />
         </div>
       </div>
@@ -135,7 +135,7 @@ export default function TransakRefreshPage() {
 
   return (
     <div className="min-h-[calc(100vh-130px)] md:min-h-[calc(100vh-70px)] flex px-2 sm:px-4">
-      <div className="w-full max-w-2xl mx-auto py-8 sm:py-12">
+      <div className="w-full max-w-2xl mx-auto p-6 py-8 sm:py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-2 sticky top-0 z-10 pb-2">Refresh Transak Access Token</h1>
         <div className="flex flex-wrap items-center gap-4 mb-6">
           {loading && (

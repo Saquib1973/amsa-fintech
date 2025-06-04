@@ -73,7 +73,6 @@ const NavbarHome = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.02 }}
             >
               <div id={item.title} className="relative">
                 <button

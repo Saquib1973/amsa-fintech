@@ -1,7 +1,6 @@
 'use client'
 import { useCoingecko } from '@/hooks/use-coingecko'
 import React from 'react'
-import Loader from '../loader-component'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -64,27 +63,68 @@ const AssetsTable: React.FC = () => {
     setCurrentPage(page)
   }
 
-  if (loadingCoinsData) {
+  if (loadingCoinsData || loadingQueryCoinsData) {
     return (
-      <div className="w-full bg-white h-fit max-w-4xl overflow-x-auto">
+      <div className="w-full bg-white h-fit max-w-4xl overflow-x-auto" aria-busy="true">
         <h2 className="text-3xl font-light border-b border-gray-200 mb-4 p-3">
           {queryCoinsData ? 'Search Results' : 'Crypto Market Prices'}
         </h2>
-        <div className="w-full text-sm flex-col py-10 min-h-[680px] flex items-center justify-center">
-          <Loader message="Loading crypto market prices..." />
-        </div>
-      </div>
-    )
-  }
-  if (loadingQueryCoinsData) {
-    return (
-      <div className="w-full bg-white h-fit max-w-4xl overflow-x-auto">
-        <h2 className="text-3xl font-light mb-4 border-b border-gray-200 p-3">
-          {queryCoinsData ? 'Search Results' : 'Crypto Market Prices'}
-        </h2>
-          <div className="w-full text-sm flex-col py-10 min-h-[680px] flex items-center justify-center">
-            <Loader message="Loading crypto market prices..." />
-          </div>
+        <table className="min-w-full">
+          <thead>
+            <tr>
+              <th className="px-2 py-3 text-left text-xs font-light light-text uppercase tracking-wider">
+                #
+              </th>
+              <th className="px-2 py-3 text-left text-xs font-light light-text uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-2 py-3 text-left text-xs font-light light-text uppercase tracking-wider">
+                Price
+              </th>
+              <th className="px-2 py-3 text-left max-md:hidden text-xs font-light light-text uppercase tracking-wider">
+                Market Cap
+              </th>
+              <th className="px-2 py-3 text-left max-md:hidden text-xs font-light light-text uppercase tracking-wider">
+                Volume
+              </th>
+              <th className="px-2 py-3 text-left text-xs font-light light-text uppercase tracking-wider">
+                24h
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {[...Array(10)].map((_, index) => (
+              <tr key={index}>
+                <td className="px-2 py-2 whitespace-nowrap">
+                  <div className="h-4 w-8 bg-gray-200 rounded animate-pulse" />
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-8 w-8">
+                      <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
+                    </div>
+                    <div className="ml-4">
+                      <div className={`h-4 ${index % 2 === 0 ? 'w-24' : 'w-20'} bg-gray-200 rounded animate-pulse mb-1`} />
+                      <div className={`h-3 ${index % 3 === 0 ? 'w-12' : 'w-16'} bg-gray-200 rounded animate-pulse`} />
+                    </div>
+                  </div>
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap">
+                  <div className={`h-4 ${index % 2 === 0 ? 'w-20' : 'w-16'} bg-gray-200 rounded animate-pulse`} />
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap max-md:hidden">
+                  <div className={`h-4 ${index % 2 === 0 ? 'w-24' : 'w-20'} bg-gray-200 rounded animate-pulse`} />
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap max-md:hidden">
+                  <div className={`h-4 ${index % 2 === 0 ? 'w-24' : 'w-20'} bg-gray-200 rounded animate-pulse`} />
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap">
+                  <div className={`h-4 ${index % 2 === 0 ? 'w-16' : 'w-12'} bg-gray-200 rounded animate-pulse`} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     )
   }

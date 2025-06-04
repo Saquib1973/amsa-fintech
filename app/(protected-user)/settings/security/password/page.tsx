@@ -66,7 +66,7 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="p-6 bg-white w-full max-w-md">
+    <div className="p-6 bg-white w-full max-w-xl">
       <div className="flex items-center gap-3 mb-6">
         <Lock className="w-5 h-5 text-gray-600" />
         <h3 className="font-medium">Change Password</h3>

@@ -91,8 +91,6 @@ const Testimonials = () => {
         <div className="flex items-center justify-end">
           <div className="flex gap-2">
             <motion.button
-              whileTap={{ scale: 0.92 }}
-              whileHover={{ scale: 1.06 }}
               onClick={prevTestimonial}
               className="h-fit bg-primary-main p-4 text-2xl text-white transition-colors"
             >
@@ -111,8 +109,6 @@ const Testimonials = () => {
               </svg>
             </motion.button>
             <motion.button
-              whileTap={{ scale: 0.92 }}
-              whileHover={{ scale: 1.06 }}
               onClick={nextTestimonial}
               className="h-fit bg-primary-main p-4 text-2xl text-white transition-colors"
             >
