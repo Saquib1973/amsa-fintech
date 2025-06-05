@@ -1,5 +1,5 @@
-import DashboardNavbar from '@/components/dashboard/dashboard-navbar'
-import DashboardSidebar from '@/components/dashboard/dashboard-sidebar'
+import DashboardNavbar from '@/components/dashboard/navbar/dashboard-navbar'
+import DashboardSidebar from '@/components/dashboard/sidebar/dashboard-sidebar'
 import AuthCheckWrapper from '@/components/wrapper/auth-check-wrapper'
 
 export default function ProtectedUserLayout({

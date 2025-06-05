@@ -5,7 +5,7 @@
 @layer components {
   /* Input Field */
   .input-field {
-    @apply border border-primary-alt-hover bg-surface-main rounded-full dark:border-primary-main-dark dark:bg-primary-main-dark md:px-5 text-lg outline-none p-2;
+    @apply border border-primary-alt-hover bg-surface-main rounded-full dark:border-primary-main-dark dark:bg-primary-main-dark md:px-5 text-lg outline-none p-3;
   }
 
   /* Page Header */
