@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { motion } from 'framer-motion'
-import { navSections, type UserRole } from '@/lib/dashboard-data'
+import { dashboardSidebarItems as sidebarItems, type UserRole } from '@/lib/dashboard-data'
 import AnimateWrapper from '../../wrapper/animate-wrapper'
 import { MobileHeader, DesktopHeader, MobileCloseButton } from './header'
 import { NavigationContent } from './navigation-content'
@@ -53,7 +53,7 @@ const DashboardSidebar = () => {
     await signOut({ callbackUrl: '/' })
   }
 
-  const filteredNavItems = navSections
+  const filteredNavItems = sidebarItems
     .filter((section) => !section.roles || section.roles.includes(userRole))
     .flatMap((section) =>
       section.items
@@ -92,7 +92,7 @@ const DashboardSidebar = () => {
               loading={loading}
               isCollapsed={isCollapsed}
               filteredNavItems={filteredNavItems}
-              navSections={navSections}
+              navSections={sidebarItems}
               userRole={userRole}
               isItemActive={isItemActive}
               handleNavItemClick={handleNavItemClick}

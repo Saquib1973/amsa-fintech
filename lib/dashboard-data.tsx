@@ -1,9 +1,24 @@
-import { NavSection } from '@/components/dashboard/sidebar/types';
-import { Bitcoin, ChartBar, Coins, CreditCard, Database, Globe, History, Home, Lock, Megaphone, RefreshCw, Settings, User, Users, Wallet } from 'lucide-react';
+import { NavSection } from '@/components/dashboard/sidebar/types'
+import {
+  Bitcoin,
+  ChartBar,
+  Coins,
+  CreditCard,
+  Database,
+  Globe,
+  History,
+  Home,
+  Lock,
+  Megaphone,
+  RefreshCw,
+  Settings,
+  User,
+  Users,
+  Wallet,
+} from 'lucide-react'
 
-export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
-
-export const navSections: NavSection[] = [
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN'
+export const dashboardSidebarItems: NavSection[] = [
   {
     title: 'General',
     items: [
@@ -94,15 +109,15 @@ export const navSections: NavSection[] = [
             order: 2,
           },
         ],
-        roles: ['SUPER_ADMIN'],
         order: 1,
+        roles: ['SUPER_ADMIN'],
       },
       {
+        order: 2,
         name: 'Broadcast',
         href: '/broadcast',
         icon: <Megaphone className="w-5 h-5" />,
         roles: ['SUPER_ADMIN'],
-        order: 2,
       },
     ],
     roles: ['ADMIN', 'SUPER_ADMIN'],
@@ -117,27 +132,27 @@ export const navSections: NavSection[] = [
         hasSubmenu: true,
         submenuItems: [
           {
+            order: 1,
             name: 'Transak',
             href: '/transak',
             icon: <Wallet className="w-5 h-5" />,
-            order: 1,
           },
           {
+            order: 2,
             name: 'Refresh Token',
             href: '/transak/refresh-token',
             icon: <RefreshCw className="w-5 h-5" />,
-            order: 2,
           },
         ],
-        roles: ['SUPER_ADMIN'],
         order: 1,
+        roles: ['SUPER_ADMIN'],
       },
       {
+        order: 2,
         name: 'Broadcast',
         href: '/broadcast',
         icon: <Megaphone className="w-5 h-5" />,
         roles: ['SUPER_ADMIN'],
-        order: 2,
       },
     ],
     roles: ['SUPER_ADMIN'],
@@ -152,27 +167,27 @@ export const navSections: NavSection[] = [
         hasSubmenu: true,
         submenuItems: [
           {
+            order: 1,
             name: 'Change Password',
             href: '/settings/security/password',
             icon: <Lock className="w-5 h-5" />,
-            order: 1,
           },
           {
+            order: 2,
             name: 'Login History',
             href: '/settings/security/history',
             icon: <History className="w-5 h-5" />,
-            order: 2,
           },
         ],
-        roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
         order: 1,
+        roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
       },
       {
+        order: 2,
         name: 'Preferences',
         href: '/settings/preferences',
         icon: <Globe className="w-5 h-5" />,
         roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
-        order: 2,
       },
     ],
   },

@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useRef, KeyboardEvent, useCallback, useMemo } from 'react';
-import { navSections } from '@/lib/dashboard-data';
+import { dashboardSidebarItems as sidebarItems } from '@/lib/dashboard-data';
 import { menuItems } from '@/lib/data';
 import Link from 'next/link';
 import { Search, Command, ExternalLink, SearchX } from 'lucide-react';
@@ -68,7 +68,7 @@ const SearchBar = () => {
     const searchLower = debouncedSearchQuery.toLowerCase();
     const filteredResults: SearchResult[] = [];
 
-    navSections.forEach(section => {
+    sidebarItems.forEach(section => {
       section.items.forEach(item => {
         if (item.name.toLowerCase().includes(searchLower) && item.href) {
           filteredResults.push({
