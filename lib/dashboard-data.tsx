@@ -37,8 +37,8 @@ export const dashboardSidebarItems: NavSection[] = [
         order: 2,
       },
       {
-        name: 'Wallet',
-        href: '/wallet',
+        name: 'Wallets',
+        href: '/wallets',
         icon: <Wallet className="w-5 h-5" />,
         roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
         order: 3,

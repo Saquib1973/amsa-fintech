@@ -38,6 +38,8 @@ export default function LoginHistoryPage() {
         }
         const data = (await response.json()) as ApiResponse
 
+        console.log("session data",data)
+
         const transformedSessions: LoginSession[] = data.sessions.map(
           (session: ApiSession) => ({
             id: session.id,

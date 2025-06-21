@@ -5,9 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function moveToTop(y: number) {
+export const moveToTop = (y:number = 0) => {
   window.scrollTo({
     top: y,
+    left: 0,
     behavior: 'smooth'
   })
 }

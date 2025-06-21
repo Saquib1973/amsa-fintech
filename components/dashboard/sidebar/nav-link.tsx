@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { NavLinkProps } from './types'
 
 export const NavLink = ({ item, isActive, onClick, isCollapsed }: NavLinkProps) => {
+
   if (isCollapsed) {
     return (
       <div className="flex justify-center w-full">
