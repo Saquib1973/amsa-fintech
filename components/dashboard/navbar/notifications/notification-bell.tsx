@@ -92,7 +92,6 @@ export default function NotificationBell() {
     [notifications, activeTab]
   );
 
-  // Click outside handler
   useEffect(() => {
     if (!open) return;
 
@@ -115,7 +114,7 @@ export default function NotificationBell() {
   // API handlers
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`/api/notifications/${notificationId}`, {
         method: "POST",
       });
 
@@ -154,6 +153,18 @@ export default function NotificationBell() {
     }
   }, [notifications, refetch]);
 
+  const handleDelete = useCallback(async (notificationId: string) => {
+    try {
+      await fetch(`/api/notifications/${notificationId}`, {
+        method: "DELETE",
+      });
+      await refetch();
+      toast.success("Notification deleted");
+    } catch {
+      toast.error("Failed to delete notification");
+    }
+  }, [refetch]);
+
   const getNotificationIcon = useCallback((type: NotificationType) => {
     const Icon = NOTIFICATION_ICONS[type] || Bell;
     return <Icon className="w-5 h-5" />;
@@ -172,18 +183,6 @@ export default function NotificationBell() {
       ...prev,
       [id]: !prev[id],
     }));
-  };
-
-  const handleDelete = async (notificationId: string) => {
-    try {
-      await fetch(`/api/notifications/${notificationId}`, {
-        method: "DELETE",
-      });
-      await refetch();
-      toast.success("Notification deleted");
-    } catch {
-      toast.error("Failed to delete notification");
-    }
   };
 
   const renderNotificationDetail = (notification: Notification) => {

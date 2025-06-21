@@ -9,7 +9,7 @@ const DashboardNavbar = () => {
       <AnimateWrapper>
         <div className="flex justify-between w-full items-center">
           <SearchBar />
-          <div className="flex justify-end items-center gap-4">
+          <div className="flex justify-end items-center pl-2 gap-4">
             <NotificationBell />
             <UserOptions />
           </div>
