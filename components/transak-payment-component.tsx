@@ -1,6 +1,6 @@
 'use client'
 import { Transak, TransakConfig } from '@transak/transak-sdk'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import PrimaryButton from './button/primary-button'
 import Loader from './loader-component'
 
@@ -55,7 +55,10 @@ interface TransakPaymentProps {
   }
   className?: string
 }
+
 const DEFAULT_FIAT_AMOUNT = 30
+const POLLING_INTERVAL = 5000 // 5 seconds
+const MAX_POLLING_ATTEMPTS = 60 // 5 minutes maximum polling time
 
 const TransakPaymentComponent = ({
   exchangeScreenTitle = 'Buy Crypto To Your Wallet',
@@ -73,8 +76,106 @@ const TransakPaymentComponent = ({
 }: TransakPaymentProps) => {
   const [transak, setTransak] = useState<Transak | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [transactionStatus, setTransactionStatus] = useState<string>('')
+  const [isProcessing, setIsProcessing] = useState(false)
+  const pollingRef = useRef<NodeJS.Timeout | null>(null)
+  const pollingAttemptsRef = useRef(0)
+
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return 'Waiting for payment confirmation...'
+      case 'PROCESSING':
+        return 'Processing your transaction...'
+      case 'COMPLETED':
+        return 'Transaction completed successfully!'
+      case 'FAILED':
+        return 'Transaction failed. Please try again.'
+      case 'CANCELLED':
+        return 'Transaction was cancelled.'
+      case 'EXPIRED':
+        return 'Transaction has expired.'
+      default:
+        return 'Processing your transaction...'
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'text-green-600'
+      case 'FAILED':
+      case 'CANCELLED':
+      case 'EXPIRED':
+        return 'text-red-600'
+      default:
+        return 'text-blue-600'
+    }
+  }
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current)
+      pollingRef.current = null
+    }
+    pollingAttemptsRef.current = 0
+  }
+
+  const checkTransactionStatus = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/transaction/status?orderId=${orderId}`)
+      const data = await response.json()
+
+      if (response.ok && data.data) {
+        const status = data.data.status
+        setTransactionStatus(status)
+        setIsProcessing(true)
+
+        // Check if transaction is in a final state
+        if (['COMPLETED', 'FAILED', 'CANCELLED', 'EXPIRED'].includes(status)) {
+          stopPolling()
+          setIsProcessing(false)
+          if (status === 'COMPLETED') {
+            // Handle successful transaction
+            const orderData: TransakOrderData = {
+              eventName: 'TRANSACTION_COMPLETED',
+              status: data.data
+            }
+            await saveTransaction(orderData)
+            onSuccess?.(orderData)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking transaction status:', error)
+    }
+  }
+
+  const startPolling = (orderId: string) => {
+    stopPolling() // Clear any existing polling
+    pollingAttemptsRef.current = 0
+
+    pollingRef.current = setInterval(() => {
+      pollingAttemptsRef.current += 1
+
+      if (pollingAttemptsRef.current >= MAX_POLLING_ATTEMPTS) {
+        stopPolling()
+        return
+      }
+
+      checkTransactionStatus(orderId)
+    }, POLLING_INTERVAL)
+  }
+
+  useEffect(() => {
+    return () => {
+      stopPolling()
+    }
+  }, [])
+
   const saveTransaction = async (orderData: TransakOrderData) => {
     const payload = {
+      id: orderData.status.id,
       isBuyOrSell: orderData.status.isBuyOrSell ?? 'BUY',
       fiatAmount: orderData.status.fiatAmount ?? 0,
       fiatCurrency: orderData.status.fiatCurrency ?? 'AUD',
@@ -124,33 +225,42 @@ const TransakPaymentComponent = ({
       newTransak.close()
       setTransak(null)
       setIsLoading(false)
+      stopPolling()
       onClose?.()
     })
 
-    Transak.on(Transak.EVENTS.TRANSAK_ORDER_CREATED, (orderData) => {
+    Transak.on(Transak.EVENTS.TRANSAK_ORDER_CREATED, (data: unknown) => {
+      const orderData = data as TransakOrderData
       console.log(orderData)
+      if (orderData.status?.id) {
+        startPolling(orderData.status.id)
+      }
     })
 
-    Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, async (orderData ) => {
-
-      await saveTransaction(orderData as TransakOrderData)
+    Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, async (data: unknown) => {
+      const orderData = data as TransakOrderData
+      if (orderData.status?.id) {
+        await checkTransactionStatus(orderData.status.id)
+      }
       newTransak.close()
       setTransak(null)
       setIsLoading(false)
-      onSuccess?.(orderData as TransakOrderData)
+      onSuccess?.(orderData)
       onClose?.()
     })
   }
+
   const handleClose = () => {
     if (transak) {
       transak.close()
       setTransak(null)
       setIsLoading(false)
+      stopPolling()
       onClose?.()
     }
   }
 
-  const disabledCondition = isLoading || fiatAmount<=0
+  const disabledCondition = isLoading || fiatAmount <= 0
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
@@ -170,20 +280,37 @@ const TransakPaymentComponent = ({
           )}
         </PrimaryButton>
       ) : (
-        <PrimaryButton
-          className="w-full"
-          onClick={handleClose}
-          disabled={disabledCondition}
-        >
-          {isLoading ? (
-            <>
-              <Loader noMessage size="sm" darker />
-              Processing...
-            </>
-          ) : (
-            buttonText.close
+        <div className="w-full space-y-4">
+          {isProcessing && (
+            <div className="flex flex-col items-center space-y-2 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Loader noMessage size="sm" darker />
+                <span className={`text-sm font-medium ${getStatusColor(transactionStatus)}`}>
+                  {getStatusMessage(transactionStatus)}
+                </span>
+              </div>
+              {transactionStatus && !['COMPLETED', 'FAILED', 'CANCELLED', 'EXPIRED'].includes(transactionStatus) && (
+                <div className="text-xs text-gray-500">
+                  This may take a few minutes. Please don&apos;t close this window.
+                </div>
+              )}
+            </div>
           )}
-        </PrimaryButton>
+          <PrimaryButton
+            className="w-full"
+            onClick={handleClose}
+            disabled={disabledCondition}
+          >
+            {isLoading ? (
+              <>
+                <Loader noMessage size="sm" darker />
+                Processing...
+              </>
+            ) : (
+              buttonText.close
+            )}
+          </PrimaryButton>
+        </div>
       )}
     </div>
   )

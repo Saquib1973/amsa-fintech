@@ -45,15 +45,16 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const session = await getSession()
-  const id = session?.user.id
-  if (!id) {
+  const user_id = session?.user.id
+  if (!user_id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const { isBuyOrSell, fiatAmount, fiatCurrency, cryptoCurrency, walletLink, walletAddress, network } = await req.json();
+    const {id, isBuyOrSell, fiatAmount, fiatCurrency, cryptoCurrency, walletLink, walletAddress, network } = await req.json();
     const trnasaction = await prisma.transaction.create({
       data: {
-        userId: id,
+        id: id,
+        userId: user_id,
         isBuyOrSell,
         fiatAmount,
         fiatCurrency,

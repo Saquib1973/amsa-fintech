@@ -443,7 +443,7 @@ const AssetCalculator = ({
                 value={currencyAmount}
                 onChange={handleAmountChange}
               />
-            </div>
+            </div>``
 
             <svg
               className="text-black max-xl:rotate-90 block m-auto fill-current"
