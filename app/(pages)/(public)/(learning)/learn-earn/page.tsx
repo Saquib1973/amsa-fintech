@@ -4,6 +4,13 @@ import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-c
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import Link from 'next/link'
 import { courses } from '@/content/courses'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Learn and Earn | AMSA Fintech and IT solutions',
+  description: 'Learn about crypto and get rewarded',
+  keywords: 'learn, earn, crypto, AMSA Fintech and IT solutions',
+}
 
 const page = () => {
   return (

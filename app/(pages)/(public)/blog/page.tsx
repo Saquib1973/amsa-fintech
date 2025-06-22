@@ -3,6 +3,13 @@ import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import { blogPosts } from '@/content/blog'
 import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Blogs | AMSA Fintech and IT solutions',
+  description: 'Read our latest blog posts about AMSA Fintech and IT solutions, including news, updates, and insights.',
+  keywords: 'blogs, AMSA Fintech and IT solutions',
+}
 
 const BlogPage = async () => {
   const posts = Object.entries(blogPosts).map(([id, post]) => ({

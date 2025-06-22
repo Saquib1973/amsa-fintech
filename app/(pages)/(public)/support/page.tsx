@@ -12,6 +12,13 @@ import FAQComponent from '@/components/support/faq-component'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import BlueHeadingContainer from '@/components/containers/blue-heading-container'
 import PrimaryButton from '@/components/button/primary-button'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Support | AMSA Fintech and IT solutions',
+  description: 'Support for AMSA Fintech and IT solutions',
+  keywords: 'support, AMSA Fintech and IT solutions',
+}
 
 const faqData = [
   {

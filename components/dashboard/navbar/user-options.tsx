@@ -4,6 +4,7 @@ import { User, Lock, Settings, LogOut, ChevronDown, Wallet } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const UserOptions = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -36,15 +37,21 @@ const UserOptions = () => {
     <div className="relative" ref={optionsRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2.5 text-sm border border-gray-200 hover:border-gray-100 bg-gray-50 rounded-lg transition-colors"
+        className="flex items-center gap-2 px-4 py-2.5 text-sm border border-gray-200 hover:border-gray-100 bg-gray-50 rounded-md transition-colors"
       >
         <User className="w-5 h-5" />
         <span>Account</span>
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
+      <AnimatePresence mode="wait">
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg border border-gray-100 z-50">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="absolute rounded-md right-0 mt-2 w-48 bg-white shadow-lg border border-gray-100 z-50">
           <Link
             href="/profile"
             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -82,10 +89,11 @@ const UserOptions = () => {
             className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-500 hover:text-white transition-all"
           >
             <LogOut className="w-4 h-4" />
-            Logout
-          </button>
-        </div>
-      )}
+              Logout
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

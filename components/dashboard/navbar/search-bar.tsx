@@ -1,10 +1,11 @@
 "use client"
 import { useState, useEffect, useRef, KeyboardEvent, useCallback, useMemo } from 'react';
-import { dashboardSidebarItems as sidebarItems } from '@/lib/dashboard-data';
+import { dashboardSidebarItems as sidebarItems, type UserRole } from '@/lib/dashboard-data';
 import { menuItems } from '@/lib/data';
 import Link from 'next/link';
 import { Search, Command, ExternalLink, SearchX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence,motion } from 'framer-motion';
 
 interface SearchResult {
   name: string;
@@ -38,10 +39,10 @@ const SearchSkeleton = () => (
     {[...Array(3)].map((_, index) => (
       <div key={index} className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700" />
           <div className="flex-1">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 w-3/4 mb-2" />
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 w-1/2" />
           </div>
         </div>
       </div>
@@ -57,10 +58,27 @@ const SearchBar = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(false);
   const [showShortcut, setShowShortcut] = useState(true);
+  const [userRole, setUserRole] = useState<UserRole>('USER');
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAY);
+
+  // Fetch user role on component mount
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch('/api/user');
+        const data = await response.json();
+        if (data.type) {
+          setUserRole(data.type);
+        }
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+      }
+    };
+    fetchUserRole();
+  }, []);
 
   const searchResults = useMemo(() => {
     if (!debouncedSearchQuery.trim()) return [];
@@ -68,8 +86,19 @@ const SearchBar = () => {
     const searchLower = debouncedSearchQuery.toLowerCase();
     const filteredResults: SearchResult[] = [];
 
+    // Filter sidebar items based on user role
     sidebarItems.forEach(section => {
+      // Check if section is accessible to user role
+      if (section.roles && !section.roles.includes(userRole)) {
+        return; // Skip this section if user doesn't have access
+      }
+
       section.items.forEach(item => {
+        // Check if item is accessible to user role
+        if (item.roles && !item.roles.includes(userRole)) {
+          return; // Skip this item if user doesn't have access
+        }
+
         if (item.name.toLowerCase().includes(searchLower) && item.href) {
           filteredResults.push({
             name: item.name,
@@ -79,8 +108,11 @@ const SearchBar = () => {
             icon: item.icon
           });
         }
+
+        // Check submenu items
         if (item.submenuItems) {
           item.submenuItems.forEach(subItem => {
+            // Note: submenu items inherit parent's role restrictions
             if (subItem.name.toLowerCase().includes(searchLower) && subItem.href) {
               filteredResults.push({
                 name: subItem.name,
@@ -95,6 +127,7 @@ const SearchBar = () => {
       });
     });
 
+    // Filter menu items (these don't have role restrictions, so show to all)
     menuItems.forEach(item => {
       if (item.title.toLowerCase().includes(searchLower) && item.href) {
         filteredResults.push({
@@ -119,7 +152,7 @@ const SearchBar = () => {
     });
 
     return filteredResults.slice(0, MAX_RESULTS);
-  }, [debouncedSearchQuery]);
+  }, [debouncedSearchQuery, userRole]);
 
   useEffect(() => {
     if (!debouncedSearchQuery.trim()) {
@@ -192,22 +225,22 @@ const SearchBar = () => {
         <Link
           key={`${result.href}-${index}`}
           href={result.href}
-          className={`block px-4 py-3 transition-all border-b duration-200 ${
+          className={`block px-4 py-3 group transition-all border-b duration-200 ${
             index === selectedIndex
               ? 'bg-blue-50 dark:bg-blue-900/20'
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
           onClick={() => handleResultClick(result.href)}
         >
           <div className="flex items-center justify-between group/item">
             <div className="flex items-center gap-3">
               {result.icon && (
-                <div className="text-gray-500 dark:text-gray-400">
+                <div className="text-gray-500 dark:text-gray-400 group-hover/item:text-blue-500 transition-all">
                   {result.icon}
                 </div>
               )}
               <div className="flex flex-col">
-                <span className="font-medium text-gray-900 dark:text-gray-100">
+                <span className="font-medium text-gray-900 dark:text-gray-100 group-hover/item:text-blue-500 transition-all">
                   {result.name}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -246,25 +279,17 @@ const SearchBar = () => {
       {showResults && (
         <button
           type="button"
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 w-full h-full"
+          className="fixed inset-0  z-40 w-full h-full"
           onClick={() => setShowResults(false)}
           aria-label="Close search"
         />
       )}
-      <div
-        className={`
-        w-full relative flex items-center justify-center transition-all duration-500 group z-50
-        ${showResults ? 'translate-y-10' : 'translate-y-0'}
-        `}
-      >
+      <div className="w-full relative flex items-center justify-center z-50">
         <input
           ref={inputRef}
           type="text"
-          className={`p-2 pl-10 bg-white rounded-md border border-gray-300 outline-none dark:border-gray-700 focus:shadow-sm
-                   transition-all duration-200
-                  dark:bg-gray-800 dark:text-white
-                  ${showResults ? ' w-[50%] p-4 text-xl' : 'w-full'}
-                  `}
+          className="w-full p-2 pl-10 bg-white border-2 border-gray-100 outline-none dark:border-gray-700
+                  rounded-md transition-all duration-200 dark:bg-gray-800 dark:text-white"
           placeholder="Search..."
           value={searchQuery}
           onChange={(e) => {
@@ -281,12 +306,7 @@ const SearchBar = () => {
           aria-label="Search navigation"
           role="searchbox"
         />
-        <Search
-          className={`
-          w-4 h-4 absolute top-1/2 transform -translate-y-1/2 text-gray-400
-          ${showResults ? 'hidden' : 'left-3'}
-          `}
-        />
+        <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         {showShortcut && !searchQuery && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1 text-xs text-gray-400">
             <Command className="w-3 h-3" />
@@ -295,20 +315,26 @@ const SearchBar = () => {
         )}
         {isLoading && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <div className="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 dark:border-t-blue-400 animate-spin" />
           </div>
         )}
       </div>
 
+      <AnimatePresence mode="wait">
       {showResults && (isLoading || results.length > 0 || debouncedSearchQuery.trim()) && (
-        <div
-          className="absolute top-full left-0 right-0 mt-12 bg-white dark:bg-gray-800 rounded-lg
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          className="absolute top-full left-0 right-0 mt-0.5 bg-white dark:bg-gray-800
                     border border-gray-200 dark:border-gray-700 max-h-[60vh] overflow-y-auto z-50
-                    backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 max-w-[50%] mx-auto"
+                    backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95"
         >
           {renderResults()}
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   )
 };

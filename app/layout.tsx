@@ -2,7 +2,6 @@ import ClientWrapper from '@/context/client-wrapper'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import '../styles/globals.css'
-
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -14,7 +13,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'AMSA Fintech and IT Solutions',
+  title: 'AMSA Fintech and IT solutions',
   description:
     'AmsaFintech offers cutting-edge financial technology solutions, empowering businesses and individuals with secure, efficient, and innovative tools for financial management and growth.',
   keywords: 'fintech, financial technology, crypto, blockchain, digital finance, financial solutions',

@@ -1,403 +1,380 @@
 'use client'
 
+import React, { useEffect, useState, useMemo } from 'react'
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Search,
+  X,
+  ChevronRight,
+} from 'lucide-react'
+import { format, isToday, isYesterday } from 'date-fns'
+import Link from 'next/link'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
-import Loader from '@/components/loader-component'
-import AnimateWrapper from '@/components/wrapper/animate-wrapper'
-import SectionWrapper from '@/components/wrapper/section-wrapper'
-import { Calendar, Download, Search } from 'lucide-react'
-import { useSession } from 'next-auth/react'
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { motion } from 'framer-motion'
 
-interface Wallet {
-  id: string
-  address: string
-  type: string
-}
+type TransactionStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED'
+  | 'EXPIRED'
 
-interface Order {
+type Transaction = {
   id: string
-  status: string
-  createdAt: string
-  fiatAmount: number
-  cryptoAmount: number
+  isBuyOrSell: 'BUY' | 'SELL'
   cryptoCurrency: string
+  network: string
+  fiatAmount: number
   fiatCurrency: string
+  status: TransactionStatus
+  createdAt: string // API returns date as string
   walletAddress: string
-  transactionHash: string
-  transactionLink: string
-  paymentOptionId: string
 }
 
-export default function TransactionsPage() {
-  const { data: session, status } = useSession()
-  const [dateRange, setDateRange] = useState('last30days')
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const urlWalletAddress = searchParams.get('wallet') || ''
+const statusFilters: ('All' | TransactionStatus)[] = [
+  'All',
+  'COMPLETED',
+  'PENDING',
+  'FAILED',
+  'PROCESSING',
+  'CANCELLED',
+  'EXPIRED',
+]
 
-  const [walletAddress, setWalletAddress] = useState(urlWalletAddress)
-  const [wallets, setWallets] = useState<Wallet[]>([])
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(false)
-  const [walletsLoading, setWalletsLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const isWalletAccessible = useCallback((address: string, walletsList: Wallet[]) => {
-    return walletsList.some((wallet) => wallet.address === address)
-  }, [])
-
-  const fetchOrders = useCallback(async (address: string) => {
-    if (!address || !isWalletAccessible(address, wallets)) {
-      setError('Wallet not accessible')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-    try {
-      const response = await fetch(
-        `/api/transaction/transak?walletAddress=${address}`
-      )
-      const data = await response.json()
-
-      if (response.ok) {
-        const ordersData = Array.isArray(data.data) ? data.data : []
-        setOrders(ordersData)
-      } else {
-        setError(data.error || 'Failed to fetch orders')
-      }
-    } catch (err) {
-      console.error('Error fetching orders:', err)
-      setError('An error occurred while fetching orders')
-    } finally {
-      setLoading(false)
-    }
-  }, [wallets, isWalletAccessible])
-
-  const fetchWallets = useCallback(async () => {
-    if (!session?.user?.id) return
-
-    setWalletsLoading(true)
-    setError('')
-    try {
-      const response = await fetch('/api/wallet')
-      const data = await response.json()
-      if (response.ok) {
-        // Filter only crypto wallets
-        const cryptoWallets = (data.wallets || []).filter((wallet: Wallet) => wallet.type === 'web3')
-        setWallets(cryptoWallets)
-
-        // Handle wallet selection logic
-        if (urlWalletAddress) {
-          if (isWalletAccessible(urlWalletAddress, cryptoWallets)) {
-            setWalletAddress(urlWalletAddress)
-          } else {
-            setError('Wallet not accessible')
-            if (cryptoWallets.length > 0 && cryptoWallets[0].address) {
-              setWalletAddress(cryptoWallets[0].address)
-              router.replace(`/transactions?wallet=${cryptoWallets[0].address}`)
-            }
-          }
-        } else if (cryptoWallets.length > 0 && cryptoWallets[0].address) {
-          setWalletAddress(cryptoWallets[0].address)
-          router.replace(`/transactions?wallet=${cryptoWallets[0].address}`)
-        }
-      } else {
-        setError(data.error || 'Failed to fetch wallets')
-      }
-    } catch (err) {
-      console.error('Error fetching wallets:', err)
-      setError('An error occurred while fetching wallets')
-    } finally {
-      setWalletsLoading(false)
-    }
-  }, [session?.user?.id, urlWalletAddress, isWalletAccessible, router])
-
-  // Fetch wallets when authenticated
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchWallets()
-    }
-  }, [status, fetchWallets])
-
-  // Fetch orders when wallet address changes
-  useEffect(() => {
-    if (walletAddress && !error && isWalletAccessible(walletAddress, wallets)) {
-      fetchOrders(walletAddress)
-    }
-  }, [walletAddress, error, wallets, isWalletAccessible, fetchOrders])
-
-  const handleWalletChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newWalletAddress = e.target.value
-    if (isWalletAccessible(newWalletAddress, wallets)) {
-      setError('')
-      setWalletAddress(newWalletAddress)
-      router.push(`/transactions?wallet=${newWalletAddress}`)
-    } else {
-      setError('Wallet not accessible')
-    }
-  }
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const escapeCSV = (str: string) => {
-    const value = str?.toString() || ''
-    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-      return `"${value.replace(/"/g, '""')}"`
-    }
-    return value
-  }
-
-  const exportToCSV = () => {
-    if (orders.length === 0) return
-
-    const headers = ['Order ID', 'Date', 'Fiat Amount', 'Crypto Amount', 'Payment Method', 'Status', 'Transaction Link']
-    const csvRows = [
-      headers.map(escapeCSV).join(','),
-      ...orders.map(order => {
-        const row = [
-          order.id,
-          formatDate(order.createdAt),
-          `${order.fiatAmount} ${order.fiatCurrency}`,
-          `${order.cryptoAmount} ${order.cryptoCurrency}`,
-          order.paymentOptionId?.replace(/_/g, ' ').toUpperCase() || '',
-          order.status,
-          order.transactionLink || ''
-        ]
-        return row.map(escapeCSV).join(',')
-      })
-    ]
-    const csvContent = csvRows.join('\n')
-
-    const BOM = '\uFEFF'
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.setAttribute('href', url)
-    link.setAttribute('download', `transactions_${new Date().toISOString().split('T')[0]}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  const renderTableContent = () => {
-    if (loading) {
+const getStatusChip = (status: Transaction['status']) => {
+  const baseClasses = 'px-2.5 py-1 text-xs font-medium rounded-full inline-block'
+  switch (status) {
+    case 'COMPLETED':
       return (
-        <tr>
-          <td
-            colSpan={7}
-            className="px-6 py-4 text-center h-[300px] text-gray-500"
-          >
-            <Loader size="sm" message='Loading transaction rows...' />
-          </td>
-        </tr>
+        <span className={`${baseClasses} text-green-800 bg-green-100`}>
+          Completed
+        </span>
       )
-    }
-    if (orders.length > 0) {
-      return orders.map((order) => {
-        if (!order || typeof order !== 'object') {
-          console.error('Invalid order data:', order)
-          return null
-        }
-        return (
-          <tr key={order.id} className="">
-            <td className="px-6 py-4">
-              <div className="font-medium text-gray-900">{order.id}</div>
-            </td>
-            <td className="px-6 py-4 text-sm text-gray-500">
-              {formatDate(order.createdAt)}
-            </td>
-            <td className="px-6 py-4">
-              {formatCurrency(order.fiatAmount, order.fiatCurrency)}
-            </td>
-            <td className="px-6 py-4">
-              {order.cryptoAmount} {order.cryptoCurrency}
-            </td>
-            <td className="px-6 py-4">
-              <span className="text-sm text-gray-500">
-                {order.paymentOptionId?.replace(/_/g, ' ').toUpperCase()}
-              </span>
-            </td>
-            <td className="px-6 py-4">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  order.status === 'COMPLETED'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}
-              >
-                {order.status}
-              </span>
-            </td>
-            <td className="px-6 py-4">
-              {order.transactionLink ? (
-                <a
-                  href={order.transactionLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-700 text-sm"
-                >
-                  View
-                </a>
-              ) : (
-                <span className="text-gray-500 text-sm">-</span>
-              )}
-            </td>
-          </tr>
-        )
-      })
-    }
-    return (
-      <tr>
-        <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-          {walletAddress
-            ? 'No orders found'
-            : 'Enter a wallet address to search'}
-        </td>
-      </tr>
-    )
+    case 'PENDING':
+      return (
+        <span className={`${baseClasses} text-yellow-800 bg-yellow-100`}>
+          Pending
+        </span>
+      )
+    case 'PROCESSING':
+      return (
+        <span className={`${baseClasses} text-blue-800 bg-blue-100`}>
+          Processing
+        </span>
+      )
+    case 'FAILED':
+    case 'CANCELLED':
+    case 'EXPIRED':
+      return (
+        <span className={`${baseClasses} text-red-800 bg-red-100`}>
+          {status}
+        </span>
+      )
+    default:
+      return (
+        <span className={`${baseClasses} text-gray-800 bg-gray-100`}>
+          {status}
+        </span>
+      )
   }
+}
+
+const CryptoIcon = ({
+  currency,
+  isBuy,
+}: {
+  currency: string
+  isBuy: boolean
+}) => {
+  const colors = [
+    'bg-orange-100 text-orange-600',
+    'bg-blue-100 text-blue-600',
+    'bg-indigo-100 text-indigo-600',
+    'bg-purple-100 text-purple-600',
+    'bg-pink-100 text-pink-600',
+    'bg-teal-100 text-teal-600',
+    'bg-red-100 text-red-600',
+  ]
+  const color = colors[currency.charCodeAt(0) % colors.length]
+  const Icon = isBuy ? ArrowUpRight : ArrowDownLeft
+  const iconColor = isBuy
+    ? 'bg-green-100 text-green-700'
+    : 'bg-red-100 text-red-700'
 
   return (
-    <AnimateWrapper>
-      <div className="min-h-screen text-black dark:text-white">
-        <OffWhiteHeadingContainer>
-          <div className="flex w-full max-md:flex-col justify-center items-center">
-            <div>
-              <h1 className="text-4xl font-light">Transactions</h1>
-              <p className="text-xl text-gray-600 dark:text-gray-400 mt-2 font-light">
-                View and manage your transactions
-              </p>
-            </div>
-          </div>
-        </OffWhiteHeadingContainer>
-
-        <SectionWrapper className="py-6 md:py-16">
-          {status === 'loading' || walletsLoading ? (
-            <div className="flex justify-center items-center min-h-[200px]">
-              <Loader message='Loading transactions...' />
-            </div>
-          ) : status === 'unauthenticated' ? (
-            <div className="text-center py-4 text-gray-500">
-              Please sign in to view transactions
-            </div>
-          ) : (
-            <>
-              <div className="py-4 flex items-center gap-2 justify-end">
-                <div className="relative max-w-md">
-                  <select
-                    value={walletAddress}
-                    onChange={handleWalletChange}
-                    className="input-field w-[300px]"
-                    disabled={walletsLoading}
-                  >
-                    <option value="">Select a wallet</option>
-                    {wallets.map((wallet) => (
-                      <option key={wallet.id} value={wallet.address}>
-                        {wallet.address?.slice(0, 10)}...
-                        {wallet.address?.slice(-4)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {error && (
-                <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-md">
-                  {error}
-                </div>
-              )}
-
-              <div className="mb-6 flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search transactions..."
-                      className="w-full p-3 pl-10 border dark:placeholder:text-gray-600 border-gray-300 dark:border-gray-800 rounded-md"
-                    />
-                    <Search className="w-5 h-5 text-gray-400 dark:text-gray-600 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="relative">
-                    <select
-                      value={dateRange}
-                      onChange={(e) => setDateRange(e.target.value)}
-                      className="appearance-none p-3 pr-10 border border-gray-300 dark:border-gray-800 rounded-md bg-white dark:bg-gray-950"
-                    >
-                      <option value="last30days">Last 30 Days</option>
-                      <option value="last7days">Last 7 Days</option>
-                      <option value="today">Today</option>
-                    </select>
-                    <Calendar className="w-5 h-5 text-gray-400 dark:text-gray-600 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-                  </div>
-                  <button
-                    onClick={exportToCSV}
-                    className="flex cursor-pointer items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-md text-sm"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Export</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Orders Table */}
-              <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
-                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">
-                          Order ID
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">
-                          Date
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">
-                          Fiat Amount
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">
-                          Crypto Amount
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">
-                          Payment Method
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">
-                          Status
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">
-                          Transaction
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {renderTableContent()}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-        </SectionWrapper>
+    <div className="relative">
+      <div
+        className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-md ${color}`}
+      >
+        {currency.slice(0, 3).toUpperCase()}
       </div>
-    </AnimateWrapper>
+      <div
+        className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white ${iconColor}`}
+      >
+        <Icon className="w-3 h-3" />
+      </div>
+    </div>
   )
 }
+
+const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
+  const isBuy = transaction.isBuyOrSell === 'BUY'
+  const actionText = isBuy ? 'Buy' : 'Sell'
+
+  return (
+    <Link
+      href={`/transactions/${transaction.id}`}
+      className="w-full bg-white p-4 rounded-xl border border-gray-200/60 transition-all duration-300 flex items-center justify-between cursor-pointer hover:border-gray-300 hover:shadow-sm group"
+    >
+      <div className="flex items-center space-x-4">
+        <CryptoIcon currency={transaction.cryptoCurrency} isBuy={isBuy} />
+        <div>
+          <p className="font-semibold text-gray-900 text-md">
+            {actionText} {transaction.cryptoCurrency}
+          </p>
+          <p className="text-sm text-gray-500">
+            {format(new Date(transaction.createdAt), 'PP')}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="text-right">
+          <p className="font-semibold text-gray-900 text-md">
+            {new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: transaction.fiatCurrency,
+            }).format(transaction.fiatAmount)}
+          </p>
+          <div className="mt-1 flex justify-end">
+            {getStatusChip(transaction.status)}
+          </div>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-500 transition-colors" />
+      </div>
+    </Link>
+  )
+}
+
+const TransactionItemSkeleton = () => {
+  return (
+    <div className="w-full bg-white p-4 rounded-xl border border-gray-200/60 flex items-center justify-between animate-pulse">
+      <div className="flex items-center space-x-4">
+        <div className="w-11 h-11 rounded-full bg-gray-200"></div>
+        <div>
+          <div className="h-5 bg-gray-200 rounded w-32 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-24"></div>
+        </div>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="text-right">
+          <div className="h-5 bg-gray-200 rounded w-24 mb-2"></div>
+          <div className="h-5 bg-gray-200 rounded-full w-28"></div>
+        </div>
+        <div className="w-5 h-5 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+  )
+}
+
+const TransactionHistory = () => {
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [activeStatusFilter, setActiveStatusFilter] = useState<string>('All')
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setLoading(true)
+      try {
+        // Simulating network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const response = await fetch('/api/transaction')
+        if (!response.ok) throw new Error('Failed to fetch transactions')
+        const data = await response.json()
+        setTransactions(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTransactions()
+  }, [])
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(tx => {
+      if (activeStatusFilter !== 'All' && tx.status !== activeStatusFilter) {
+        return false
+      }
+      const searchLower = searchTerm.toLowerCase()
+      if (
+        searchLower &&
+        !tx.cryptoCurrency.toLowerCase().includes(searchLower) &&
+        !tx.network.toLowerCase().includes(searchLower)
+      ) {
+        return false
+      }
+      return true
+    })
+  }, [transactions, searchTerm, activeStatusFilter])
+
+  const groupedTransactions = useMemo(() => {
+    return filteredTransactions.reduce(
+      (acc, tx) => {
+        const date = new Date(tx.createdAt)
+        let groupKey = format(date, 'MMMM yyyy')
+        if (isToday(date)) {
+          groupKey = 'Today'
+        } else if (isYesterday(date)) {
+          groupKey = 'Yesterday'
+        }
+
+        if (!acc[groupKey]) {
+          acc[groupKey] = []
+        }
+        acc[groupKey].push(tx)
+        return acc
+      },
+      {} as Record<string, Transaction[]>,
+    )
+  }, [filteredTransactions])
+
+  const sortedGroupKeys = useMemo(() => {
+    return Object.keys(groupedTransactions).sort((a, b) => {
+      const aDate = a === 'Today' ? new Date() : a === 'Yesterday' ? new Date(new Date().setDate(new Date().getDate() -1)) : new Date(a);
+      const bDate = b === 'Today' ? new Date() : b === 'Yesterday' ? new Date(new Date().setDate(new Date().getDate() -1)) : new Date(b);
+      return bDate.getTime() - aDate.getTime();
+    });
+  }, [groupedTransactions]);
+
+  return (
+    <>
+      <div className="flex flex-col sm:flex-row justify-end items-center mb-8 gap-4">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative w-full sm:w-auto">
+            <Search
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              size={18}
+            />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full sm:w-48 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
+            />
+          </div>
+          <Select
+            onValueChange={value => setActiveStatusFilter(value)}
+            defaultValue="All"
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusFilters.map(status => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="space-y-6">
+          {[...Array(2)].map((_, i) => (
+            <div key={i}>
+              <div className="h-4 bg-gray-200 rounded w-32 mb-4 animate-pulse"></div>
+              <div className="space-y-3">
+                {[...Array(3)].map((_, j) => (
+                  <TransactionItemSkeleton key={j} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center py-12 bg-red-50 rounded-lg border border-red-200">
+          <X className="w-8 h-8 mx-auto text-red-500" />
+          <p className="text-red-600 font-semibold mt-2">
+            Error loading transactions
+          </p>
+          <p className="text-red-500 text-sm">{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && filteredTransactions.length === 0 && (
+        <div className="text-center py-16">
+          <p className="text-lg font-semibold text-gray-600">
+            No transactions found
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            Try adjusting your search or filters.
+          </p>
+        </div>
+      )}
+
+      {!loading &&
+        !error &&
+        filteredTransactions.length > 0 && (
+          <div className="space-y-6">
+            {sortedGroupKeys.map((dateKey,index) => (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.5 ,delay: 0.1 * (index + 1)%10 }}
+                key={dateKey}>
+                <h3 className="text-sm font-semibold text-gray-500 mb-3 px-1 tracking-wider uppercase">
+                  {dateKey}
+                </h3>
+                <div className="space-y-2">
+                  {groupedTransactions[dateKey].map((tx,txIndex) => (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.5 ,delay: 0.1 * (txIndex + 1)%10 }}
+                      key={tx.id}>
+                      <TransactionItem transaction={tx} />
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+    </>
+  )
+}
+
+const TransactionsPage = () => {
+  return (
+    <div className="bg-gray-50/50 min-h-screen font-sans">
+      <OffWhiteHeadingContainer>
+        <div>
+          <h1 className="text-5xl font-light">Transactions</h1>
+        </div>
+      </OffWhiteHeadingContainer>
+      <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <TransactionHistory />
+      </main>
+    </div>
+  )
+}
+
+export default TransactionsPage

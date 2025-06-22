@@ -30,10 +30,16 @@ export async function GET(req: Request) {
         where: { userId: id },
         skip,
         take,
+        orderBy: {
+          createdAt: 'desc'
+        }
       })
     } else {
       transactions = await prisma.transaction.findMany({
         where: { userId: id },
+        orderBy: {
+          createdAt: 'desc'
+        }
       })
     }
 
@@ -50,7 +56,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
-    const {id, isBuyOrSell, fiatAmount, fiatCurrency, cryptoCurrency, walletLink, walletAddress, network } = await req.json();
+    const {id, isBuyOrSell, fiatAmount, fiatCurrency, cryptoCurrency, walletLink, walletAddress, network, status, paymentOptionId, fiatAmountInUsd, statusHistories } = await req.json();
     const trnasaction = await prisma.transaction.create({
       data: {
         id: id,
@@ -62,11 +68,63 @@ export async function POST(req: Request) {
         walletLink,
         walletAddress,
         network,
+        status,
+        paymentOptionId,
+        fiatAmountInUsd,
+        statusHistories,
       },
     })
 
     return NextResponse.json(trnasaction);
   } catch (error) {
+    return NextResponse.json({ error: error }, { status: 500 })
+  }
+}
+
+
+export async function PUT(req: Request) {
+  const session = await getSession()
+  const user_id = session?.user.id
+  if (!user_id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const {
+      id,
+      status,
+      statusHistories,
+      fiatAmount,
+      fiatCurrency,
+      cryptoCurrency,
+      walletLink,
+      walletAddress,
+      network,
+      paymentOptionId,
+      fiatAmountInUsd,
+    } = await req.json()
+
+    const transaction = await prisma.transaction.update({
+      where: {
+        id: id,
+      },
+      data: {
+        status,
+        statusHistories,
+        fiatAmount,
+        fiatCurrency,
+        cryptoCurrency,
+        walletLink,
+        walletAddress,
+        network,
+        paymentOptionId,
+        fiatAmountInUsd,
+      },
+    })
+
+    return NextResponse.json(transaction)
+  } catch (error) {
+    console.error('Transaction update error:', error)
     return NextResponse.json({ error: error }, { status: 500 })
   }
 }

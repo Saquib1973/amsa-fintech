@@ -135,13 +135,17 @@ const TransakPaymentComponent = ({
         if (['COMPLETED', 'FAILED', 'CANCELLED', 'EXPIRED'].includes(status)) {
           stopPolling()
           setIsProcessing(false)
+
+          // Update the saved transaction with final status and history
+          await updateTransaction(orderId, data.data)
+
           if (status === 'COMPLETED') {
             // Handle successful transaction
             const orderData: TransakOrderData = {
               eventName: 'TRANSACTION_COMPLETED',
               status: data.data
             }
-            await saveTransaction(orderData)
+            console.log('Transaction completed')
             onSuccess?.(orderData)
           }
         }
@@ -151,8 +155,81 @@ const TransakPaymentComponent = ({
     }
   }
 
+  const updateTransaction = async (orderId: string, statusData: TransakOrderData['status']) => {
+    console.log('Updating transaction')
+
+    const payload = {
+      id: orderId,
+      status: statusData.status,
+      statusHistories: statusData.statusHistories ?? [],
+      fiatAmount: statusData.fiatAmount ?? 0,
+      fiatCurrency: statusData.fiatCurrency ?? 'AUD',
+      cryptoCurrency: statusData.cryptoCurrency ?? 'BTC',
+      walletLink: statusData.walletLink ?? '',
+      walletAddress: statusData.walletAddress ?? '',
+      network: statusData.network ?? '',
+      paymentOptionId: statusData.paymentOptionId ?? '',
+      fiatAmountInUsd: statusData.fiatAmountInUsd?.toString() ?? '',
+    }
+
+    try {
+      const response = await fetch('/api/transaction', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (response.ok) {
+        console.log('Transaction updated successfully')
+      } else {
+        const errorText = await response.text()
+        console.error('Failed to update transaction:', errorText)
+      }
+    } catch (error) {
+      console.error('Error updating transaction:', error)
+    }
+  }
+
+  const saveTransaction = async (orderData: TransakOrderData) => {
+    console.log('Saving transaction')
+
+    const statusData = orderData.status || orderData
+
+    const payload = {
+      id: statusData.id,
+      isBuyOrSell: statusData.isBuyOrSell ?? 'BUY',
+      fiatAmount: statusData.fiatAmount ?? 0,
+      fiatCurrency: statusData.fiatCurrency ?? 'AUD',
+      cryptoCurrency: statusData.cryptoCurrency ?? 'BTC',
+      walletLink: statusData.walletLink ?? '',
+      walletAddress: statusData.walletAddress ?? '',
+      network: statusData.network ?? '',
+      status: 'PENDING', // Always set as PENDING initially
+      paymentOptionId: statusData.paymentOptionId ?? '',
+      fiatAmountInUsd: statusData.fiatAmountInUsd?.toString() ?? '',
+      statusHistories: [], // Empty initially, will be updated on completion
+    }
+
+    try {
+      const response = await fetch('/api/transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (response.ok) {
+        console.log('Transaction saved successfully:', payload)
+      } else {
+        const errorText = await response.text()
+        console.error('Failed to save transaction:', errorText)
+      }
+    } catch (error) {
+      console.error('Error saving transaction:', error)
+    }
+  }
+
   const startPolling = (orderId: string) => {
-    stopPolling() // Clear any existing polling
+    stopPolling()
     pollingAttemptsRef.current = 0
 
     pollingRef.current = setInterval(() => {
@@ -172,29 +249,6 @@ const TransakPaymentComponent = ({
       stopPolling()
     }
   }, [])
-
-  const saveTransaction = async (orderData: TransakOrderData) => {
-    const payload = {
-      id: orderData.status.id,
-      isBuyOrSell: orderData.status.isBuyOrSell ?? 'BUY',
-      fiatAmount: orderData.status.fiatAmount ?? 0,
-      fiatCurrency: orderData.status.fiatCurrency ?? 'AUD',
-      cryptoCurrency: orderData.status.cryptoCurrency ?? 'BTC',
-      cryptoAmount: orderData.status.cryptoAmount ?? 0,
-      walletLink: orderData.status.walletLink ?? '',
-      walletAddress: orderData.status.walletAddress ?? '',
-      network: orderData.status.network ?? '',
-    }
-    try {
-      await fetch('/api/transaction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-    } catch (error) {
-      console.error('Error saving transaction:', error)
-    }
-  }
 
   const initializeTransak = () => {
     setIsLoading(true)
@@ -229,10 +283,11 @@ const TransakPaymentComponent = ({
       onClose?.()
     })
 
-    Transak.on(Transak.EVENTS.TRANSAK_ORDER_CREATED, (data: unknown) => {
+    Transak.on(Transak.EVENTS.TRANSAK_ORDER_CREATED, async (data: unknown) => {
       const orderData = data as TransakOrderData
-      console.log(orderData)
+      console.log('Order created')
       if (orderData.status?.id) {
+        await saveTransaction(orderData)
         startPolling(orderData.status.id)
       }
     })

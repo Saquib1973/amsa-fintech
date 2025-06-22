@@ -109,6 +109,10 @@ model Transaction{
   walletLink String
   walletAddress String
   network String
+  status TransactionStatus @default(PENDING)
+  paymentOptionId String?
+  fiatAmountInUsd String?
+  statusHistories Json?
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -159,4 +163,13 @@ enum SettingType {
   NUMBER
   DATE
   JSON
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  EXPIRED
 }

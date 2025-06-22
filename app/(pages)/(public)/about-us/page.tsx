@@ -3,6 +3,13 @@ import React from 'react'
 import Image from 'next/image'
 import TrustSection from '@/components/home-page/trust-section'
 import BlueHeadingContainer from '@/components/containers/blue-heading-container'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'About Us | AMSA Fintech and IT solutions',
+  description: 'Learn more about AMSA Fintech and IT solutions, our mission, and our commitment to providing innovative IT solutions.',
+  keywords: 'about us, AMSA Fintech and IT solutions',
+}
 
 const AboutUsPage = () => {
   const content = [

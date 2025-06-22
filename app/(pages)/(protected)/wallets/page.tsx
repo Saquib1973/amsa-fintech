@@ -3,14 +3,19 @@ import WalletCard from '@/components/(protected-user)/dashboard/wallet-card'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
-import { authOptions } from '@/lib/auth'
+import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Wallet } from '@prisma/client'
-import { getServerSession } from 'next-auth/next'
-import Link from 'next/link'
+import type { Metadata } from 'next'
 
-export default async function Dashboard() {
-  const session = await getServerSession(authOptions)
+export const metadata: Metadata = {
+  title: 'Wallets | AMSA Fintech and IT solutions',
+  description: 'Wallets for AMSA Fintech and IT solutions',
+  keywords: 'wallets, AMSA Fintech and IT solutions',
+}
+
+export default async function Wallets() {
+  const session = await getSession()
 
   if (!session?.user?.email) {
     return (
@@ -37,18 +42,9 @@ export default async function Dashboard() {
         <OffWhiteHeadingContainer>
           <div className="flex max-md:flex-col justify-between items-center">
             <div>
-              <Link
-                href="/"
-                className="text-6xl font-light hover:text-blue-400 transition-colors"
-              >
-                AMSA Fintech
-              </Link>
-              <p className="text-xl text-gray-600 dark:text-gray-400 text-left mt-2 font-light">
-                Welcome back, {session?.user?.email}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 text-left mt-2 font-light">
-                {user?.type}
-              </p>
+                <h1 className="text-4xl md:text-6xl tracking-wider font-light">
+                  Wallets
+                </h1>
             </div>
           </div>
         </OffWhiteHeadingContainer>

@@ -1,4 +1,11 @@
 import React from 'react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | AMSA Fintech and IT solutions',
+  description: 'Privacy Policy of AMSA Fintech and IT Solutions Pty Ltd',
+  keywords: 'privacy policy, AMSA Fintech and IT solutions',
+}
 
 const PrivacyPolicy = () => {
   return (

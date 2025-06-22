@@ -6,6 +6,13 @@ import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import Image from 'next/image'
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Assets | AMSA Fintech and IT solutions',
+  description: 'A comprehensive list of crypto assets you can buy, sell, and swap directly within our platform, presented with real-time prices in Australian dollars (AUD).',
+  keywords: 'assets, crypto, trading, AMSA Fintech and IT solutions',
+}
 
 const AssetsPage = () => {
   return (
