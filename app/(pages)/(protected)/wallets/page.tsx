@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 export default async function Wallets() {
   const session = await getSession()
 
+
   if (!session?.user?.email) {
     return (
       <div className="text-center py-12">

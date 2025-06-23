@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   Search,
   X,
   ChevronRight,
@@ -18,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 
 type TransactionStatus =
   | 'PENDING'
@@ -50,81 +48,11 @@ const statusFilters: ('All' | TransactionStatus)[] = [
   'EXPIRED',
 ]
 
-const getStatusChip = (status: Transaction['status']) => {
-  const baseClasses = 'px-2.5 py-1 text-xs font-medium rounded-full inline-block'
-  switch (status) {
-    case 'COMPLETED':
-      return (
-        <span className={`${baseClasses} text-green-800 bg-green-100`}>
-          Completed
-        </span>
-      )
-    case 'PENDING':
-      return (
-        <span className={`${baseClasses} text-yellow-800 bg-yellow-100`}>
-          Pending
-        </span>
-      )
-    case 'PROCESSING':
-      return (
-        <span className={`${baseClasses} text-blue-800 bg-blue-100`}>
-          Processing
-        </span>
-      )
-    case 'FAILED':
-    case 'CANCELLED':
-    case 'EXPIRED':
-      return (
-        <span className={`${baseClasses} text-red-800 bg-red-100`}>
-          {status}
-        </span>
-      )
-    default:
-      return (
-        <span className={`${baseClasses} text-gray-800 bg-gray-100`}>
-          {status}
-        </span>
-      )
-  }
-}
-
-const CryptoIcon = ({
-  currency,
-  isBuy,
-}: {
-  currency: string
-  isBuy: boolean
-}) => {
-  const colors = [
-    'bg-orange-100 text-orange-600',
-    'bg-blue-100 text-blue-600',
-    'bg-indigo-100 text-indigo-600',
-    'bg-purple-100 text-purple-600',
-    'bg-pink-100 text-pink-600',
-    'bg-teal-100 text-teal-600',
-    'bg-red-100 text-red-600',
-  ]
-  const color = colors[currency.charCodeAt(0) % colors.length]
-  const Icon = isBuy ? ArrowUpRight : ArrowDownLeft
-  const iconColor = isBuy
-    ? 'bg-green-100 text-green-700'
-    : 'bg-red-100 text-red-700'
-
-  return (
-    <div className="relative">
-      <div
-        className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-md ${color}`}
-      >
-        {currency.slice(0, 3).toUpperCase()}
-      </div>
-      <div
-        className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white ${iconColor}`}
-      >
-        <Icon className="w-3 h-3" />
-      </div>
-    </div>
-  )
-}
+const SimpleCryptoIcon = ({ currency }: { currency: string }) => (
+  <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-700 text-xs bg-white">
+    {currency.slice(0, 3).toUpperCase()}
+  </div>
+)
 
 const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
   const isBuy = transaction.isBuyOrSell === 'BUY'
@@ -133,32 +61,33 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
   return (
     <Link
       href={`/transactions/${transaction.id}`}
-      className="w-full bg-white p-4 rounded-xl border border-gray-200/60 transition-all duration-300 flex items-center justify-between cursor-pointer hover:border-gray-300 hover:shadow-sm group"
+      className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-2 py-3 group focus:outline-none focus:ring-2 focus:ring-blue-200 rounded-md"
+      aria-label={`View details for ${actionText} ${transaction.cryptoCurrency} transaction`}
     >
-      <div className="flex items-center space-x-4">
-        <CryptoIcon currency={transaction.cryptoCurrency} isBuy={isBuy} />
-        <div>
-          <p className="font-semibold text-gray-900 text-md">
-            {actionText} {transaction.cryptoCurrency}
-          </p>
-          <p className="text-sm text-gray-500">
-            {format(new Date(transaction.createdAt), 'PP')}
-          </p>
-        </div>
+      {/* Left: Crypto icon */}
+      <div className="flex items-center gap-2 min-w-[40px]">
+        <SimpleCryptoIcon currency={transaction.cryptoCurrency} />
       </div>
-      <div className="flex items-center gap-4">
-        <div className="text-right">
-          <p className="font-semibold text-gray-900 text-md">
-            {new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: transaction.fiatCurrency,
-            }).format(transaction.fiatAmount)}
-          </p>
-          <div className="mt-1 flex justify-end">
-            {getStatusChip(transaction.status)}
-          </div>
+      {/* Center: Info */}
+      <div className="flex-1 min-w-0 px-2">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-800 text-sm group-hover:underline group-hover:text-blue-600 transition-colors duration-100">{actionText} {transaction.cryptoCurrency}</span>
+          <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-400">{transaction.network}</span>
         </div>
-        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-500 transition-colors" />
+        <div className="text-xs text-gray-400 mt-0.5">{format(new Date(transaction.createdAt), 'PP')}</div>
+      </div>
+      {/* Right: Amount, status, chevron */}
+      <div className="flex flex-col items-end gap-1 min-w-[90px]">
+        <span className="text-gray-800 text-sm">
+          {new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: transaction.fiatCurrency,
+          }).format(transaction.fiatAmount)}
+        </span>
+        <span className="text-xs text-gray-400 mt-0.5">{transaction.status}</span>
+      </div>
+      <div className="flex items-center ml-2" title="View transaction details">
+        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-transform duration-150 group-hover:translate-x-1" />
       </div>
     </Link>
   )
@@ -166,20 +95,26 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
 
 const TransactionItemSkeleton = () => {
   return (
-    <div className="w-full bg-white p-4 rounded-xl border border-gray-200/60 flex items-center justify-between animate-pulse">
-      <div className="flex items-center space-x-4">
-        <div className="w-11 h-11 rounded-full bg-gray-200"></div>
-        <div>
-          <div className="h-5 bg-gray-200 rounded w-32 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-24"></div>
-        </div>
+    <div className="flex items-center justify-between w-full border-b border-gray-100 px-2 py-3">
+      {/* Left: Icon */}
+      <div className="flex items-center gap-2 min-w-[40px]">
+        <div className="w-8 h-8 rounded-full border border-gray-200 bg-gray-100" />
       </div>
-      <div className="flex items-center gap-4">
-        <div className="text-right">
-          <div className="h-5 bg-gray-200 rounded w-24 mb-2"></div>
-          <div className="h-5 bg-gray-200 rounded-full w-28"></div>
+      {/* Center: Info */}
+      <div className="flex-1 min-w-0 px-2">
+        <div className="flex items-center gap-2">
+          <div className="h-4 bg-gray-100 rounded w-20 mb-1" />
+          <div className="h-3 bg-gray-100 rounded w-10" />
         </div>
-        <div className="w-5 h-5 bg-gray-200 rounded"></div>
+        <div className="h-3 bg-gray-100 rounded w-16 mt-1" />
+      </div>
+      {/* Right: Amount, status, chevron */}
+      <div className="flex flex-col items-end gap-1 min-w-[90px]">
+        <div className="h-4 bg-gray-100 rounded w-14 mb-1" />
+        <div className="h-3 bg-gray-100 rounded w-10" />
+      </div>
+      <div className="flex items-center ml-2">
+        <div className="w-4 h-4 bg-gray-100 rounded" />
       </div>
     </div>
   )
@@ -271,14 +206,14 @@ const TransactionHistory = () => {
               placeholder="Search..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full sm:w-48 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors"
+              className="pl-10 pr-4 py-2 w-full sm:w-48 border border-gray-300 rounded-md transition-colors"
             />
           </div>
           <Select
             onValueChange={value => setActiveStatusFilter(value)}
             defaultValue="All"
-          >
-            <SelectTrigger className="w-[150px]">
+            >
+            <SelectTrigger className="w-[150px] outline-none">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -331,7 +266,8 @@ const TransactionHistory = () => {
       {!loading &&
         !error &&
         filteredTransactions.length > 0 && (
-          <div className="space-y-6">
+        <div className="space-y-6">
+          <AnimatePresence mode="popLayout">
             {sortedGroupKeys.map((dateKey,index) => (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -342,7 +278,7 @@ const TransactionHistory = () => {
                 <h3 className="text-sm font-semibold text-gray-500 mb-3 px-1 tracking-wider uppercase">
                   {dateKey}
                 </h3>
-                <div className="space-y-2">
+                <div className="">
                   {groupedTransactions[dateKey].map((tx,txIndex) => (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -356,7 +292,8 @@ const TransactionHistory = () => {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </AnimatePresence>
+        </div>
         )}
     </>
   )

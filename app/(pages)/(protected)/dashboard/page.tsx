@@ -1,5 +1,4 @@
 import { getSession } from '@/lib/auth'
-import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import {
   History,
   Settings,
@@ -8,15 +7,11 @@ import {
   Bitcoin,
   Coins,
   DollarSign,
-  ArrowUpRight,
   Wallet,
   TrendingUp,
   Shield,
   HelpCircle,
-  FileText,
   PieChart,
-  Clock,
-  ArrowDownLeft,
 } from 'lucide-react'
 import Link from 'next/link'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
@@ -24,6 +19,7 @@ import { prisma } from '@/lib/prisma'
 import type { Metadata } from 'next'
 import { format } from 'date-fns'
 import { Transaction } from '@/types/transaction-types'
+import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 
 export const metadata: Metadata = {
   title: 'Dashboard | AMSA Fintech and IT solutions',
@@ -31,200 +27,96 @@ export const metadata: Metadata = {
   keywords: 'dashboard, AMSA Fintech and IT solutions',
 }
 
+const quickActions = [
+  {
+    name: 'Transactions',
+    description: 'View your transaction history',
+    icon: <History className="w-5 h-5" />,
+    href: '/transactions',
+  },
+  {
+    name: 'Analytics',
+    description: 'View financial insights',
+    icon: <BarChart3 className="w-5 h-5" />,
+    href: '/analytics',
+  },
+  {
+    name: 'Assets',
+    description: 'Browse available assets',
+    icon: <Coins className="w-5 h-5" />,
+    href: '/assets',
+  },
+  {
+    name: 'Settings',
+    description: 'Manage your account',
+    icon: <Settings className="w-5 h-5" />,
+    href: '/settings',
+  },
+]
+
 const popularAssets = [
   {
     name: 'Bitcoin',
     symbol: 'BTC',
-    price: '$43,250.75',
-    change: '+2.5%',
-    icon: <Bitcoin className="w-6 h-6 text-orange-500" />,
+    icon: <Bitcoin className="w-5 h-5" />,
     href: '/assets/bitcoin?tab=overview',
   },
   {
     name: 'Ethereum',
     symbol: 'ETH',
-    price: '$2,250.30',
-    change: '+1.8%',
-    icon: <Coins className="w-6 h-6 text-blue-500" />,
+    icon: <Coins className="w-5 h-5" />,
     href: '/assets/ethereum?tab=overview',
   },
   {
     name: 'US Dollar',
     symbol: 'USD',
-    price: '$1.00',
-    change: '0.0%',
-    icon: <DollarSign className="w-6 h-6 text-green-500" />,
+    icon: <DollarSign className="w-5 h-5" />,
     href: '/assets/usd?tab=overview',
   },
 ]
 
-const quickActions = [
-  {
-    name: 'Transactions',
-    description: 'View your transaction history',
-    icon: <History className="w-6 h-6 text-orange-600" />,
-    href: '/transactions',
-    bgClass: 'bg-orange-50 dark:bg-orange-900/30',
-  },
-  {
-    name: 'Analytics',
-    description: 'View financial insights',
-    icon: <BarChart3 className="w-6 h-6 text-purple-600" />,
-    href: '/analytics',
-    bgClass: 'bg-purple-50 dark:bg-purple-900/30',
-  },
-  {
-    name: 'Assets',
-    description: 'Browse available assets',
-    icon: <Coins className="w-6 h-6 text-blue-600" />,
-    href: '/assets',
-    bgClass: 'bg-blue-50 dark:bg-blue-900/30',
-  },
-  {
-    name: 'History',
-    description: 'View past activities',
-    icon: <Clock className="w-6 h-6 text-green-600" />,
-    href: '/history',
-    bgClass: 'bg-green-50 dark:bg-green-900/30',
-  },
-]
+const SimpleCryptoIcon = ({ currency }: { currency: string }) => (
+  <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-700 text-xs bg-white">
+    {currency.slice(0, 4).toUpperCase()}
+  </div>
+)
 
-const settings = [
-  {
-    name: 'Profile',
-    href: '/profile',
-    icon: <Settings className="w-5 h-5" />,
-  },
-  {
-    name: 'Security',
-    href: '/profile/security',
-    icon: <Shield className="w-5 h-5" />,
-  },
-  {
-    name: 'Documents',
-    href: '/documents',
-    icon: <FileText className="w-5 h-5" />,
-  },
-  {
-    name: 'Support',
-    href: '/support',
-    icon: <HelpCircle className="w-5 h-5" />,
-  },
-]
-
-const getStatusChip = (status: Transaction['status']) => {
-  const baseClasses = 'px-2.5 py-1 text-xs font-medium rounded-full inline-block'
-  switch (status) {
-    case 'COMPLETED':
-      return (
-        <span className={`${baseClasses} text-green-800 bg-green-100`}>
-          Completed
-        </span>
-      )
-    case 'PENDING':
-      return (
-        <span className={`${baseClasses} text-yellow-800 bg-yellow-100`}>
-          Pending
-        </span>
-      )
-    case 'PROCESSING':
-      return (
-        <span className={`${baseClasses} text-blue-800 bg-blue-100`}>
-          Processing
-        </span>
-      )
-    case 'FAILED':
-    case 'CANCELLED':
-    case 'EXPIRED':
-      return (
-        <span className={`${baseClasses} text-red-800 bg-red-100`}>
-          {status}
-        </span>
-      )
-    default:
-      return (
-        <span className={`${baseClasses} text-gray-800 bg-gray-100`}>
-          {status}
-        </span>
-      )
-  }
-}
-
-const CryptoIcon = ({
-  currency,
-  isBuy,
-}: {
-  currency: string
-  isBuy: boolean
-}) => {
-  const colors = [
-    'bg-orange-100 text-orange-600',
-    'bg-blue-100 text-blue-600',
-    'bg-indigo-100 text-indigo-600',
-    'bg-purple-100 text-purple-600',
-    'bg-pink-100 text-pink-600',
-    'bg-teal-100 text-teal-600',
-    'bg-red-100 text-red-600',
-  ]
-  const color = colors[currency.charCodeAt(0) % colors.length]
-  const Icon = isBuy ? ArrowUpRight : ArrowDownLeft
-  const iconColor = isBuy
-    ? 'bg-green-100 text-green-700'
-    : 'bg-red-100 text-red-700'
-
-  return (
-    <div className="relative">
-      <div
-        className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-md ${color}`}
-      >
-        {currency.slice(0, 3).toUpperCase()}
-      </div>
-      <div
-        className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white ${iconColor}`}
-      >
-        <Icon className="w-3 h-3" />
-      </div>
-    </div>
-  )
-}
-
-const DashboardTransactionItem = ({
-  transaction,
-}: {
-  transaction: Transaction
-}) => {
+const DashboardTransactionItem = ({ transaction }: { transaction: Transaction }) => {
   const isBuy = transaction.isBuyOrSell === 'BUY'
   const actionText = isBuy ? 'Buy' : 'Sell'
 
   return (
     <Link
       href={`/transactions/${transaction.id}`}
-      className="w-full bg-transparent p-4 rounded-xl border border-transparent transition-all duration-300 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-700/50 group"
+      className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-2 py-3 group focus:outline-none focus:ring-2 focus:ring-blue-200 rounded-md"
     >
-      <div className="flex items-center space-x-4">
-        <CryptoIcon currency={transaction.cryptoCurrency} isBuy={isBuy} />
-        <div>
-          <p className="font-semibold text-gray-900 dark:text-white text-md">
+      <div className="flex items-center gap-2 min-w-[40px]">
+        <SimpleCryptoIcon currency={transaction.cryptoCurrency} />
+      </div>
+      <div className="flex-1 min-w-0 px-2">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-800 text-sm group-hover:underline group-hover:text-blue-600 transition-colors duration-100">
             {actionText} {transaction.cryptoCurrency}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {format(transaction.createdAt, 'PP')}
-          </p>
+          </span>
+          <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-400">
+            {transaction.network}
+          </span>
+        </div>
+        <div className="text-xs text-gray-400 mt-0.5">
+          {format(transaction.createdAt, 'PP')}
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        <div className="text-right">
-          <p className="font-semibold text-gray-900 dark:text-white text-md">
-            {new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: transaction.fiatCurrency,
-            }).format(transaction.fiatAmount)}
-          </p>
-          <div className="mt-1 flex justify-end">
-            {getStatusChip(transaction.status)}
-          </div>
-        </div>
-        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-500 transition-colors" />
+      <div className="flex flex-col items-end gap-1 min-w-[90px]">
+        <span className="text-gray-800 text-sm">
+          {new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: transaction.fiatCurrency,
+          }).format(transaction.fiatAmount)}
+        </span>
+        <span className="text-xs text-gray-400 mt-0.5">{transaction.status}</span>
+      </div>
+      <div className="flex items-center ml-2">
+        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-transform duration-150 group-hover:translate-x-1" />
       </div>
     </Link>
   )
@@ -239,109 +131,110 @@ const DashboardPage = async () => {
     },
   })
 
-  const recentTransactions = transactionArr.slice(0, 3)
-
-  const totalCost = transactionArr.reduce(
-    (acc, item) => acc + item.fiatAmount,
-    0
-  )
+  const txArrLen = transactionArr.length
+  const recentTransactions = transactionArr.slice(0, txArrLen>5?5:txArrLen)
+  const totalCost = transactionArr.reduce((acc, item) => acc + item.fiatAmount, 0)
 
   return (
     <AnimateWrapper>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <OffWhiteHeadingContainer>
-          <div className="md:py-4">
-            <div>
-              <h1 className="text-4xl md:text-6xl tracking-wider font-light">Dashboard</h1>
-            </div>
-          </div>
-        </OffWhiteHeadingContainer>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Portfolio Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 p-6 border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-                  <Wallet className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Total Amount</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">${totalCost}</p>
-                </div>
+
+    <div className="bg-gray-50/50 min-h-screen font-sans">
+      <OffWhiteHeadingContainer>
+        <div>
+          <h1 className="text-5xl font-light">Dashboard</h1>
+        </div>
+      </OffWhiteHeadingContainer>
+
+      <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white p-4 rounded-md border border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                <Wallet className="w-5 h-5 text-blue-600" />
               </div>
-
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-6 border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">24h Change</p>
-                  <p className="text-2xl font-semibold text-green-600 dark:text-green-400 mt-1">+$1,234.56</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-6 border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
-                  <PieChart className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Active Assets</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">12</p>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500">Total Amount</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  ${totalCost.toFixed(2)}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Quick Actions */}
-              <div className="bg-white dark:bg-gray-800 p-6 border border-gray-100 dark:border-gray-700">
-                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-2 gap-2">
+          <div className="bg-white p-4 rounded-md border border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">24h Change</p>
+                <p className="text-lg font-semibold text-green-600">+$1,234.56</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-md border border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                <PieChart className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Active Assets</p>
+                <p className="text-lg font-semibold text-gray-900">12</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Quick Actions */}
+            <div className="bg-white rounded-md border border-gray-100">
+              <div className="p-4 border-b border-gray-100">
+                <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-3">
                   {quickActions.map((action) => (
                     <Link
                       key={action.name}
                       href={action.href}
-                      className="group p-4 hover:bg-gray-50 transition-colors border-gray-100 border"
+                      className="group p-3 rounded-md hover:bg-gray-50 transition-colors border border-gray-100"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg ${action.bgClass} flex items-center justify-center`}>
+                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
                           {action.icon}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{action.name}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{action.description}</p>
+                          <p className="font-medium text-gray-900 text-sm">{action.name}</p>
+                          <p className="text-xs text-gray-500">{action.description}</p>
                         </div>
                       </div>
                     </Link>
                   ))}
                 </div>
               </div>
+            </div>
 
-              {/* Recent Transactions */}
-              <div className="bg-white dark:bg-gray-800 p-6 border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Transactions</h2>
-                  </div>
-                  <Link
-                    href="/transactions"
-                    className="group inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                  >
-                    View all
-                    <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
-                  </Link>
-                </div>
-                <div className="space-y-2 -m-4">
-                  {recentTransactions.length > 0 ? (
-                    recentTransactions.map(transaction => {
+            {/* Recent Transactions */}
+            <div className="bg-white rounded-md border border-gray-100">
+              <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                <h2 className="text-lg font-medium text-gray-900">Recent Transactions</h2>
+                <Link
+                  href="/transactions"
+                  className="group inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  View all
+                  <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
+                </Link>
+              </div>
+              <div className="p-4">
+                {recentTransactions.length > 0 ? (
+                  <div className="space-y-2">
+                    {recentTransactions.map((transaction) => {
                       const transformedTransaction = {
                         ...transaction,
                         statusHistories:
@@ -356,95 +249,114 @@ const DashboardPage = async () => {
                           transaction={transformedTransaction as Transaction}
                         />
                       )
-                    })
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">No recent transactions.</p>
-                      <Link
-                        href="/assets"
-                        className="text-blue-600 hover:underline mt-2 inline-block"
-                      >
-                        Make your first transaction
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 text-sm">No recent transactions.</p>
+                    <Link
+                      href="/assets"
+                      className="text-blue-600 hover:underline mt-2 inline-block text-sm"
+                    >
+                      Make your first transaction
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
+          </div>
 
-            {/* Sidebar */}
-            <div className="space-y-8">
-              <div className="bg-white pt-6 border border-gray-100">
-                <div className="flex items-center justify-between mb-4 px-6">
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-900">Popular Assets</h2>
-                  </div>
-                </div>
-                <div className="">
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Popular Assets */}
+            <div className="bg-white rounded-md border border-gray-100">
+              <div className="p-4 border-b border-gray-100">
+                <h2 className="text-lg font-medium text-gray-900">Popular Assets</h2>
+              </div>
+              <div className="p-4">
+                <div className="space-y-3">
                   {popularAssets.map((asset) => (
                     <Link
                       key={asset.symbol}
                       href={asset.href}
-                      className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                      className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
                           {asset.icon}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{asset.name}</p>
-                          <p className="text-sm text-gray-500">{asset.symbol}</p>
+                          <p className="font-medium text-gray-900 text-sm">{asset.name}</p>
+                          <p className="text-xs text-gray-500">{asset.symbol}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-gray-900">{asset.price}</p>
-                        <p className={`text-sm ${
-                          asset.change.startsWith('+')
-                            ? 'text-green-600'
-                            : 'text-gray-500'
-                        }`}>
-                          {asset.change}
-                        </p>
-                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
                     </Link>
                   ))}
                 </div>
-                <div className="border-t border-gray-100">
+                <div className="mt-4 pt-4 border-t border-gray-100">
                   <Link
                     href="/assets"
-                    className="flex w-full items-center justify-center gap-2 bg-primary-main px-6 py-4 text-sm font-semibold text-white"
+                    className="flex w-full items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium text-white rounded-md transition-colors"
                   >
                     <span>All Assets</span>
-                    <ChevronRight className="h-4 w-4 transition-transform" />
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
               </div>
+            </div>
 
-              <div className="bg-white pt-6 border border-gray-100">
-                <h2 className="text-lg font-medium text-gray-900 mb-4 px-6">Settings & Support</h2>
+            {/* Settings & Support */}
+            <div className="bg-white rounded-md border border-gray-100">
+              <div className="p-4 border-b border-gray-100">
+                <h2 className="text-lg font-medium text-gray-900">Settings & Support</h2>
+              </div>
+              <div className="p-4">
                 <div className="space-y-2">
-                  {settings.map((setting) => (
-                    <Link
-                      key={setting.name}
-                      href={setting.href}
-                      className="flex items-center justify-between p-3 px-6 hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
-                          {setting.icon}
-                        </div>
-                        <span className="text-gray-900">{setting.name}</span>
+                  <Link
+                    href="/profile"
+                    className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <Settings className="w-4 h-4" />
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
-                    </Link>
-                  ))}
+                      <span className="text-gray-900 text-sm">Profile</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </Link>
+                  <Link
+                    href="/profile/security"
+                    className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <Shield className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-900 text-sm">Security</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </Link>
+                  <Link
+                    href="/support"
+                    className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <HelpCircle className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-900 text-sm">Support</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </main>
       </div>
-    </AnimateWrapper>
+      </AnimateWrapper>
   )
 }
 
