@@ -10,8 +10,8 @@ import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-c
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import { SimpleButton } from '@/components/ui/simple-button'
-
-type TransactionStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'EXPIRED'
+import { getStatusColor } from '@/lib/utils'
+import type { TransactionStatus } from '@/types/transaction-types'
 
 interface StatusHistory {
   status: string
@@ -35,24 +35,23 @@ interface Transaction {
   createdAt: string
   updatedAt: string
   userId: string
+  amountPaid?: number
+  cryptoAmount?: number
+  totalFeeInFiat?: number
+  countryCode?: string
+  stateCode?: string
+  statusReason?: string
+  transakFeeAmount?: number
+  cardPaymentData?: Record<string, unknown>
 }
 
 const getStatusChip = (status: TransactionStatus) => {
-  const baseClasses = "px-3 py-1 text-sm font-medium rounded-full inline-flex items-center gap-2"
-  switch (status) {
-    case 'COMPLETED':
-      return <span className={`${baseClasses} text-green-800 bg-green-100`}>✓ Completed</span>
-    case 'PENDING':
-      return <span className={`${baseClasses} text-yellow-800 bg-yellow-100`}>⏳ Pending</span>
-    case 'PROCESSING':
-      return <span className={`${baseClasses} text-blue-800 bg-blue-100`}>🔄 Processing</span>
-    case 'FAILED':
-    case 'CANCELLED':
-    case 'EXPIRED':
-      return <span className={`${baseClasses} text-red-800 bg-red-100`}>❌ {status}</span>
-    default:
-      return <span className={`${baseClasses} text-gray-800 bg-gray-100`}>{status}</span>
-  }
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`inline-block h-2 w-2 rounded-full ${getStatusColor(status)}`} />
+      <span className="text-sm text-gray-600">{status}</span>
+    </div>
+  )
 }
 
 const CryptoIcon = ({ currency }: { currency: string }) => {
@@ -132,24 +131,56 @@ const TransactionDetailSkeleton = () => {
             </section>
 
             {/* Status History Section */}
-            <section className="space-y-2">
-              <div className="flex items-center gap-2 mb-1">
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-3">
                 <div className="w-5 h-5 bg-gray-200 rounded"></div>
                 <div className="h-5 bg-gray-200 rounded w-32"></div>
               </div>
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="w-2 h-2 rounded-full bg-gray-200 mt-2 flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-1">
-                        <div className="h-4 bg-gray-200 rounded w-24"></div>
-                        <div className="h-3 bg-gray-200 rounded w-32"></div>
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+
+                <div className="space-y-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="relative flex items-start gap-4">
+                      {/* Status dot */}
+                      <div className={`relative z-10 w-8 h-8 rounded-full border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0 ${
+                        i === 2 ? 'bg-gray-200' : 'bg-gray-200'
+                      }`}>
+                        <div className="w-2 h-2 rounded-full bg-gray-300"></div>
                       </div>
-                      <div className="h-3 bg-gray-200 rounded w-48"></div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        {/* Status header */}
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                            {i === 2 && (
+                              <div className="h-5 bg-gray-200 rounded-full w-12"></div>
+                            )}
+                          </div>
+                          <div className="h-3 bg-gray-200 rounded w-24"></div>
+                        </div>
+
+                        {/* Message content */}
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                          <div className="space-y-3">
+                            <div className="h-4 bg-gray-200 rounded w-full"></div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-gray-200">
+                              {[...Array(4)].map((_, j) => (
+                                <div key={j} className="flex flex-col">
+                                  <div className="h-3 bg-gray-200 rounded w-16 mb-1"></div>
+                                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </section>
           </div>
@@ -274,7 +305,7 @@ const TransactionDetailPage = () => {
           </div>
         </OffWhiteHeadingContainer>
 
-        <SectionWrapper className="max-w-2xl mx-auto py-6 md:py-10 pb-8 mb-8 ">
+        <SectionWrapper className="max-w-2xl mx-auto py-6 md:py-10 pb-8 mb-8">
           {/* Action Button */}
           <div className="flex justify-start mb-6 mr-2">
             <SimpleButton
@@ -325,6 +356,38 @@ const TransactionDetailPage = () => {
                     </span>
                   </div>
                 )}
+                {transaction.cryptoAmount && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">Crypto Amount</span>
+                    <span className="text-gray-900">
+                      {transaction.cryptoAmount} {transaction.cryptoCurrency}
+                    </span>
+                  </div>
+                )}
+                {transaction.amountPaid && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">Amount Paid</span>
+                    <span className="text-gray-900">
+                      {formatCurrency(transaction.amountPaid, transaction.fiatCurrency)}
+                    </span>
+                  </div>
+                )}
+                {transaction.totalFeeInFiat && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">Total Fee</span>
+                    <span className="text-gray-900">
+                      {formatCurrency(transaction.totalFeeInFiat, transaction.fiatCurrency)}
+                    </span>
+                  </div>
+                )}
+                {transaction.transakFeeAmount && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">Transak Fee</span>
+                    <span className="text-gray-900">
+                      ${transaction.transakFeeAmount}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Type</span>
                   <span className={isBuy ? 'text-green-600' : 'text-red-600'}>
@@ -348,6 +411,22 @@ const TransactionDetailPage = () => {
                     {transaction.network}
                   </span>
                 </div>
+                {transaction.countryCode && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">Country</span>
+                    <span className="text-gray-900">
+                      {transaction.countryCode}
+                    </span>
+                  </div>
+                )}
+                {transaction.stateCode && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">State</span>
+                    <span className="text-gray-900">
+                      {transaction.stateCode}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Created</span>
                   <span className="text-gray-900 flex items-center gap-1">
@@ -404,38 +483,164 @@ const TransactionDetailPage = () => {
               )}
             </section>
 
+            {/* Status Reason Section */}
+            {transaction.statusReason && (
+              <section className="space-y-2">
+                <h2 className="text-base font-medium text-gray-700 flex items-center gap-2 mb-1">
+                  <Coins className="w-5 h-5" />
+                  Status Reason
+                </h2>
+                <div className="p-3 bg-gray-50 rounded-md">
+                  <p className="text-sm text-gray-700">
+                    {transaction.statusReason}
+                  </p>
+                </div>
+              </section>
+            )}
+
             {/* Status History Section */}
             {transaction.statusHistories &&
               Array.isArray(transaction.statusHistories) &&
               transaction.statusHistories.length > 0 && (
-                <section className="space-y-2">
-                  <h2 className="text-base font-medium text-gray-700 flex items-center gap-2 mb-1">
+                <section className="space-y-4">
+                  <h2 className="text-base font-medium text-gray-700 flex items-center gap-2 mb-3">
                     <Coins className="w-5 h-5" />
                     Status History
                   </h2>
-                  <div className="space-y-4">
-                    {transaction.statusHistories.map(
-                      (history: StatusHistory, index: number) => (
-                        <div key={index} className="flex items-start gap-4">
-                          <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                              <span className="font-medium">
-                                {history.status}
-                              </span>
-                              <span className="text-gray-500 text-sm">
-                                {formatDate(history.createdAt)}
-                              </span>
+                  <div className="relative">
+                    {/* Timeline line */}
+                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+
+                    <div className="space-y-6">
+                      {transaction.statusHistories.map(
+                        (history: StatusHistory, index: number) => {
+                          // Parse the message to extract structured data
+                          const message = history.message || ''
+                          const isLast = index === transaction.statusHistories!.length - 1
+
+                          // Extract key information from the message
+                          const extractOrderInfo = (msg: string) => {
+                            const orderIdMatch = msg.match(/\*Order Id:\* ([a-f0-9-]+)/)
+                            const emailMatch = msg.match(/\*Email:\* ([^\s*]+)/)
+                            const cryptoAmountMatch = msg.match(/\*Crypto Amount:\* ([0-9.]+ [A-Z]+)/)
+                            const fiatAmountMatch = msg.match(/\*Fiat Amount:\* ([0-9]+ [A-Z]+)/)
+                            const paymentMethodMatch = msg.match(/\*Payment Method:\* ([^\s*]+)/)
+                            const walletAddressMatch = msg.match(/\*Wallet Address:\* ([a-fA-F0-9x]+)/)
+                            const liquidityProviderMatch = msg.match(/\*Liquidity Provider\* ([^\s*]+)/)
+
+                            return {
+                              orderId: orderIdMatch?.[1],
+                              email: emailMatch?.[1],
+                              cryptoAmount: cryptoAmountMatch?.[1],
+                              fiatAmount: fiatAmountMatch?.[1],
+                              paymentMethod: paymentMethodMatch?.[1],
+                              walletAddress: walletAddressMatch?.[1],
+                              liquidityProvider: liquidityProviderMatch?.[1]
+                            }
+                          }
+
+                          const orderInfo = extractOrderInfo(message)
+                          const hasStructuredData = orderInfo.orderId || orderInfo.cryptoAmount || orderInfo.fiatAmount
+
+                          return (
+                            <div key={index} className="relative flex items-start gap-4">
+                              {/* Status dot */}
+                              <div className={`relative z-10 w-8 h-8 rounded-full border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0 ${
+                                isLast ? 'bg-blue-500' : 'bg-gray-300'
+                              }`}>
+                                <div className={`w-2 h-2 rounded-full ${
+                                  isLast ? 'bg-white' : 'bg-gray-600'
+                                }`}></div>
+                              </div>
+
+                              {/* Content */}
+                              <div className="flex-1 min-w-0">
+                                {/* Status header */}
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-gray-900 text-sm">
+                                      {history.status.replace(/_/g, ' ')}
+                                    </span>
+                                    {isLast && (
+                                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                                        Current
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-gray-500 text-xs whitespace-nowrap ml-2">
+                                    {formatDate(history.createdAt)}
+                                  </span>
+                                </div>
+
+                                {/* Message content */}
+                                {message && (
+                                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                    {hasStructuredData ? (
+                                      <div className="space-y-3">
+                                        {/* Clean message without structured data */}
+                                        <p className="text-sm text-gray-700 leading-relaxed">
+                                          {message.replace(/\*[^*]+\*/g, '').trim()}
+                                        </p>
+
+                                        {/* Structured data grid */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-gray-200">
+                                          {orderInfo.orderId && (
+                                            <div className="flex flex-col">
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Order ID</span>
+                                              <span className="text-sm text-gray-900 font-mono">{orderInfo.orderId}</span>
+                                            </div>
+                                          )}
+                                          {orderInfo.email && (
+                                            <div className="flex flex-col">
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</span>
+                                              <span className="text-sm text-gray-900">{orderInfo.email}</span>
+                                            </div>
+                                          )}
+                                          {orderInfo.cryptoAmount && (
+                                            <div className="flex flex-col">
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Crypto Amount</span>
+                                              <span className="text-sm text-gray-900 font-semibold">{orderInfo.cryptoAmount}</span>
+                                            </div>
+                                          )}
+                                          {orderInfo.fiatAmount && (
+                                            <div className="flex flex-col">
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fiat Amount</span>
+                                              <span className="text-sm text-gray-900 font-semibold">{orderInfo.fiatAmount}</span>
+                                            </div>
+                                          )}
+                                          {orderInfo.paymentMethod && (
+                                            <div className="flex flex-col">
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Payment Method</span>
+                                              <span className="text-sm text-gray-900 capitalize">{orderInfo.paymentMethod.replace(/_/g, ' ')}</span>
+                                            </div>
+                                          )}
+                                          {orderInfo.liquidityProvider && (
+                                            <div className="flex flex-col">
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Provider</span>
+                                              <span className="text-sm text-gray-900">{orderInfo.liquidityProvider}</span>
+                                            </div>
+                                          )}
+                                          {orderInfo.walletAddress && (
+                                            <div className="flex flex-col sm:col-span-2">
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wallet Address</span>
+                                              <span className="text-sm text-gray-900 font-mono break-all">{orderInfo.walletAddress}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <p className="text-sm text-gray-700 leading-relaxed">
+                                        {message}
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            {history.message && (
-                              <p className="text-gray-600 text-sm mt-1">
-                                {history.message}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    )}
+                          )
+                        }
+                      )}
+                    </div>
                   </div>
                 </section>
               )}

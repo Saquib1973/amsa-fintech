@@ -1,7 +1,7 @@
 "use client"
 import Image from 'next/image'
 import React, { useState } from 'react'
-import { motion, easeOut } from 'framer-motion'
+import { motion, easeInOut } from 'framer-motion'
 
 const testimonials = [
   {
@@ -55,8 +55,8 @@ const testimonials = [
 ]
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 32 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } }
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: easeInOut } }
 }
 
 const gridVariants = {
@@ -93,6 +93,8 @@ const Testimonials = () => {
             <motion.button
               onClick={prevTestimonial}
               className="h-fit bg-primary-main p-4 text-2xl text-white transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               <svg
                 stroke="currentColor"
@@ -111,6 +113,8 @@ const Testimonials = () => {
             <motion.button
               onClick={nextTestimonial}
               className="h-fit bg-primary-main p-4 text-2xl text-white transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               <svg
                 stroke="currentColor"
@@ -130,19 +134,20 @@ const Testimonials = () => {
         </div>
         <div className="relative overflow-hidden">
           <div
-            className="flex transition-transform duration-300 ease-in-out"
+            className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
             {testimonials.map((t, i) => (
-              <motion.div
+              <div
                 key={i}
                 className="w-full flex-shrink-0 px-2"
-                variants={cardVariants}
-                initial="hidden"
-                animate={currentIndex === i ? "visible" : "hidden"}
-                transition={{ duration: 0.6, ease: easeOut }}
               >
-                <div className="bg-white rounded-2xl shadow p-6 flex flex-col h-full border border-gray-100">
+                <motion.div
+                  className="bg-white rounded-2xl shadow p-6 flex flex-col h-full border border-gray-100"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                >
                   <p className="text-gray-900 text-base mb-6">{t.text}</p>
                   <div className="flex items-center mt-auto">
                     <Image
@@ -159,8 +164,8 @@ const Testimonials = () => {
                       <div className="text-sm text-gray-500">{t.title}</div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </div>
             ))}
           </div>
         </div>

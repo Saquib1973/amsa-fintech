@@ -50,7 +50,13 @@ export const getStatusColor = (status: TransactionStatus) => {
       return 'bg-green-500'
     case 'PENDING':
       return 'bg-yellow-500'
-    default:
+    case 'PROCESSING':
+      return 'bg-blue-500'
+    case 'FAILED':
+    case 'CANCELLED':
+    case 'EXPIRED':
       return 'bg-red-500'
+    default:
+      return 'bg-gray-500'
   }
 }

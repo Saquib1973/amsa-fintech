@@ -25,10 +25,11 @@ interface MenuItemProps {
   item: MenuItem
   onLinkClick: () => void
   isActive: boolean
+  isFirstItem?: boolean
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive }) => {
-  const [isOpen, setIsOpen] = useState(false)
+const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive, isFirstItem = false }) => {
+  const [isOpen, setIsOpen] = useState(isFirstItem)
 
   if (item.href) {
     return (
@@ -36,7 +37,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive }) => {
         href={item.href}
         target={item.target}
         onClick={onLinkClick}
-        className={`flex text-lg items-center font-light transition-colors w-full px-8 py-2.5 gap-4 ${
+        className={`ml-2 flex text-lg items-center font-light transition-colors w-full px-8 py-2.5 gap-4 ${
           isActive
             ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
@@ -75,7 +76,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive }) => {
       <AnimatePresence initial={false}>
         {isOpen && item.children && (
           <motion.div
-            className="mt-1 space-y-1"
+            className="mt-1 space-y-1 overflow-x-hidden"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -181,6 +182,7 @@ const MobileNavbar = () => {
                   item={item}
                   onLinkClick={handleNavItemClick}
                   isActive={isItemActive(item.href)}
+                  isFirstItem={index === 0}
                 />
               ))}
               <Link

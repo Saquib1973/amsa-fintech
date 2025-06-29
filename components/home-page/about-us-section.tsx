@@ -25,6 +25,7 @@ const features = [
 const AboutUsSection = () => {
   const [isActive, setIsActive] = useState(1)
   const [progress, setProgress] = useState(0)
+  const [slideDirection, setSlideDirection] = useState<'up' | 'down'>('down')
   const INTERVAL = 4000
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const AboutUsSection = () => {
       setProgress(progress)
 
       if (elapsed >= INTERVAL) {
+        setSlideDirection('down')
         setIsActive((prev) => (prev === features.length ? 1 : prev + 1))
         setProgress(0)
       }
@@ -44,19 +46,36 @@ const AboutUsSection = () => {
     return () => clearInterval(interval)
   }, [isActive])
 
+  const handleSlideChange = (newIndex: number) => {
+    const currentIndex = isActive - 1
+    const direction = newIndex > currentIndex ? 'down' : 'up'
+    setSlideDirection(direction)
+    setIsActive(newIndex + 1)
+    setProgress(0)
+  }
+
   return (
-    <div className="w-full h-full flex relative">
+    <div className="w-full min-h-screen flex relative">
       <div className="flex max-md:flex-col justify-between max-w-[1400px] mx-auto w-full">
-        <div className="p-10 xl:p-24 w-full md:w-1/2 h-full">
-          <div className="relative p-10 w-full h-full">
+        <div className="p-10 py-2 xl:p-24 w-full md:w-1/2 md:h-full min-h-[400px] md:min-h-0">
+          <div className="relative p-10 py-2 w-full h-full overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={features[isActive - 1].title}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                transition={{ duration: 0.5 }}
-                className="absolute w-full bg-gray-50 max-md:h-[300px] max-md:-translate-y-4 inset-0 flex items-center justify-center"
+                initial={{
+                  opacity: 0,
+                  y: slideDirection === 'down' ? -100 : 100
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0
+                }}
+                exit={{
+                  opacity: 0,
+                  y: slideDirection === 'down' ? 100 : -100
+                }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+                className="absolute w-full max-md:h-[300px] md:h-full inset-0 flex items-center justify-center"
               >
                 <Image
                   width={1000}
@@ -69,25 +88,22 @@ const AboutUsSection = () => {
             </AnimatePresence>
           </div>
         </div>
-        <div className="p-10 xl:p-24 md:w-1/2 h-full">
-          <h1 className="text-6xl font-light mb-10">
+        <div className="p-10 xl:p-24 md:w-1/2 md:h-full flex flex-col justify-center min-h-[400px] md:min-h-0">
+          <h1 className="text-4xl md:text-6xl font-light mb-6 md:mb-10 relative z-10">
             Buy crypto in
             <br />
             <span className="italic">minutes</span>
           </h1>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 relative z-10">
             {features.map((feature, index) => (
-              <div key={feature.title} className="w-[80%]">
+              <div key={feature.title} className="w-full md:w-[80%]">
                 <button
-                  onClick={() => {
-                    setIsActive(index + 1)
-                    setProgress(0)
-                  }}
-                  className={`w-full cursor-pointer flex items-center h-20 px-6 transition-colors duration-200 ${
+                  onClick={() => handleSlideChange(index)}
+                  className={`w-full cursor-pointer flex items-center h-16 md:h-20 px-4 md:px-6 transition-colors duration-200 ${
                     index === isActive - 1 ? 'bg-primary-main text-white' : ''
                   }`}
                 >
-                  <span className="text-2xl font-light">{feature.title}</span>
+                  <span className="text-lg md:text-2xl font-light">{feature.title}</span>
                 </button>
                 <div
                   className={`relative h-1 ${index === isActive - 1 ? 'bg-primary-main' : ''} overflow-hidden`}

@@ -53,7 +53,7 @@ const TestCredentialsOptions = ({ onSelectCredentials }: TestCredentialsOptionsP
               animate={{ opacity: 1, y: -8 }}
               exit={{ opacity: 0, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="absolute z-10 bottom-[28px] rounded-lg left-0 bg-white shadow-lg min-w-[400px] border border-gray-100 duration-200"
+              className="absolute z-10 bottom-[28px] rounded-lg left-0 bg-white shadow-lg md:w-full md:min-w-[400px] max-md:w-[350px] border border-gray-100 duration-200"
             >
               <div className="p-4">
               <h3 className="text-xl font-light  mb-4">Test Credentials</h3>

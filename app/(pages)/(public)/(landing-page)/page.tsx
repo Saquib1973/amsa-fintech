@@ -13,7 +13,7 @@ import LocationSection from '@/components/home-page/location-section'
 const page = () => {
   return (
     <AnimateWrapper>
-      <div className="min-h-screen">
+      <div className="min-h-screen overflow-x-hidden">
         <HeroSection />
         <TrustSection />
         <AboutUsSection />

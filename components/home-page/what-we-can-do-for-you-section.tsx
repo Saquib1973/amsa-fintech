@@ -71,7 +71,10 @@ const WhatWeCanDoForYouSection = () => {
       <div className="relative max-2xl:min-h-screen bg-surface-alt py-12 md:py-20 lg:py-40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="space-y-16 md:space-y-24">
-            <div>
+            <h1 className='text-3xl md:hidden font-light text-gray-900'>
+              What We Can Do For You ?
+            </h1>
+            <div className='max-md:hidden'>
               <motion.h1
                 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-black leading-tight"
                 variants={headingContainer}
@@ -88,7 +91,7 @@ const WhatWeCanDoForYouSection = () => {
                 }
               </motion.h1>
               <motion.div
-                className='max-md:hidden h-1.5 ml-2 md:ml-4 my-2 rounded-full bg-primary-main'
+                className='h-1.5 ml-2 md:ml-4 my-2 rounded-full bg-primary-main'
                 initial={{ width: "20%", opacity: 0 }}
                 whileInView={{ width: '80%', opacity: 1 }}
                 transition={{ duration: 2, delay: 1.2, ease: easeOut }}
