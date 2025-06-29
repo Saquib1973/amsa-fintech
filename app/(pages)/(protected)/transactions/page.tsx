@@ -17,14 +17,10 @@ import {
 } from '@/components/ui/select'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import { AnimatePresence, motion } from 'framer-motion'
+import type { TransactionStatus } from '@/types/transaction-types'
+import { getStatusColor } from '@/lib/utils'
 
-type TransactionStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'CANCELLED'
-  | 'EXPIRED'
+
 
 type Transaction = {
   id: string
@@ -61,7 +57,7 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
   return (
     <Link
       href={`/transactions/${transaction.id}`}
-      className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-2 py-3 group focus:outline-none focus:ring-2 focus:ring-blue-200 rounded-md"
+      className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-2 py-3 group rounded-md"
       aria-label={`View details for ${actionText} ${transaction.cryptoCurrency} transaction`}
     >
       {/* Left: Crypto icon */}
@@ -71,10 +67,16 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
       {/* Center: Info */}
       <div className="flex-1 min-w-0 px-2">
         <div className="flex items-center gap-2">
-          <span className="text-gray-800 text-sm group-hover:underline group-hover:text-blue-600 transition-colors duration-100">{actionText} {transaction.cryptoCurrency}</span>
-          <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-400">{transaction.network}</span>
+          <span className="text-gray-800 text-sm group-hover:underline group-hover:text-blue-600 transition-colors duration-100">
+            {actionText} {transaction.cryptoCurrency}
+          </span>
+          <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-400">
+            {transaction.network}
+          </span>
         </div>
-        <div className="text-xs text-gray-400 mt-0.5">{format(new Date(transaction.createdAt), 'PP')}</div>
+        <div className="text-xs text-gray-400 mt-0.5">
+          {format(new Date(transaction.createdAt), 'PP')}
+        </div>
       </div>
       {/* Right: Amount, status, chevron */}
       <div className="flex flex-col items-end gap-1 min-w-[90px]">
@@ -84,7 +86,12 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
             currency: transaction.fiatCurrency,
           }).format(transaction.fiatAmount)}
         </span>
-        <span className="text-xs text-gray-400 mt-0.5">{transaction.status}</span>
+        <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+          <span
+            className={`inline-block h-2 w-2 rounded-full ${getStatusColor(transaction.status)}`}
+          />
+          {transaction.status}
+        </div>
       </div>
       <div className="flex items-center ml-2" title="View transaction details">
         <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-transform duration-150 group-hover:translate-x-1" />
@@ -301,7 +308,7 @@ const TransactionHistory = () => {
 
 const TransactionsPage = () => {
   return (
-    <div className="bg-gray-50/50 min-h-screen font-sans">
+    <div className="bg-gray-50/50 min-h-[calc(100vh-69px)] font-sans">
       <OffWhiteHeadingContainer>
         <div>
           <h1 className="text-5xl font-light">Transactions</h1>

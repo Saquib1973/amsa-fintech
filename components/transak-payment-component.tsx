@@ -4,6 +4,34 @@ import { useState, useEffect, useRef } from 'react'
 import PrimaryButton from './button/primary-button'
 import Loader from './loader-component'
 
+// Map Transak statuses to our database enum values
+const mapTransakStatusToDbStatus = (transakStatus: string): string => {
+  const statusMap: Record<string, string> = {
+    'AWAITING_PAYMENT_FROM_USER': 'PENDING',
+    'ORDER_CREATED': 'PENDING',
+    'ORDER_PROCESSING': 'PROCESSING',
+    'ORDER_COMPLETED': 'COMPLETED',
+    'ORDER_FAILED': 'FAILED',
+    'ORDER_CANCELLED': 'CANCELLED',
+    'ORDER_EXPIRED': 'EXPIRED',
+    'PAYMENT_PENDING': 'PENDING',
+    'PAYMENT_PROCESSING': 'PROCESSING',
+    'PAYMENT_COMPLETED': 'COMPLETED',
+    'PAYMENT_FAILED': 'FAILED',
+    'PAYMENT_CANCELLED': 'CANCELLED',
+    'PAYMENT_EXPIRED': 'EXPIRED',
+    'COMPLETED': 'COMPLETED',
+    'SUCCESS': 'COMPLETED',
+    'SUCCESSFUL': 'COMPLETED',
+    'DONE': 'COMPLETED',
+    'FINALIZED': 'COMPLETED',
+    'SETTLED': 'COMPLETED',
+    'CONFIRMED': 'COMPLETED',
+  }
+
+  return statusMap[transakStatus] || 'PENDING'
+}
+
 interface TransakOrderData {
   eventName: string
   status: {
@@ -21,7 +49,7 @@ interface TransakOrderData {
     network: string
     cryptoAmount: number
     totalFeeInFiat: number
-    fiatAmountInUsd: number
+    fiatAmountInUsd: string | null
     countryCode: string
     stateCode: string
     createdAt: string
@@ -121,72 +149,95 @@ const TransakPaymentComponent = ({
     pollingAttemptsRef.current = 0
   }
 
+  const handleTransactionCompletion = (orderData: TransakOrderData, status: string) => {
+    console.log('Handling transaction completion with status:', status);
+
+    // Stop polling
+    stopPolling()
+
+    // Close Transak widget
+    if (transak) {
+      console.log('Closing Transak widget');
+      transak.close()
+      setTransak(null)
+    }
+
+    // Update UI state
+    setIsLoading(false)
+    setIsProcessing(false)
+    setTransactionStatus(status)
+
+    // Call success callback
+    if (status === "COMPLETED") {
+      console.log('Transaction completed successfully, calling onSuccess');
+      onSuccess?.(orderData)
+    }
+
+    // Call close callback with a small delay to ensure UI updates
+    setTimeout(() => {
+      console.log('Calling onClose callback');
+      onClose?.()
+    }, 100)
+  }
+
   const checkTransactionStatus = async (orderId: string) => {
     try {
+      console.log('Checking transaction status for orderId:', orderId);
       const response = await fetch(`/api/transaction/status?orderId=${orderId}`)
       const data = await response.json()
+      console.log('Transaction status API response:', data);
 
       if (response.ok && data.data) {
         const status = data.data.status
-        setTransactionStatus(status)
+        const mappedStatus = mapTransakStatusToDbStatus(status)
+        console.log('Transaction status:', status, 'Mapped status:', mappedStatus);
+        console.log('Full transaction data:', data.data);
+        setTransactionStatus(mappedStatus)
         setIsProcessing(true)
 
-        // Check if transaction is in a final state
-        if (['COMPLETED', 'FAILED', 'CANCELLED', 'EXPIRED'].includes(status)) {
-          stopPolling()
-          setIsProcessing(false)
+        // Update the local database transaction with the latest status
+        try {
+          const updateResponse = await fetch('/api/transaction', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: orderId,
+              status: mappedStatus,
+              statusHistories: data.data.statusHistories || [],
+              fiatAmount: data.data.fiatAmount,
+              fiatCurrency: data.data.fiatCurrency,
+              cryptoCurrency: data.data.cryptoCurrency,
+              walletLink: data.data.walletLink,
+              walletAddress: data.data.walletAddress,
+              network: data.data.network,
+              paymentOptionId: data.data.paymentOptionId,
+              fiatAmountInUsd: data.data.fiatAmountInUsd?.toString() || null,
+            }),
+          })
 
-          // Update the saved transaction with final status and history
-          await updateTransaction(orderId, data.data)
-
-          if (status === 'COMPLETED') {
-            // Handle successful transaction
-            const orderData: TransakOrderData = {
-              eventName: 'TRANSACTION_COMPLETED',
-              status: data.data
-            }
-            console.log('Transaction completed')
-            onSuccess?.(orderData)
+          if (updateResponse.ok) {
+            console.log('Transaction status updated in database:', mappedStatus)
+          } else {
+            console.error('Failed to update transaction status in database')
           }
+        } catch (updateError) {
+          console.error('Error updating transaction status:', updateError)
+        }
+
+        // Check if transaction is in a final state using mapped status
+        console.log('Checking if status is final:', mappedStatus, 'Final states:', ["COMPLETED", "FAILED", "CANCELLED", "EXPIRED"]);
+        if (["COMPLETED", "FAILED", "CANCELLED", "EXPIRED"].includes(mappedStatus)) {
+          console.log('Transaction is in final state:', mappedStatus);
+          handleTransactionCompletion({
+            eventName: "TRANSACTION_COMPLETED",
+            status: data.data
+          }, mappedStatus)
+        } else {
+          console.log('Transaction is still in progress:', mappedStatus);
         }
       }
     } catch (error) {
       console.error('Error checking transaction status:', error)
-    }
-  }
-
-  const updateTransaction = async (orderId: string, statusData: TransakOrderData['status']) => {
-    console.log('Updating transaction')
-
-    const payload = {
-      id: orderId,
-      status: statusData.status,
-      statusHistories: statusData.statusHistories ?? [],
-      fiatAmount: statusData.fiatAmount ?? 0,
-      fiatCurrency: statusData.fiatCurrency ?? 'AUD',
-      cryptoCurrency: statusData.cryptoCurrency ?? 'BTC',
-      walletLink: statusData.walletLink ?? '',
-      walletAddress: statusData.walletAddress ?? '',
-      network: statusData.network ?? '',
-      paymentOptionId: statusData.paymentOptionId ?? '',
-      fiatAmountInUsd: statusData.fiatAmountInUsd?.toString() ?? '',
-    }
-
-    try {
-      const response = await fetch('/api/transaction', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      if (response.ok) {
-        console.log('Transaction updated successfully')
-      } else {
-        const errorText = await response.text()
-        console.error('Failed to update transaction:', errorText)
-      }
-    } catch (error) {
-      console.error('Error updating transaction:', error)
     }
   }
 
@@ -204,10 +255,18 @@ const TransakPaymentComponent = ({
       walletLink: statusData.walletLink ?? '',
       walletAddress: statusData.walletAddress ?? '',
       network: statusData.network ?? '',
-      status: 'PENDING', // Always set as PENDING initially
+      status: mapTransakStatusToDbStatus(statusData.status ?? 'PENDING'), // Use actual status from Transak
       paymentOptionId: statusData.paymentOptionId ?? '',
-      fiatAmountInUsd: statusData.fiatAmountInUsd?.toString() ?? '',
-      statusHistories: [], // Empty initially, will be updated on completion
+      fiatAmountInUsd: statusData.fiatAmountInUsd?.toString() ?? null,
+      statusHistories: statusData.statusHistories || [],
+      amountPaid: statusData.amountPaid ?? 0,
+      cryptoAmount: statusData.cryptoAmount ?? 0,
+      totalFeeInFiat: statusData.totalFeeInFiat ?? 0,
+      countryCode: statusData.countryCode ?? 'US',
+      stateCode: statusData.stateCode ?? '',
+      statusReason: statusData.statusReason,
+      transakFeeAmount: statusData.transakFeeAmount,
+      cardPaymentData: statusData.cardPaymentData,
     }
 
     try {
@@ -237,6 +296,33 @@ const TransakPaymentComponent = ({
 
       if (pollingAttemptsRef.current >= MAX_POLLING_ATTEMPTS) {
         stopPolling()
+        console.log('Max polling attempts reached, forcing completion');
+        // Force close after max attempts
+        handleTransactionCompletion({
+          eventName: "TRANSACTION_TIMEOUT",
+          status: {
+            id: orderId,
+            status: "TIMEOUT",
+            // Add other required fields with defaults
+            userId: "",
+            isBuyOrSell: "BUY",
+            fiatCurrency: "AUD",
+            cryptoCurrency: "BTC",
+            fiatAmount: 0,
+            amountPaid: 0,
+            paymentOptionId: "",
+            walletAddress: "",
+            walletLink: "",
+            network: "",
+            cryptoAmount: 0,
+            totalFeeInFiat: 0,
+            fiatAmountInUsd: null,
+            countryCode: "US",
+            stateCode: "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+        }, "EXPIRED")
         return
       }
 
@@ -249,6 +335,11 @@ const TransakPaymentComponent = ({
       stopPolling()
     }
   }, [])
+
+  // Debug effect to log status changes
+  useEffect(() => {
+    console.log('Transaction status state changed to:', transactionStatus);
+  }, [transactionStatus])
 
   const initializeTransak = () => {
     setIsLoading(true)
@@ -285,23 +376,28 @@ const TransakPaymentComponent = ({
 
     Transak.on(Transak.EVENTS.TRANSAK_ORDER_CREATED, async (data: unknown) => {
       const orderData = data as TransakOrderData
-      console.log('Order created')
+      console.log('Order created:', orderData);
       if (orderData.status?.id) {
+        console.log('Starting polling for order ID:', orderData.status.id);
         await saveTransaction(orderData)
         startPolling(orderData.status.id)
+        // Set initial status
+        const initialStatus = mapTransakStatusToDbStatus(orderData.status.status || 'PENDING')
+        console.log('Setting initial status:', initialStatus);
+        setTransactionStatus(initialStatus)
+        setIsProcessing(true)
+        onSuccess?.(orderData)
       }
     })
 
     Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, async (data: unknown) => {
       const orderData = data as TransakOrderData
+      console.log('Order successful event received:', orderData);
       if (orderData.status?.id) {
+        // Immediately check the status and handle completion
         await checkTransactionStatus(orderData.status.id)
       }
-      newTransak.close()
-      setTransak(null)
-      setIsLoading(false)
-      onSuccess?.(orderData)
-      onClose?.()
+      // Do NOT close the widget or call onSuccess here; let polling handle it
     })
   }
 

@@ -1,11 +1,15 @@
 "use client"
 import { useState, useEffect, useRef, KeyboardEvent, useCallback, useMemo } from 'react';
-import { dashboardSidebarItems as sidebarItems, type UserRole } from '@/lib/dashboard-data';
+import { dashboardSidebarItems as sidebarItems } from '@/lib/dashboard-data';
+import { UserRole } from '@/types/user';
 import { menuItems } from '@/lib/data';
 import Link from 'next/link';
 import { Search, Command, ExternalLink, SearchX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence,motion } from 'framer-motion';
+import { useDebounce } from '@/hooks/use-debounce';
+import {  useSession } from 'next-auth/react';
+import { roleRefactor } from '@/lib/utils';
 
 interface SearchResult {
   name: string;
@@ -18,22 +22,7 @@ interface SearchResult {
 const DEBOUNCE_DELAY = 300;
 const MAX_RESULTS = 10;
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
+//Skeleton
 const SearchSkeleton = () => (
   <div className="animate-pulse">
     {[...Array(3)].map((_, index) => (
@@ -61,24 +50,14 @@ const SearchBar = () => {
   const [userRole, setUserRole] = useState<UserRole>('USER');
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { data: session, status } = useSession()
+  useEffect(()=>{
+    if (status === 'authenticated') {
+      setUserRole(roleRefactor(session?.user?.name as UserRole))
+    }
+  },[status,session])
 
-  const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAY);
-
-  // Fetch user role on component mount
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      try {
-        const response = await fetch('/api/user');
-        const data = await response.json();
-        if (data.type) {
-          setUserRole(data.type);
-        }
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-      }
-    };
-    fetchUserRole();
-  }, []);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, DEBOUNCE_DELAY);
 
   const searchResults = useMemo(() => {
     if (!debouncedSearchQuery.trim()) return [];
@@ -90,13 +69,13 @@ const SearchBar = () => {
     sidebarItems.forEach(section => {
       // Check if section is accessible to user role
       if (section.roles && !section.roles.includes(userRole)) {
-        return; // Skip this section if user doesn't have access
+        return;
       }
 
       section.items.forEach(item => {
         // Check if item is accessible to user role
         if (item.roles && !item.roles.includes(userRole)) {
-          return; // Skip this item if user doesn't have access
+          return;
         }
 
         if (item.name.toLowerCase().includes(searchLower) && item.href) {
@@ -127,7 +106,7 @@ const SearchBar = () => {
       });
     });
 
-    // Filter menu items (these don't have role restrictions, so show to all)
+    // Filter menu items
     menuItems.forEach(item => {
       if (item.title.toLowerCase().includes(searchLower) && item.href) {
         filteredResults.push({
@@ -220,10 +199,33 @@ const SearchBar = () => {
     if (isLoading) {
       return <SearchSkeleton />;
     }
+    if (showResults && !debouncedSearchQuery.trim()) {
+      return (
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex flex-col items-center justify-center py-8 px-4 text-center">
+          <Search className="w-12 h-12 text-gray-400 dark:text-gray-500 mb-3" />
+          <p className="text-gray-600 dark:text-gray-300 font-medium mb-1">Write something you want to search</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Start typing to see suggestions
+          </p>
+        </motion.div>
+      );
+    }
     if (results.length > 0) {
       return results.map((result, index) => (
-        <Link
+        <motion.div
           key={`${result.href}-${index}`}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2, delay: (index+1)%20 * 0.06 }}
+        >
+          <Link
           href={result.href}
           className={`block px-4 py-3 group transition-all border-b duration-200 ${
             index === selectedIndex
@@ -257,17 +259,24 @@ const SearchBar = () => {
               <ExternalLink className="w-4 h-4 text-blue-500" />
             </div>
           </div>
-        </Link>
+          </Link>
+        </motion.div>
       ));
     }
     return (
-      <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="flex flex-col items-center justify-center py-8 px-4 text-center"
+      >
         <SearchX className="w-12 h-12 text-gray-400 dark:text-gray-500 mb-3" />
         <p className="text-gray-600 dark:text-gray-300 font-medium mb-1">No results found</p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Try different keywords or check your spelling
         </p>
-      </div>
+      </motion.div>
     );
   };
 
@@ -321,19 +330,23 @@ const SearchBar = () => {
       </div>
 
       <AnimatePresence mode="wait">
-      {showResults && (isLoading || results.length > 0 || debouncedSearchQuery.trim()) && (
+        {showResults && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{
+              opacity: 0,
+              y: -5,
+              transition: { duration: ((results.length + 1) % 20) * 0.04 },
+            }}
             transition={{ duration: 0.2 }}
-          className="absolute top-full left-0 right-0 mt-0.5 bg-white dark:bg-gray-800
-                    border border-gray-200 dark:border-gray-700 max-h-[60vh] overflow-y-auto z-50
-                    backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95"
-        >
-          {renderResults()}
-        </motion.div>
-      )}
+            className="absolute top-full left-0 right-0 mt-1 rounded-md bg-white dark:bg-gray-800
+                      border border-gray-200 dark:border-gray-700 max-h-[calc(100vh-69px)] overflow-y-auto z-50
+                      backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95"
+          >
+            {renderResults()}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   )

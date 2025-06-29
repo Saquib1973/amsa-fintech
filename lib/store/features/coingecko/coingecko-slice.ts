@@ -31,7 +31,7 @@ const initialState: CoingeckoState = {
   trendingCoinsData: null,
   queryCoinsData: null,
   coinData: null,
-  loadingCoinsData: false,
+  loadingCoinsData: true,
   loadingTrendingCoinsData: false,
   loadingQueryCoinsData: false,
   loadingCoinData: false,

@@ -240,10 +240,15 @@ export default function NotificationBell() {
     }
     return (
       <div className="divide-y divide-gray-200">
+        <AnimatePresence mode="wait">
         {filteredNotifications.map((notification) => {
           const expanded = expandedNotifications[notification.id];
           return (
-            <div
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               key={notification.id}
               className={`group p-4 flex flex-col gap-2 transition ${!notification.read ? 'text-black' : 'text-gray-700'}`}
               tabIndex={0}
@@ -319,9 +324,10 @@ export default function NotificationBell() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           )
         })}
+        </AnimatePresence>
       </div>
     );
   };
@@ -347,8 +353,13 @@ export default function NotificationBell() {
         )}
       </button>
 
+      <AnimatePresence mode="wait">
       {open && (
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
           ref={dropdownRef}
           className="absolute right-2 mt-1 w-[450px] h-[600px] max-w-[90vw] bg-white rounded-lg shadow-lg z-50 border p-0"
           style={{ minWidth: 320 }}
@@ -407,8 +418,9 @@ export default function NotificationBell() {
               </Tabs>
             </>
           )}
-        </div>
-      )}
+        </motion.div>
+        )}
+        </AnimatePresence>
     </div>
   );
 }

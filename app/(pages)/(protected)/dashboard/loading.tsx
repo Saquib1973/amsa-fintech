@@ -13,9 +13,7 @@ const DashboardLoading = () => {
       </OffWhiteHeadingContainer>
 
       <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {/* Total Amount Card */}
           <div className="bg-white p-4 rounded-md border border-gray-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
@@ -26,7 +24,6 @@ const DashboardLoading = () => {
             </div>
           </div>
 
-          {/* 24h Change Card */}
           <div className="bg-white p-4 rounded-md border border-gray-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
@@ -37,7 +34,6 @@ const DashboardLoading = () => {
             </div>
           </div>
 
-          {/* Active Assets Card */}
           <div className="bg-white p-4 rounded-md border border-gray-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
@@ -50,9 +46,7 @@ const DashboardLoading = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Quick Actions */}
             <div className="bg-white rounded-md border border-gray-100">
               <div className="p-4 border-b border-gray-100">
                 <div className="h-5 bg-gray-200 rounded animate-pulse w-32"></div>
@@ -74,7 +68,6 @@ const DashboardLoading = () => {
               </div>
             </div>
 
-            {/* Recent Transactions */}
             <div className="bg-white rounded-md border border-gray-100">
               <div className="flex items-center justify-between p-4 border-b border-gray-100">
                 <div className="h-5 bg-gray-200 rounded animate-pulse w-40"></div>
@@ -108,9 +101,7 @@ const DashboardLoading = () => {
             </div>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Popular Assets */}
             <div className="bg-white rounded-md border border-gray-100">
               <div className="p-4 border-b border-gray-100">
                 <div className="h-5 bg-gray-200 rounded animate-pulse w-32"></div>
@@ -139,7 +130,6 @@ const DashboardLoading = () => {
               </div>
             </div>
 
-            {/* Settings & Support */}
             <div className="bg-white rounded-md border border-gray-100">
               <div className="p-4 border-b border-gray-100">
                 <div className="h-5 bg-gray-200 rounded animate-pulse w-40"></div>

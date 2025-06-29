@@ -1,4 +1,4 @@
-import { UserRole } from '@/lib/dashboard-data'
+import { UserRole } from '@/types/user'
 import React from 'react'
 
 export interface NavItem {

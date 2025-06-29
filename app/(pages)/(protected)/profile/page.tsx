@@ -20,7 +20,7 @@ export default function ProfilePage() {
       name: data.user.name,
       email: data.user.email,
       phone: data.user.phone,
-      address: data.user.addresses?.address ,
+      address: data.user.addresses?.address,
       city: data.user.addresses?.city,
       state: data.user.addresses?.state,
       zip: data.user.addresses?.zip,

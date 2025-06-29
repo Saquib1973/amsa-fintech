@@ -1,6 +1,6 @@
 import CurrencyDropdown from '@/components/dropdown/currency-dropdown'
 import { CoinData } from '@/types/coingecko-types'
-import { formatLargeNumber } from '@/utils/format-large-number'
+import { formatLargeNumber } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useLayoutEffect, useRef } from 'react'

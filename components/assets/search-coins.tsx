@@ -37,7 +37,7 @@ const SearchCoins = () => {
       value={query || ''}
       onChange={(e) => setQuery(e.target.value)}
       placeholder="Search for an asset"
-      className="input-field w-full text-sm"
+      className="input-field rounded-none bg-white w-full p-2 px-4 text-base"
     />
   )
 }

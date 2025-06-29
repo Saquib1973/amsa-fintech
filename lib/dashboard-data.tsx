@@ -17,7 +17,7 @@ import {
   Wallet,
 } from 'lucide-react'
 
-export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN'
+
 export const dashboardSidebarItems: NavSection[] = [
   {
     title: 'General',

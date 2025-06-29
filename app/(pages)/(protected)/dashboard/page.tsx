@@ -20,6 +20,7 @@ import type { Metadata } from 'next'
 import { format } from 'date-fns'
 import { Transaction } from '@/types/transaction-types'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
+import { getStatusColor } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Dashboard | AMSA Fintech and IT solutions',
@@ -88,7 +89,7 @@ const DashboardTransactionItem = ({ transaction }: { transaction: Transaction })
   return (
     <Link
       href={`/transactions/${transaction.id}`}
-      className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-2 py-3 group focus:outline-none focus:ring-2 focus:ring-blue-200 rounded-md"
+      className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-2 py-3 group rounded-md"
     >
       <div className="flex items-center gap-2 min-w-[40px]">
         <SimpleCryptoIcon currency={transaction.cryptoCurrency} />
@@ -113,7 +114,12 @@ const DashboardTransactionItem = ({ transaction }: { transaction: Transaction })
             currency: transaction.fiatCurrency,
           }).format(transaction.fiatAmount)}
         </span>
-        <span className="text-xs text-gray-400 mt-0.5">{transaction.status}</span>
+        <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+          <span
+            className={`inline-block h-2 w-2 rounded-full ${getStatusColor(transaction.status)}`}
+          />
+          {transaction.status}
+        </div>
       </div>
       <div className="flex items-center ml-2">
         <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-transform duration-150 group-hover:translate-x-1" />
@@ -129,234 +135,251 @@ const DashboardPage = async () => {
     where: {
       userId: session?.user?.id,
     },
+    orderBy: {
+      createdAt: 'desc',
+    },
   })
 
-  const txArrLen = transactionArr.length
+  const txArrLen = transactionArr.length;
+
   const recentTransactions = transactionArr.slice(0, txArrLen>5?5:txArrLen)
-  const totalCost = transactionArr.reduce((acc, item) => acc + item.fiatAmount, 0)
+  const totalCost = txArrLen>0?transactionArr.reduce((acc, item) => acc + item.fiatAmount, 0):0
 
   return (
     <AnimateWrapper>
-
-
-    <div className="bg-gray-50/50 min-h-screen font-sans">
-      <OffWhiteHeadingContainer>
-        <div>
-          <h1 className="text-5xl font-light">Dashboard</h1>
-        </div>
-      </OffWhiteHeadingContainer>
-
-      <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-md border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                <Wallet className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Total Amount</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  ${totalCost.toFixed(2)}
-                </p>
-              </div>
-            </div>
+      <div className="bg-gray-50/50 min-h-screen font-sans">
+        <OffWhiteHeadingContainer>
+          <div>
+            <h1 className="text-5xl font-light">Dashboard</h1>
           </div>
+        </OffWhiteHeadingContainer>
 
-          <div className="bg-white p-4 rounded-md border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">24h Change</p>
-                <p className="text-lg font-semibold text-green-600">+$1,234.56</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-md border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                <PieChart className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Active Assets</p>
-                <p className="text-lg font-semibold text-gray-900">12</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Quick Actions */}
-            <div className="bg-white rounded-md border border-gray-100">
-              <div className="p-4 border-b border-gray-100">
-                <h2 className="text-lg font-medium text-gray-900">Quick Actions</h2>
-              </div>
-              <div className="p-4">
-                <div className="grid grid-cols-2 gap-3">
-                  {quickActions.map((action) => (
-                    <Link
-                      key={action.name}
-                      href={action.href}
-                      className="group p-3 rounded-md hover:bg-gray-50 transition-colors border border-gray-100"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
-                          {action.icon}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">{action.name}</p>
-                          <p className="text-xs text-gray-500">{action.description}</p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+        <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white p-4 rounded-md border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Total Amount</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    ${totalCost.toFixed(2)}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Recent Transactions */}
-            <div className="bg-white rounded-md border border-gray-100">
-              <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                <h2 className="text-lg font-medium text-gray-900">Recent Transactions</h2>
-                <Link
-                  href="/transactions"
-                  className="group inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  View all
-                  <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
-                </Link>
+            <div className="bg-white p-4 rounded-md border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">24h Change</p>
+                  <p className="text-lg font-semibold text-green-600">
+                    +$1,234.56
+                  </p>
+                </div>
               </div>
-              <div className="p-4">
-                {recentTransactions.length > 0 ? (
-                  <div className="space-y-2">
-                    {recentTransactions.map((transaction) => {
-                      const transformedTransaction = {
-                        ...transaction,
-                        statusHistories:
-                          transaction.statusHistories &&
-                          typeof transaction.statusHistories === 'string'
-                            ? JSON.parse(transaction.statusHistories)
-                            : transaction.statusHistories,
-                      }
-                      return (
-                        <DashboardTransactionItem
-                          key={transformedTransaction.id}
-                          transaction={transformedTransaction as Transaction}
-                        />
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 text-sm">No recent transactions.</p>
-                    <Link
-                      href="/assets"
-                      className="text-blue-600 hover:underline mt-2 inline-block text-sm"
-                    >
-                      Make your first transaction
-                    </Link>
-                  </div>
-                )}
+            </div>
+
+            <div className="bg-white p-4 rounded-md border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                  <PieChart className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Active Assets</p>
+                  <p className="text-lg font-semibold text-gray-900">12</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Popular Assets */}
-            <div className="bg-white rounded-md border border-gray-100">
-              <div className="p-4 border-b border-gray-100">
-                <h2 className="text-lg font-medium text-gray-900">Popular Assets</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-md border border-gray-100">
+                <div className="p-4 border-b border-gray-100">
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Quick Actions
+                  </h2>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    {quickActions.map((action) => (
+                      <Link
+                        key={action.name}
+                        href={action.href}
+                        className="group p-3 rounded-md hover:bg-gray-50 transition-colors border border-gray-100"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                            {action.icon}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">
+                              {action.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {action.description}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="p-4">
-                <div className="space-y-3">
-                  {popularAssets.map((asset) => (
+
+              <div className="bg-white rounded-md border border-gray-100">
+                <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Recent Transactions
+                  </h2>
+                  {txArrLen > 0 && (
                     <Link
-                      key={asset.symbol}
-                      href={asset.href}
+                      href="/transactions"
+                      className="group inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      View all
+                      <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
+                    </Link>
+                  )}
+                </div>
+                <div className="p-4">
+                  {txArrLen > 0 ? (
+                    <div className="space-y-2">
+                      {recentTransactions.map((transaction) => {
+                        const transformedTransaction = {
+                          ...transaction,
+                          statusHistories:
+                            transaction.statusHistories &&
+                            typeof transaction.statusHistories === 'string'
+                              ? JSON.parse(transaction.statusHistories)
+                              : transaction.statusHistories,
+                        }
+                        return (
+                          <DashboardTransactionItem
+                            key={transformedTransaction.id}
+                            transaction={transformedTransaction as Transaction}
+                          />
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 text-sm mb-8">
+                        No recent transactions.
+                      </p>
+                      <Link
+                        href="/assets"
+                        className="text-white transition-all bg-primary-main px-6 py-3 rounded-md mx-auto text-sm"
+                      >
+                        Buy your first asset
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-white rounded-md border border-gray-100">
+                <div className="p-4 border-b border-gray-100">
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Popular Assets
+                  </h2>
+                </div>
+                <div className="p-4">
+                  <div className="space-y-3">
+                    {popularAssets.map((asset) => (
+                      <Link
+                        key={asset.symbol}
+                        href={asset.href}
+                        className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                            {asset.icon}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">
+                              {asset.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {asset.symbol}
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <Link
+                      href="/assets"
+                      className="flex w-full items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium text-white rounded-md transition-colors"
+                    >
+                      <span>All Assets</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-md border border-gray-100">
+                <div className="p-4 border-b border-gray-100">
+                  <h2 className="text-lg font-medium text-gray-900">
+                    Settings & Support
+                  </h2>
+                </div>
+                <div className="p-4">
+                  <div className="space-y-2">
+                    <Link
+                      href="/profile"
                       className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-                          {asset.icon}
+                          <Settings className="w-4 h-4" />
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">{asset.name}</p>
-                          <p className="text-xs text-gray-500">{asset.symbol}</p>
-                        </div>
+                        <span className="text-gray-900 text-sm">Profile</span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     </Link>
-                  ))}
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <Link
-                    href="/assets"
-                    className="flex w-full items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium text-white rounded-md transition-colors"
-                  >
-                    <span>All Assets</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Settings & Support */}
-            <div className="bg-white rounded-md border border-gray-100">
-              <div className="p-4 border-b border-gray-100">
-                <h2 className="text-lg font-medium text-gray-900">Settings & Support</h2>
-              </div>
-              <div className="p-4">
-                <div className="space-y-2">
-                  <Link
-                    href="/profile"
-                    className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-                        <Settings className="w-4 h-4" />
+                    <Link
+                      href="/profile/security"
+                      className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                          <Shield className="w-4 h-4" />
+                        </div>
+                        <span className="text-gray-900 text-sm">Security</span>
                       </div>
-                      <span className="text-gray-900 text-sm">Profile</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </Link>
-                  <Link
-                    href="/profile/security"
-                    className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-                        <Shield className="w-4 h-4" />
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    </Link>
+                    <Link
+                      href="/support"
+                      className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                          <HelpCircle className="w-4 h-4" />
+                        </div>
+                        <span className="text-gray-900 text-sm">Support</span>
                       </div>
-                      <span className="text-gray-900 text-sm">Security</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </Link>
-                  <Link
-                    href="/support"
-                    className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors rounded-md"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-                        <HelpCircle className="w-4 h-4" />
-                      </div>
-                      <span className="text-gray-900 text-sm">Support</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </Link>
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
       </div>
-      </AnimateWrapper>
+    </AnimateWrapper>
   )
 }
 

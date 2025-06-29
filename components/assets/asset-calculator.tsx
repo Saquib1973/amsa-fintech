@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import { CoinData } from '@/types/coingecko-types'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -28,7 +28,7 @@ interface TransactionData {
   network: string
   cryptoAmount: number
   totalFeeInFiat: number
-  fiatAmountInUsd: number
+  fiatAmountInUsd: string | null
   countryCode: string
   stateCode: string
   createdAt: string
@@ -52,7 +52,10 @@ interface TransactionReceiptProps {
   onClose: () => void
 }
 
-const TransactionReceipt = ({ orderData, onClose }: TransactionReceiptProps) => {
+const TransactionReceipt = ({
+  orderData,
+  onClose,
+}: TransactionReceiptProps) => {
   const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) return 'N/A'
     if (typeof value === 'object') {
@@ -74,7 +77,7 @@ const TransactionReceipt = ({ orderData, onClose }: TransactionReceiptProps) => 
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        timeZoneName: 'short'
+        timeZoneName: 'short',
       })
     } catch {
       return 'Invalid Date'
@@ -86,144 +89,207 @@ const TransactionReceipt = ({ orderData, onClose }: TransactionReceiptProps) => 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
     >
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-100">
-          <div>
-            <h2 className="text-xl font-medium text-gray-900">Transaction Receipt</h2>
-            <p className="text-sm text-gray-500 mt-1">Order ID: {formatValue(orderData.id)}</p>
+      <div className="bg-white w-screen h-screen overflow-y-auto">
+        <div className="max-w-3xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center p-6 border-b border-gray-100">
+            <div>
+              <h2 className="text-xl font-medium text-gray-900">
+                Transaction Receipt
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Order ID: {formatValue(orderData.id)}
+              </p>
+            </div>
+            <SimpleButton
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="!p-2"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </SimpleButton>
           </div>
-          <SimpleButton
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            className="!p-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </SimpleButton>
-        </div>
 
-        <div className="p-6 space-y-8">
-          {/* Transaction Summary */}
-          <section className="space-y-4">
-            <h3 className="text-base font-medium text-gray-800">Transaction Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 bg-gray-50 rounded-md p-4">
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Status</span>
-                <span className={`font-medium ${orderData.status === 'COMPLETED' ? 'text-green-600' : 'text-yellow-600'}`}>
-                  {formatValue(orderData.status)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Amount</span>
-                <span className="font-medium">{formatValue(orderData.fiatAmount)} {formatValue(orderData.fiatCurrency)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Crypto Amount</span>
-                <span className="font-medium">{formatValue(orderData.cryptoAmount)} {formatValue(orderData.cryptoCurrency)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Payment Method</span>
-                <span className="font-medium">{formatValue(orderData.paymentOptionId).replace(/_/g, ' ').toUpperCase()}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Network</span>
-                <span className="font-medium">{formatValue(orderData.network)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Amount in USD</span>
-                <span className="font-medium">${formatValue(orderData.fiatAmountInUsd)}</span>
-              </div>
-            </div>
-          </section>
-
-          {/* Wallet Information */}
-          <section className="space-y-2">
-            <h3 className="text-base font-medium text-gray-800">Wallet Information</h3>
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
-              <code className="flex-1 text-sm font-mono break-all">{formatValue(orderData.walletAddress)}</code>
-              {orderData.walletLink && (
-                <Link href={orderData.walletLink} target="_blank" rel="noopener noreferrer" className="flex gap-1 items-center text-blue-600 hover:text-blue-800 text-sm">
-                  <ExternalLink className="w-4 h-4" />
-                </Link>
-              )}
-            </div>
-          </section>
-
-          {/* Fee Information */}
-          <section className="space-y-2">
-            <h3 className="text-base font-medium text-gray-800">Fee Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Total Fees</span>
-                <span className="font-medium">{formatValue(orderData.totalFeeInFiat)} {formatValue(orderData.fiatCurrency)}</span>
-              </div>
-              {orderData.transakFeeAmount && (
+          <div className="p-6 space-y-8">
+            {/* Transaction Summary */}
+            <section className="space-y-4">
+              <h3 className="text-base font-medium text-gray-800">
+                Transaction Summary
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 bg-gray-50 rounded-md p-4">
                 <div className="flex justify-between items-center text-sm py-1">
-                  <span className="text-gray-500">Transak Fee</span>
-                  <span className="font-medium">{formatValue(orderData.transakFeeAmount)} {formatValue(orderData.fiatCurrency)}</span>
+                  <span className="text-gray-500">Status</span>
+                  <span
+                    className={`font-medium ${orderData.status === 'COMPLETED' ? 'text-green-600' : 'text-yellow-600'}`}
+                  >
+                    {formatValue(orderData.status)}
+                  </span>
                 </div>
-              )}
-            </div>
-          </section>
-
-          {/* Timestamps */}
-          <section className="space-y-2">
-            <h3 className="text-base font-medium text-gray-800">Timestamps</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Created</span>
-                <span className="font-medium">{formatDate(orderData.createdAt)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm py-1">
-                <span className="text-gray-500">Updated</span>
-                <span className="font-medium">{formatDate(orderData.updatedAt)}</span>
-              </div>
-            </div>
-          </section>
-
-          {/* Status History */}
-          {orderData.statusHistories && orderData.statusHistories.length > 0 && (
-            <section className="space-y-2">
-              <h3 className="text-base font-medium text-gray-800">Status History</h3>
-              <div className="space-y-4">
-                {orderData.statusHistories.map((history, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <span className="font-medium">{formatValue(history.status)}</span>
-                        <span className="text-gray-500 text-sm">{formatDate(history.createdAt)}</span>
-                      </div>
-                      {history.message && (
-                        <p className="text-gray-600 text-sm mt-1">{formatValue(history.message)}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Amount</span>
+                  <span className="font-medium">
+                    {formatValue(orderData.fiatAmount)}{' '}
+                    {formatValue(orderData.fiatCurrency)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Crypto Amount</span>
+                  <span className="font-medium">
+                    {formatValue(orderData.cryptoAmount)}{' '}
+                    {formatValue(orderData.cryptoCurrency)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Payment Method</span>
+                  <span className="font-medium">
+                    {formatValue(orderData.paymentOptionId)
+                      .replace(/_/g, ' ')
+                      .toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Network</span>
+                  <span className="font-medium">
+                    {formatValue(orderData.network)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Amount in USD</span>
+                  <span className="font-medium">
+                    ${formatValue(orderData.fiatAmountInUsd)}
+                  </span>
+                </div>
               </div>
             </section>
-          )}
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-between items-center p-6 border-t border-gray-100 gap-4">
-          <SimpleButton
-            variant="secondary"
-            onClick={onClose}
-          >
-            Close
-          </SimpleButton>
-          <SimpleButton
-            variant="primary"
-            onClick={() => window.location.href = '/transactions'}
-          >
-            View All Transactions
-          </SimpleButton>
+            {/* Wallet Information */}
+            <section className="space-y-2">
+              <h3 className="text-base font-medium text-gray-800">
+                Wallet Information
+              </h3>
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
+                <code className="flex-1 text-sm font-mono break-all">
+                  {formatValue(orderData.walletAddress)}
+                </code>
+                {orderData.walletLink && (
+                  <Link
+                    href={orderData.walletLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex gap-1 items-center text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+                )}
+              </div>
+            </section>
+
+            {/* Fee Information */}
+            <section className="space-y-2">
+              <h3 className="text-base font-medium text-gray-800">
+                Fee Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Total Fees</span>
+                  <span className="font-medium">
+                    {formatValue(orderData.totalFeeInFiat)}{' '}
+                    {formatValue(orderData.fiatCurrency)}
+                  </span>
+                </div>
+                {orderData.transakFeeAmount && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">Transak Fee</span>
+                    <span className="font-medium">
+                      {formatValue(orderData.transakFeeAmount)}{' '}
+                      {formatValue(orderData.fiatCurrency)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Timestamps */}
+            <section className="space-y-2">
+              <h3 className="text-base font-medium text-gray-800">
+                Timestamps
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Created</span>
+                  <span className="font-medium">
+                    {formatDate(orderData.createdAt)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Updated</span>
+                  <span className="font-medium">
+                    {formatDate(orderData.updatedAt)}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            {/* Status History */}
+            {orderData.statusHistories &&
+              orderData.statusHistories.length > 0 && (
+                <section className="space-y-2">
+                  <h3 className="text-base font-medium text-gray-800">
+                    Status History
+                  </h3>
+                  <div className="space-y-4">
+                    {orderData.statusHistories.map((history, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start">
+                            <span className="font-medium">
+                              {formatValue(history.status)}
+                            </span>
+                            <span className="text-gray-500 text-sm">
+                              {formatDate(history.createdAt)}
+                            </span>
+                          </div>
+                          {history.message && (
+                            <p className="text-gray-600 text-sm mt-1">
+                              {formatValue(history.message)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between items-center p-6 border-t border-gray-100 gap-4">
+            <SimpleButton variant="secondary" onClick={onClose}>
+              Close
+            </SimpleButton>
+            <SimpleButton
+              variant="primary"
+              onClick={() => (window.location.href = '/transactions')}
+            >
+              View All Transactions
+            </SimpleButton>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -252,7 +318,7 @@ interface TransakOrderData {
     network: string
     cryptoAmount: number
     totalFeeInFiat: number
-    fiatAmountInUsd: number
+    fiatAmountInUsd: string | null
     countryCode: string
     stateCode: string
     createdAt: string
@@ -281,7 +347,7 @@ const AssetCalculator = ({
   const [showReceipt, setShowReceipt] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [orderData, setOrderData] = useState<TransactionData | null>(null)
-  const { data: session } = useSession()
+  const { data: session,status:userSessionStatus} = useSession()
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -310,79 +376,103 @@ const AssetCalculator = ({
   }
 
   const handleTransakSuccess = (orderData: TransakOrderData) => {
+    console.log('handleTransakSuccess called with:', orderData)
+
     const defaultTransactionData: TransactionData = {
-      id: "ERROR",
-      userId: "ERROR",
-      isBuyOrSell: "BUY",
-      fiatCurrency: "AUD",
-      cryptoCurrency: "BTC",
+      id: 'ERROR',
+      userId: 'ERROR',
+      isBuyOrSell: 'BUY',
+      fiatCurrency: 'AUD',
+      cryptoCurrency: 'BTC',
       fiatAmount: 0,
-      status: "ERROR",
+      status: 'ERROR',
       amountPaid: 0,
-      paymentOptionId: "ERROR",
-      walletAddress: "ERROR",
-      walletLink: "",
-      network: "ERROR",
+      paymentOptionId: 'ERROR',
+      walletAddress: 'ERROR',
+      walletLink: '',
+      network: 'ERROR',
       cryptoAmount: 0,
       totalFeeInFiat: 0,
-      fiatAmountInUsd: 0,
-      countryCode: "US",
-      stateCode: "",
+      fiatAmountInUsd: null,
+      countryCode: 'US',
+      stateCode: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      statusHistories: []
-    };
+      statusHistories: [],
+    }
 
-    let transactionData: TransactionData = defaultTransactionData;
+    let transactionData: TransactionData = defaultTransactionData
 
     try {
       if (!orderData.status) {
-        throw new Error('No status data received');
+        throw new Error('No status data received')
       }
 
-      const status = orderData.status;
+      const status = orderData.status
+      console.log('Processing transaction status:', status)
 
       transactionData = {
-        id: status.id || "N/A",
-        userId: status.userId || "N/A",
-        isBuyOrSell: status.isBuyOrSell || "BUY",
-        fiatCurrency: status.fiatCurrency || "AUD",
-        cryptoCurrency: status.cryptoCurrency || "BTC",
+        id: status.id || 'N/A',
+        userId: status.userId || 'N/A',
+        isBuyOrSell: status.isBuyOrSell || 'BUY',
+        fiatCurrency: status.fiatCurrency || 'AUD',
+        cryptoCurrency: status.cryptoCurrency || 'BTC',
         fiatAmount: status.fiatAmount || 0,
-        status: status.status || "PROCESSING",
+        status: status.status || 'PROCESSING',
         amountPaid: status.amountPaid || 0,
-        paymentOptionId: status.paymentOptionId || "credit_debit_card",
-        walletAddress: status.walletAddress || "N/A",
-        walletLink: status.walletLink || "",
-        network: status.network || "mainnet",
+        paymentOptionId: status.paymentOptionId || 'credit_debit_card',
+        walletAddress: status.walletAddress || 'N/A',
+        walletLink: status.walletLink || '',
+        network: status.network || 'mainnet',
         cryptoAmount: status.cryptoAmount || 0,
         totalFeeInFiat: status.totalFeeInFiat || 0,
-        fiatAmountInUsd: status.fiatAmountInUsd || 0,
-        countryCode: status.countryCode || "US",
-        stateCode: status.stateCode || "",
+        fiatAmountInUsd: status.fiatAmountInUsd?.toString() || null,
+        countryCode: status.countryCode || 'US',
+        stateCode: status.stateCode || '',
         createdAt: status.createdAt || new Date().toISOString(),
         updatedAt: status.updatedAt || new Date().toISOString(),
         statusReason: status.statusReason,
         transakFeeAmount: status.transakFeeAmount,
         cardPaymentData: status.cardPaymentData,
-        statusHistories: status.statusHistories || []
-      };
+        statusHistories: status.statusHistories || [],
+      }
     } catch (error) {
-      console.error('Error parsing transaction data:', error);
+      console.error('Error parsing transaction data:', error)
     }
 
-    setShowConfetti(true);
-    setOrderData(transactionData);
-    setShowReceipt(true);
-    toast.success(`Transaction ${transactionData.status.toLowerCase()}! Amount: ${transactionData.fiatAmount} ${transactionData.fiatCurrency}`, {
-      duration: 5000,
-      position: 'top-center'
-    });
-    setTimeout(() => {
-      setShowConfetti(false);
-      toast.dismiss();
-    }, 5000);
-  };
+    console.log('Final transaction data:', transactionData)
+    setOrderData(transactionData)
+
+    // Show receipt and confetti for both PROCESSING and COMPLETED statuses
+    if (
+      transactionData.status === 'PROCESSING' ||
+      transactionData.status === 'COMPLETED'
+    ) {
+      console.log('Showing receipt for status:', transactionData.status)
+      setShowConfetti(true)
+      setShowReceipt(true)
+
+      const statusMessage =
+        transactionData.status === 'COMPLETED'
+          ? 'Transaction completed successfully!'
+          : `Transaction ${transactionData.status.toLowerCase()}!`
+
+      toast.success(
+        `${statusMessage} Amount: ${transactionData.fiatAmount} ${transactionData.fiatCurrency}`,
+        {
+          duration: 5000,
+          position: 'top-center',
+        }
+      )
+
+      setTimeout(() => {
+        setShowConfetti(false)
+        toast.dismiss()
+      }, 5000)
+    } else {
+      console.log('Not showing receipt for status:', transactionData.status)
+    }
+  }
 
   const handleTransakClose = () => {
     console.log('Transak closed')
@@ -391,6 +481,46 @@ const AssetCalculator = ({
   const handleCloseReceipt = () => {
     setShowReceipt(false)
     setOrderData(null)
+  }
+
+  // Test function to manually trigger receipt (for debugging)
+  const testReceipt = () => {
+    const testData: TransactionData = {
+      id: 'TEST-123',
+      userId: 'test-user',
+      isBuyOrSell: 'BUY',
+      fiatCurrency: 'AUD',
+      cryptoCurrency: 'BTC',
+      fiatAmount: 100,
+      status: 'COMPLETED',
+      amountPaid: 100,
+      paymentOptionId: 'credit_debit_card',
+      walletAddress: 'test-wallet-address',
+      walletLink: 'https://example.com',
+      network: 'mainnet',
+      cryptoAmount: 0.0025,
+      totalFeeInFiat: 5,
+      fiatAmountInUsd: '75',
+      countryCode: 'US',
+      stateCode: 'CA',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      statusHistories: [
+        {
+          status: 'PENDING',
+          createdAt: new Date().toISOString(),
+          message: 'Transaction initiated',
+        },
+        {
+          status: 'COMPLETED',
+          createdAt: new Date().toISOString(),
+          message: 'Transaction completed successfully',
+        },
+      ],
+    }
+    setOrderData(testData)
+    setShowReceipt(true)
+    setShowConfetti(true)
   }
 
   const currentPrice =
@@ -403,18 +533,20 @@ const AssetCalculator = ({
       {showConfetti && <Confetti />}
       <AnimatePresence>
         {showReceipt && orderData && (
-          <TransactionReceipt orderData={orderData} onClose={handleCloseReceipt} />
+          <TransactionReceipt
+            orderData={orderData}
+            onClose={handleCloseReceipt}
+          />
         )}
       </AnimatePresence>
       <div className="m-auto w-full py-6 md:py-12 p-4 md:p-6">
         <Breadcrumb className="xl:hidden my-2" />
-        <p className="text-2xl md:text-3xl font-isola mb-4 md:mb-6">
-          Buy {coinData.name} in minutes
-        </p>
         <div className="w-full flex flex-col gap-3">
           <div className="flex-1">
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-              <h2 className="text-xl font-semibold mb-4">Calculate Your Purchase</h2>
+            <div className="bg-white rounded-md p-6 border border-gray-100">
+              <h2 className="text-xl font-medium mb-4">
+                Calculate Your Purchase
+              </h2>
 
               <div className="space-y-4">
                 <div className="flex xl:flex-col gap-3">
@@ -465,27 +597,45 @@ const AssetCalculator = ({
                 </div>
 
                 <p className="text-color-text-body asset-price-calc text-sm md:text-base">
-                  1 {coinData.symbol.toUpperCase()} = ${currentPrice.toLocaleString()}{' '}
+                  1 {coinData.symbol.toUpperCase()} = $
+                  {currentPrice.toLocaleString()}{' '}
                   <span className="currency-set">
                     {selectedCurrency.toUpperCase()}
                   </span>
                 </p>
-                {session?.user ? (
-                  <TransakPaymentComponent
-                    fiatAmount={Number(amount)}
-                    cryptoCurrency={coinData.symbol.toUpperCase()}
-                    cryptoAmount={Number(cryptoAmount)}
-                    onSuccess={handleTransakSuccess}
-                    onClose={handleTransakClose}
-                  />
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-gray-600 mb-4">Please sign in to make a purchase</p>
-                    <PrimaryButton link="/auth/signin">
-                      Sign In
-                    </PrimaryButton>
-                  </div>
+
+                {/* Temporary test button for debugging */}
+                {process.env.NEXT_PUBLIC_NODE_ENV === 'development' && (
+                  <button
+                    onClick={testReceipt}
+                    className="w-full p-2 bg-blue-500 text-white rounded-lg text-sm mb-4"
+                  >
+                    Test Receipt (Dev Only)
+                  </button>
                 )}
+
+                  {session?.user ? (
+
+                      <TransakPaymentComponent
+                        fiatAmount={Number(amount)}
+                        cryptoCurrency={coinData.symbol.toUpperCase()}
+                        cryptoAmount={Number(cryptoAmount)}
+                        onSuccess={handleTransakSuccess}
+                        onClose={handleTransakClose}
+                      />
+                  ) : (
+
+                      <PrimaryButton
+                        link="/auth/signin"
+                        className="w-full"
+                        disabled={userSessionStatus==="loading" || userSessionStatus==="unauthenticated"}
+                      >
+                        {
+                          userSessionStatus ==="loading" ? "Loading":"Sign In"
+
+                        }
+                      </PrimaryButton>
+                  )}
               </div>
             </div>
           </div>

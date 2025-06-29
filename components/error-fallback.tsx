@@ -1,11 +1,14 @@
 'use client'
-import Link from 'next/link'
-import React from 'react'
+import React, { useState, useMemo } from 'react'
 import StillBuildingPage from './still-building-page'
-import { ArrowDownRight } from 'lucide-react'
 import AnimateWrapper from './wrapper/animate-wrapper'
 import SectionWrapper from './wrapper/section-wrapper'
 import SecondaryButton from './button/secondary-button'
+import Link from 'next/link'
+import { Search, ExternalLink, SearchX } from 'lucide-react'
+import { dashboardSidebarItems as sidebarItems } from '@/lib/dashboard-data'
+import { menuItems } from '@/lib/data'
+import { useDebounce } from '@/hooks/use-debounce'
 
 const navOptions = [
   {
@@ -25,6 +28,14 @@ const navOptions = [
   },
 ]
 
+interface SearchResult {
+  name: string;
+  href: string;
+  section: string;
+  description?: string;
+  icon?: React.ReactNode;
+}
+
 const ErrorPage = ({
   error = null,
   building = null,
@@ -38,6 +49,63 @@ const ErrorPage = ({
   title?: string
   message?: string
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
+  const searchResults = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) return [] as SearchResult[];
+    const searchLower = debouncedSearchQuery.toLowerCase();
+    const filteredResults: SearchResult[] = [];
+    sidebarItems.forEach(section => {
+      section.items.forEach(item => {
+        if (item.name.toLowerCase().includes(searchLower) && item.href) {
+          filteredResults.push({
+            name: item.name,
+            href: item.href,
+            section: section.title,
+            description: `Navigate to ${item.name.toLowerCase()} page`,
+            icon: item.icon
+          });
+        }
+        if (item.submenuItems) {
+          item.submenuItems.forEach(subItem => {
+            if (subItem.name.toLowerCase().includes(searchLower) && subItem.href) {
+              filteredResults.push({
+                name: subItem.name,
+                href: subItem.href,
+                section: `${section.title} > ${item.name}`,
+                description: `Access ${subItem.name.toLowerCase()} settings`,
+                icon: subItem.icon
+              });
+            }
+          });
+        }
+      });
+    });
+    menuItems.forEach(item => {
+      if (item.title.toLowerCase().includes(searchLower) && item.href) {
+        filteredResults.push({
+          name: item.title,
+          href: item.href,
+          section: 'Main Menu',
+          description: `View ${item.title.toLowerCase()} information`
+        });
+      }
+      if (item.children) {
+        item.children.forEach(child => {
+          if (child.title.toLowerCase().includes(searchLower) && child.href) {
+            filteredResults.push({
+              name: child.title,
+              href: child.href,
+              section: `${item.title}`,
+              description: `Explore ${child.title.toLowerCase()}`
+            });
+          }
+        });
+      }
+    });
+    return filteredResults.slice(0, 10);
+  }, [debouncedSearchQuery]);
+
   if (error || building === null) {
     if (simple) {
       return (
@@ -63,49 +131,80 @@ const ErrorPage = ({
         </AnimateWrapper>
       )
     }
-
     return (
       <AnimateWrapper>
-        <div className="relative min-h-[90vh] flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center justify-center select-none">
-            <span className="text-[20vw] max-lg:hidden md:text-[30vw] font-extrabold text-black tracking-widest z-0">
-              4
-            </span>
-            <div className="relative z-10 bg-black translate-y-4 md:translate-y-9 text-white rounded-3xl border border-gray-200 p-4 md:p-8 w-[90%] max-w-md flex flex-col items-center">
-              <h1 className="text-3xl md:text-5xl font-bold text-center mb-2">
-                ... 404 error ...
-              </h1>
-              <p className="text-xl md:text-3xl tracking-wide text-center mb-4">
-                Sorry, page not found
-              </p>
-              <p className="text-center text-gray-400 mb-6 text-sm md:text-base">
-                Go to other sections to learn more about Solar Digital
-              </p>
-              <div className="w-full flex flex-col gap-2 md:gap-3">
-                {navOptions.map((opt, idx) => (
+        <div className="flex items-center justify-start bg-white">
+          <div className="w-full max-w-3xl mx-auto p-8 rounded-xl flex flex-col items-center gap-8">
+            <div className="flex flex-col items-center gap-2 w-full">
+              <span className="inline-flex items-center justify-center bg-gray-100 rounded-full w-20 h-20 mb-2">
+                <Search className="w-10 h-10 text-gray-400" />
+              </span>
+              <h1 className="text-3xl font-bold text-gray-900 text-center">404 - Page Not Found</h1>
+              <p className="text-gray-600 text-center">Sorry, the page you are looking for does not exist or has been moved.</p>
+
+            </div>
+            <form className="w-full flex max-w-xl" onSubmit={e => e.preventDefault()}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search for pages, features, or help..."
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-l-md outline-none bg-gray-50"
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="px-4 py-2 bg-gray-200 text-gray-600 rounded-r-md hover:bg-gray-300 transition flex items-center justify-center"
+                  aria-label="Clear search input"
+                >
+                  <SearchX className="w-5 h-5" />
+                </button>
+              ) : (
+                <span className="px-4 py-2 bg-gray-100 rounded-r-md flex items-center justify-center text-gray-400 cursor-not-allowed">
+                  <Search className="w-5 h-5" />
+                </span>
+              )}
+            </form>
+            <div className="w-full max-w-xl max-h-[calc(100vh-380px)] p-2 overflow-y-auto flex flex-col gap-3 mt-2">
+              {debouncedSearchQuery && searchResults.length > 0 ? (
+                searchResults.map((result, idx) => (
+                  <Link
+                    key={result.href + idx}
+                    href={result.href}
+                    className="flex flex-col items-start p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+                  >
+                    <span className="font-medium text-gray-900 flex justify-between w-full items-center gap-2">
+                      <div className='flex gap-2'>
+
+                      {result.icon && <span className="text-gray-500">{result.icon}</span>}
+                      {result.name}
+                      </div>
+                      <ExternalLink className="w-4 h-4 ml-1 text-blue-500" />
+                    </span>
+                    <span className="text-xs text-gray-500">{result.section}</span>
+                    {result.description && <span className="text-xs text-gray-400 mt-1">{result.description}</span>}
+                  </Link>
+                ))
+              ) : debouncedSearchQuery && searchResults.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                  <SearchX className="w-10 h-10 text-gray-400 mb-2" />
+                  <p className="text-gray-600 font-medium mb-1">No results found</p>
+                  <p className="text-sm text-gray-500">Try different keywords or check your spelling</p>
+                </div>
+              ) : (
+                navOptions.map((opt) => (
                   <Link
                     key={opt.label}
                     href={opt.href}
-                    className={`flex cursor-pointer items-center justify-between p-3 md:p-4 rounded-lg border transition group ${
-                      idx === 0
-                        ? 'text-blue-100 bg-primary-main border-blue-900'
-                        : 'text-gray-800 bg-white'
-                    }`}
+                    className="flex flex-col items-start p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
                   >
-                    <div>
-                      <div className="font-semibold text-sm md:text-base">{opt.label}</div>
-                      <div className="text-xs">{opt.description}</div>
-                    </div>
-                    <span className="ml-2 font-bold text-base md:text-lg group-hover:-rotate-90 duration-500 -rotate-45 group-hover:bg-gray-100 rounded-full aspect-square h-5 md:h-6 w-5 md:w-6 flex justify-center items-center group-hover:text-black transition-all">
-                      <ArrowDownRight className="w-3 md:w-4 h-3 md:h-4" />
-                    </span>
+                    <span className="font-medium text-gray-900">{opt.label}</span>
+                    <span className="text-xs text-gray-500">{opt.description}</span>
                   </Link>
-                ))}
-              </div>
+                ))
+              )}
             </div>
-            <span className="text-[20vw] max-lg:hidden md:text-[30vw] font-extrabold text-black tracking-widest z-0">
-              4
-            </span>
           </div>
         </div>
       </AnimateWrapper>

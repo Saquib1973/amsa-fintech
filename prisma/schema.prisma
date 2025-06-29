@@ -113,6 +113,14 @@ model Transaction{
   paymentOptionId String?
   fiatAmountInUsd String?
   statusHistories Json?
+  amountPaid Int?
+  cryptoAmount Float?
+  totalFeeInFiat Float?
+  countryCode String?
+  stateCode String?
+  statusReason String?
+  transakFeeAmount Float?
+  cardPaymentData Json?
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
