@@ -2,7 +2,7 @@
 import SectionWrapper from '../wrapper/section-wrapper'
 import Image from 'next/image'
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion, easeOut } from 'framer-motion'
 
 const headingContainer = {
   hidden: {},
@@ -15,7 +15,7 @@ const headingContainer = {
 
 const headingChar = {
   hidden: { opacity: 0, x: 12 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: easeOut } },
 }
 
 const serviceContainer = {
@@ -29,7 +29,7 @@ const serviceContainer = {
 
 const serviceCard = {
   hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: easeOut } },
 }
 
 const WhatWeCanDoForYouSection = () => {
@@ -92,7 +92,7 @@ const WhatWeCanDoForYouSection = () => {
                 className='h-1.5 ml-4 my-2 rounded-full bg-primary-main'
                 initial={{ width: "20%", opacity: 0 }}
                 whileInView={{ width: '80%', opacity: 1 }}
-                transition={{ duration: 2, delay: 1.2, ease: 'easeOut' }}
+                transition={{ duration: 2, delay: 1.2, ease: easeOut }}
                 viewport={{ once: true }}
               />
             </div>

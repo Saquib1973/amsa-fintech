@@ -1,7 +1,7 @@
 "use client"
 import Image from 'next/image'
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, easeOut } from 'framer-motion'
 
 const testimonials = [
   {
@@ -56,7 +56,7 @@ const testimonials = [
 
 const cardVariants = {
   hidden: { opacity: 0, y: 32 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } }
 }
 
 const gridVariants = {
@@ -140,7 +140,7 @@ const Testimonials = () => {
                 variants={cardVariants}
                 initial="hidden"
                 animate={currentIndex === i ? "visible" : "hidden"}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
+                transition={{ duration: 0.6, ease: easeOut }}
               >
                 <div className="bg-white rounded-2xl shadow p-6 flex flex-col h-full border border-gray-100">
                   <p className="text-gray-900 text-base mb-6">{t.text}</p>

@@ -1,6 +1,6 @@
 "use client"
 import PrimaryButton from '../button/primary-button'
-import { motion } from 'framer-motion'
+import { motion, easeOut } from 'framer-motion'
 
 const container = {
   hidden: { opacity: 0, y: 20 },
@@ -10,7 +10,7 @@ const container = {
     transition: {
       duration: 0.8,
       delay: 0.2,
-      ease: 'easeOut',
+      ease: easeOut,
       staggerChildren: 0.4,
     },
   },
@@ -18,7 +18,7 @@ const container = {
 
 const child = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: easeOut } },
 }
 
 const CtaSectionOne = () => {
@@ -46,7 +46,7 @@ const CtaSectionOne = () => {
             variants={child}
           >
             Buy, sell, swap, track and analyse hundreds of cryptocurrencies on
-            Australia’s most trusted crypto exchange
+            Australia&apos;s most trusted crypto exchange
           </motion.h1>
           <motion.div
             className="mt-4"
