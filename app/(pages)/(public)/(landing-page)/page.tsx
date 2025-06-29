@@ -19,7 +19,6 @@ const page = () => {
         <AboutUsSection />
         <CtaSectionOne />
         <UtilityPricePlay />
-        {/* Temporary */}
         <WhatWeCanDoForYouSection />
         <CtaSectionThree />
         <Testimonials />

@@ -39,7 +39,7 @@ const Footer = () => {
 
   return (
     <footer className="">
-      <div className="width-1600 flex gap-4  py-16">
+      <div className="width-1600 flex gap-4  py-10 md:py-16">
         <div className="flex max-md:flex-col md:justify-between w-full px-6 gap-6">
           <div className=" flex flex-col max-w-[300px]">
             <Link href="/" className="mb-5">
@@ -52,7 +52,7 @@ const Footer = () => {
               />
             </Link>
 
-            <p className="text-sm text-color-text-body mb-4">
+            <p className="text-sm text-gray-500 mb-4">
               Unit 2, 27 Browning Street, South Brisbane Queensland 4101,
               Australia
             </p>
@@ -61,12 +61,12 @@ const Footer = () => {
           <div className="grid grid-cols-2 w-full lg:grid-cols-4 gap-4">
             {Object.entries(footerLinks).map(([section, links]) => (
               <div key={section} className="">
-                <h3 className="text-primary-main text-2xl mb-4 capitalize">
+                <h3 className="text-primary-main text-base md:text-2xl mb-4 capitalize">
                   {section}
                 </h3>
                 <ul>
                   {links.map((link) => (
-                    <li key={link.href} className="font-light text-lg mb-1">
+                    <li key={link.href} className="font-light text-sm md:text-lg mb-1">
                       <Link href={link.href}>{link.label}</Link>
                     </li>
                   ))}
@@ -79,7 +79,7 @@ const Footer = () => {
 
       <div className="" />
 
-      <div className="width-1240 px-4 text-gray-500 text-lg mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-6 py-6">
+      <div className="width-1240 px-4 text-gray-500 text-sm md:text-lg mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-6 py-4 md:py-6">
         <div className="copyright">
           © {new Date().getFullYear()} AMSA Fintech and IT solutions - All
           Rights Reserved.

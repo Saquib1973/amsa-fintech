@@ -1,13 +1,18 @@
 'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Close, HamburgerMenu } from '@/public/svg'
 import SecondaryButton from '@/components/button/secondary-button'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import Link from 'next/link'
 import PrimaryButton from '../button/primary-button'
 import RightArrow from './../../public/svg/right-arrow'
 import { useSession } from 'next-auth/react'
 import UserSvg from '@/public/svg/user-svg'
 import { menuItems } from '@/lib/data'
+import AnimateWrapper from '../wrapper/animate-wrapper'
 
 interface MenuItem {
   title: string
@@ -19,9 +24,10 @@ interface MenuItem {
 interface MenuItemProps {
   item: MenuItem
   onLinkClick: () => void
+  isActive: boolean
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   if (item.href) {
@@ -30,7 +36,12 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick }) => {
         href={item.href}
         target={item.target}
         onClick={onLinkClick}
-        className="block py-2 no-underline pl-6 pr-3 text-base leading-7 hover:bg-gray-50"
+        className={`flex text-lg items-center font-light transition-colors w-full px-8 py-2.5 gap-4 ${
+          isActive
+            ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
+        }`}
+        title={item.title}
       >
         {item.title}
       </Link>
@@ -38,15 +49,15 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick }) => {
   }
 
   return (
-    <div className=''>
+    <div>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="hover:underline flex w-full items-center justify-between py-2 pl-3 pr-3.5 text-base leading-7"
+        className="flex w-full items-center justify-between px-8 py-2.5 text-lg font-light text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100 transition-colors"
       >
         {item.title}
         <svg
-          className={`h-4 w-4 ${
+          className={`h-4 w-4 transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -61,18 +72,32 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick }) => {
           />
         </svg>
       </button>
-      {isOpen && item.children && (
-        <div className="mt-2 space-y-2">
-          {item.children.map((child, index) => (
-            <MenuItem key={index + 'mobile-menu-item-child'} item={child} onLinkClick={onLinkClick} />
-          ))}
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {isOpen && item.children && (
+          <motion.div
+            className="mt-1 space-y-1"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            {item.children.map((child, index) => (
+              <MenuItem
+                key={index + 'mobile-menu-item-child'}
+                item={child}
+                onLinkClick={onLinkClick}
+                isActive={false}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
 
 const MobileNavbar = () => {
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const navRef = useRef<HTMLDivElement>(null)
 
@@ -96,67 +121,89 @@ const MobileNavbar = () => {
     }
   }, [isOpen])
 
+  const toggleSidebar = useCallback(() => {
+    setIsOpen((prevState) => !prevState)
+  }, [])
+
+  const closeSidebar = useCallback(() => {
+    if (isOpen) {
+      setIsOpen(false)
+    }
+  }, [isOpen])
+
+  const handleNavItemClick = useCallback(() => {
+    closeSidebar()
+  }, [closeSidebar])
+
+  const isItemActive = (href?: string): boolean =>
+    Boolean(pathname === href || (href && pathname?.startsWith(`${href}/`)))
+
   return (
-    <div className="xl:hidden relative">
-      <div className="flex items-center">
+    <AnimateWrapper className="xl:hidden">
+      <div className="xl:hidden sticky top-0 left-0 w-full flex justify-end items-center bg-white dark:bg-black border-gray-200 dark:border-gray-800 z-30 py-1">
         <button
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? 'Close menu' : 'Open menu'}
+          className="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          onClick={toggleSidebar}
+          aria-label="Toggle menu"
         >
-          {isOpen ? (
-            <Close className="size-7 cursor-pointer" />
-          ) : (
-            <HamburgerMenu className="size-7 cursor-pointer" />
-          )}
+          <HamburgerMenu className="w-6 h-6" />
         </button>
       </div>
 
       {isOpen && (
         <button
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300"
-          onClick={() => setIsOpen(false)}
+          className="xl:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300"
+          onClick={closeSidebar}
         />
       )}
 
-      <div
-        ref={navRef}
-        className={`fixed top-0 left-0 h-full w-full bg-white shadow-lg z-50 transform transition-transform duration-500 ease-in-out ${
+      <motion.div
+        className={`fixed xl:hidden top-0 left-0 h-screen w-full bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="h-full flex flex-col">
-          <div className="flex items-center justify-between p-4 border-gray-200 border-b">
-            <h2 className="text-lg md:text-xl font-semibold">Menu</h2>
+        <div className="flex flex-col h-full">
+          <div className="xl:hidden flex justify-end items-center p-4 border-gray-200 dark:border-gray-800">
             <button
-              onClick={() => setIsOpen(false)}
-              className="p-2 hover:bg-gray-100 rounded-full"
+              onClick={closeSidebar}
+              className="p-2 cursor-pointer rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Close sidebar"
             >
-              <Close className="size-6" />
+              <Close className="w-6 h-6" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
-            <div className="px-4 py-4 space-y-4">
+          <nav className="flex-1 overflow-y-auto py-6">
+            <div className="space-y-3">
               {menuItems.map((item, index) => (
-                <MenuItem key={index + 'mobile-menu-item'} item={item} onLinkClick={() => setIsOpen(false)} />
+                <MenuItem
+                  key={index + 'mobile-menu-item'}
+                  item={item}
+                  onLinkClick={handleNavItemClick}
+                  isActive={isItemActive(item.href)}
+                />
               ))}
               <Link
                 href="/support"
-                onClick={() => setIsOpen(false)}
-                className="underline block py-2 text-base leading-7"
+                onClick={handleNavItemClick}
+                className={`flex text-lg items-center font-light transition-colors w-full px-8 py-2.5 gap-4 ${
+                  isItemActive('/support')
+                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
+                }`}
               >
                 Support
               </Link>
             </div>
-          </div>
+          </nav>
 
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex flex-col gap-1">
+          <div className="border-t border-gray-200 dark:border-gray-800 p-6">
+            <div className="flex flex-col gap-3">
               {session ? (
                 <PrimaryButton
                   link="/dashboard"
-                  onClick={() => setIsOpen(false)}
-                  className='w-full'
+                  onClick={handleNavItemClick}
+                  className='w-full py-3 px-4 text-base font-medium'
                   prefixIcon={<UserSvg />}
                 >
                   Dashboard
@@ -165,15 +212,15 @@ const MobileNavbar = () => {
                 <>
                   <SecondaryButton
                     link="/auth/signin"
-                    onClick={() => setIsOpen(false)}
-                    className='w-full'
+                    onClick={handleNavItemClick}
+                    className='w-full py-3 px-4 text-base font-medium'
                   >
                     Log in
                   </SecondaryButton>
                   <PrimaryButton
                     link="/auth/signup"
-                    onClick={() => setIsOpen(false)}
-                    className="w-full"
+                    onClick={handleNavItemClick}
+                    className="w-full py-3 px-4 text-base font-medium"
                   >
                     Get started
                     <RightArrow />
@@ -183,8 +230,8 @@ const MobileNavbar = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </AnimateWrapper>
   )
 }
 

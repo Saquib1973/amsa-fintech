@@ -68,13 +68,12 @@ const WhatWeCanDoForYouSection = () => {
 
   return (
     <SectionWrapper className="max-w-full w-full max-md:px-0">
-      <div className="relative max-2xl:min-h-screen bg-surface-alt py-20 md:py-40">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="space-y-24">
+      <div className="relative max-2xl:min-h-screen bg-surface-alt py-12 md:py-20 lg:py-40">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="space-y-16 md:space-y-24">
             <div>
               <motion.h1
-                className="text-6xl font-light text-black"
-                style={{ whiteSpace: 'nowrap' }}
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-black leading-tight"
                 variants={headingContainer}
                 initial="hidden"
                 whileInView="visible"
@@ -89,7 +88,7 @@ const WhatWeCanDoForYouSection = () => {
                 }
               </motion.h1>
               <motion.div
-                className='h-1.5 ml-4 my-2 rounded-full bg-primary-main'
+                className='max-md:hidden h-1.5 ml-2 md:ml-4 my-2 rounded-full bg-primary-main'
                 initial={{ width: "20%", opacity: 0 }}
                 whileInView={{ width: '80%', opacity: 1 }}
                 transition={{ duration: 2, delay: 1.2, ease: easeOut }}
@@ -106,31 +105,31 @@ const WhatWeCanDoForYouSection = () => {
                 <React.Fragment key={service.id}>
                   <motion.div
                     variants={serviceCard}
-                    className={`flex flex-col md:flex-row gap-8 ${index % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}
+                    className={`flex flex-col md:flex-row gap-6 md:gap-8 ${index % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}
                   >
-                    <div className="relative w-full">
+                    <div className="relative w-full h-64 md:h-80 lg:h-96">
                       <Image
                         src={service.image}
                         alt={service.title}
                         fill
-                        className="object-cover"
+                        className="object-cover rounded-lg"
                       />
                     </div>
-                    <div className="space-y-4">
-                      <h2 className="text-3xl text-gray-900">{service.title}</h2>
-                      <h3 className="text-xl font-light text-gray-700">
+                    <div className="space-y-3 md:space-y-4">
+                      <h2 className="text-2xl md:text-3xl text-gray-900 font-medium">{service.title}</h2>
+                      <h3 className="text-lg md:text-xl font-light text-gray-700">
                         {service.subtitle}
                       </h3>
-                      <p className="text-gray-600 font-extralight leading-relaxed">
+                      <p className="text-sm md:text-base text-gray-600 font-extralight leading-relaxed">
                         {service.description}
                       </p>
-                      <p className="text-gray-600 font-extralight leading-relaxed">
+                      <p className="text-sm md:text-base text-gray-600 font-extralight leading-relaxed">
                         {service.additionalInfo}
                       </p>
                     </div>
                   </motion.div>
                   {index < services.length - 1 && (
-                    <div className="h-px w-full bg-gray-300 my-12" />
+                    <div className="h-px w-full bg-gray-300 my-8 md:my-12" />
                   )}
                 </React.Fragment>
               ))}
