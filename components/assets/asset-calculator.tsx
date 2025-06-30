@@ -539,7 +539,7 @@ const AssetCalculator = ({
           />
         )}
       </AnimatePresence>
-      <div className="m-auto w-full py-6 md:py-12 p-4 md:p-6">
+      <div className="m-auto w-full py-6 md:py-12 p-1 md:p-6">
         <Breadcrumb className="xl:hidden my-2" />
         <div className="w-full flex flex-col gap-3">
           <div className="flex-1">

@@ -15,7 +15,7 @@ const GoBackButton = ({ className, redirect, type = 'primary' , size = 'md' }: {
     case 'primary':
 
       return (
-        <SecondaryButton className={cn("p-2 aspect-square hover:bg-surface-hover transition-all", className)} onClick={() => {
+        <SecondaryButton className={cn("p-2 flex items-center rounded-md gap-2 hover:bg-surface-hover transition-all", className)} onClick={() => {
           if (redirect) {
             router.push(redirect)
           } else {
@@ -23,6 +23,7 @@ const GoBackButton = ({ className, redirect, type = 'primary' , size = 'md' }: {
           }
         }}>
           <ArrowLeft className={sizeMap[size]} />
+          <span className='hidden max-xl:block'>Back</span>
         </SecondaryButton>
       );
     case 'secondary':
@@ -35,6 +36,7 @@ const GoBackButton = ({ className, redirect, type = 'primary' , size = 'md' }: {
           }
         }}>
           <ArrowLeft className={sizeMap[size]} />
+          <span className='hidden max-xl:block'>Back</span>
         </PrimaryButton>
       );
     default:

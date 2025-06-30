@@ -11,19 +11,22 @@ import toast from 'react-hot-toast'
 import Loader from '@/components/loader-component'
 import TestCredentialsOptions from '@/components/auth/test-credentials-options'
 import Image from 'next/image'
+import { CheckCircle } from 'lucide-react'
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [status, setStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle')
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
 
   const error = searchParams.get('error')
-
+  const isFormDisabled = status === 'loading' || status === 'success'
   const handleSubmit = async (e: React.FormEvent) => {
+    setStatus('loading')
     e.preventDefault()
-    setIsLoading(true)
 
     try {
       const result = await signIn('credentials', {
@@ -33,28 +36,31 @@ export default function SignInPage() {
       })
 
       if (result?.error) {
+        setStatus('error')
         toast.error(result.error)
       } else {
+        setStatus('success')
         toast.success('Signed in successfully')
         router.push(callbackUrl)
         router.refresh()
       }
     } catch (error) {
+      setStatus('error')
       console.error('Sign in error:', error)
       toast.error('An error occurred. Please try again.')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true)
+    setStatus('loading')
     try {
       await signIn('google', { callbackUrl })
+      setStatus('success')
+      toast.success('Signed in successfully')
     } catch (error) {
+      setStatus('error')
       console.error('Google sign in error:', error)
       toast.error('Failed to sign in with Google')
-      setIsLoading(false)
     }
   }
 
@@ -93,7 +99,7 @@ export default function SignInPage() {
               placeholder="Enter your email"
               className="input-field w-full"
               required
-              disabled={isLoading}
+              disabled={isFormDisabled}
             />
           </div>
 
@@ -112,16 +118,28 @@ export default function SignInPage() {
               placeholder="Enter your password"
               className="input-field w-full"
               required
-              disabled={isLoading}
+              disabled={isFormDisabled}
             />
           </div>
 
           <PrimaryButton
             type="submit"
-            className="w-full text-center h-12 flex items-center justify-center mt-6"
-            disabled={isLoading}
+            className={`w-full text-center h-12 flex items-center justify-center mt-6 ${status === 'success' ? 'bg-green-600 hover:bg-green-600' : ''}`}
+            disabled={isFormDisabled}
           >
-            {isLoading ? <Loader size="sm" message="Signing in..." className="text-white flex-row justify-center gap-2" /> : 'Sign In'}
+            {status === 'loading' ? (
+              <Loader
+                size="sm"
+                message="Signing in..."
+                className="text-white flex-row flex-1 justify-center gap-2"
+              />
+            ) : status === 'success' ? (
+              <div className="flex items-center gap-2 text-white">
+                <CheckCircle className="text-white size-5" /> Logged In
+              </div>
+            ) : (
+              'Sign In'
+            )}
           </PrimaryButton>
 
           <div className="flex items-center justify-between mt-2 gap-2">
@@ -138,7 +156,7 @@ export default function SignInPage() {
                 e.preventDefault()
                 router.push('/auth/forgot-password')
               }}
-              disabled={isLoading}
+              disabled={isFormDisabled}
             >
               Forgot Passowrd?
             </button>
@@ -153,16 +171,25 @@ export default function SignInPage() {
 
         <SecondaryButton
           onClick={handleGoogleSignIn}
-          disabled={isLoading}
+          disabled={isFormDisabled}
           className="flex items-center justify-center w-full gap-2"
         >
-          <Image src="/images/google-logo.webp" className='p-1 rounded-full' alt="Google" width={30} height={30} />
+          <Image
+            src="/images/google-logo.webp"
+            className="p-1 rounded-full"
+            alt="Google"
+            width={30}
+            height={30}
+          />
           <span>Sign in with Google</span>
         </SecondaryButton>
 
         <p className="mt-6 text-center text-gray-600">
           Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="text-primary-main hover:underline">
+          <Link
+            href="/auth/signup"
+            className="text-primary-main hover:underline"
+          >
             Sign Up
           </Link>
         </p>

@@ -160,7 +160,7 @@ const MobileNavbar = () => {
 
       <motion.div
         className={`fixed xl:hidden top-0 left-0 h-screen w-full bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? 'translate-x-0 duration-500' : '-translate-x-full duration-500'
         }`}
       >
         <div className="flex flex-col h-full">

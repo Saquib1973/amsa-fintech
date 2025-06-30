@@ -9,7 +9,7 @@ interface BlogPostClientProps {
 
 export default function BlogPostClient({ post }: BlogPostClientProps) {
   return (
-    <div className="width-1240 py-20 p-10 flex flex-col gap-10">
+    <div className="w-full max-w-6xl mx-auto py-20 p-4 flex flex-col gap-10">
       <div className="flex items-center gap-2 text-xl font-light">
         <Link href="/blog" className="underline underline-offset-4">
           Blog

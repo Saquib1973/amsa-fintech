@@ -1,51 +1,41 @@
-'use client'
-import { Close } from '@/public/svg';
+"use client"
+import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
 }
 
-const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div className="fixed inset-0 bg-black/60" onClick={onClose} />
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/80 z-40"
-          />
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-off-white z-50"
+            className="relative z-10 bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-lg w-full p-6"
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-4xl font-light">{title}</h2>
-                <button
-                  onClick={onClose}
-                  className=""
-                >
-                  <Close
-                    className="size-7 text-gray-500 hover:text-red-500" />
-                </button>
-              </div>
-              <div className="space-y-6">
-                {children}
-              </div>
+            <div className="flex items-center justify-between mb-4">
+              {title && <h2 className="text-lg font-semibold">{title}</h2>}
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close modal">&times;</button>
             </div>
+            <div>{children}</div>
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );

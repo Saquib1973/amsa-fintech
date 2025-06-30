@@ -86,7 +86,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
 
     return (
       <AnimateWrapper className="bg-gradient-to-b from-white via-blue-50/80 to-white">
-        <SectionWrapper className="py-0 md:py-0">
+        <SectionWrapper className="max-md:px-0 py-0 md:py-0">
           <div className="flex flex-col-reverse xl:flex-row justify-between gap-4 md:gap-0">
             <AssetHeader
               coinData={coinData}
@@ -101,7 +101,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
             />
           </div>
         </SectionWrapper>
-        <SectionWrapper className="flex flex-col lg:flex-row gap-4">
+        <SectionWrapper className="max-md:px-0 flex flex-col lg:flex-row gap-4">
           <div className="w-full lg:w-2/3">
             {activeTab === 'overview' && <AssetOverview coinData={coinData} />}
             {activeTab === 'chart' && (

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Copy, Check, Clock, Wallet, Network, Coins } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Copy, Check, Clock, Wallet, Network, Coins,RotateCcw } from 'lucide-react'
 import { format } from 'date-fns'
 import PrimaryButton from '@/components/button/primary-button'
 import SecondaryButton from '@/components/button/secondary-button'
@@ -12,6 +12,7 @@ import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import { SimpleButton } from '@/components/ui/simple-button'
 import { getStatusColor } from '@/lib/utils'
 import type { TransactionStatus } from '@/types/transaction-types'
+import { useToast } from '@/components/ui/use-toast'
 
 interface StatusHistory {
   status: string
@@ -83,13 +84,15 @@ const TransactionDetailSkeleton = () => {
           </div>
         </OffWhiteHeadingContainer>
 
-        <SectionWrapper className="max-w-2xl mx-auto py-6 md:py-10 pb-8 mb-8">
-          {/* Back Button Skeleton */}
-          <div className="flex justify-start mb-6 mr-2">
-            <div className="h-10 bg-gray-200 rounded-lg w-48"></div>
+        <SectionWrapper className="max-w-2xl mx-auto max-md:px-1 py-6 md:py-10 pb-8 mb-8">
+          {/* Action Button Skeleton */}
+          <div className="flex gap-3 justify-start mb-6 mr-2">
+            <div className="h-10 w-[200px] rounded-md bg-gray-200 flex items-center justify-center">
+              <div className="w-5 h-5 bg-gray-300 rounded-full mr-2" />
+              <div className="h-4 w-20 bg-gray-300 rounded" />
+            </div>
           </div>
-
-          <div className="space-y-10">
+          <div className="space-y-10 px-2">
             {/* Transaction Summary Section */}
             <section className="space-y-4">
               <div className="h-6 bg-gray-200 rounded w-48 mb-2"></div>
@@ -197,34 +200,35 @@ const TransactionDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const toast = useToast()
+  const [updating, setUpdating] = useState(false)
 
   const transactionId = params.id as string
 
-  useEffect(() => {
-    const fetchTransaction = async () => {
-      if (!transactionId) return
-
-      try {
-        setLoading(true)
-        const response = await fetch(`/api/transaction/${transactionId}`)
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('Transaction not found')
-          }
-          throw new Error('Failed to fetch transaction')
+  // Reusable fetch function
+  const fetchTransaction = async () => {
+    if (!transactionId) return
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/transaction/${transactionId}`)
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Transaction not found')
         }
-
-        const data = await response.json()
-        setTransaction(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
+        throw new Error('Failed to fetch transaction')
       }
+      const data = await response.json()
+      setTransaction(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchTransaction()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionId])
 
   const handleCopyAddress = async () => {
@@ -248,6 +252,28 @@ const TransactionDetailPage = () => {
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'PPP p')
+  }
+
+  const handleUpdateStatus = async () => {
+    setUpdating(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/transaction/${transactionId}`, {
+        method: 'PATCH',
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update status')
+      }
+      toast({ title: 'Status Updated', description: 'Transaction status has been refreshed.' })
+      // Show skeleton and refetch transaction
+      await fetchTransaction()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update status')
+      toast({ title: 'Error', description: err instanceof Error ? err.message : 'Failed to update status', variant: 'destructive' })
+    } finally {
+      setUpdating(false)
+    }
   }
 
   if (loading) {
@@ -305,20 +331,21 @@ const TransactionDetailPage = () => {
           </div>
         </OffWhiteHeadingContainer>
 
-        <SectionWrapper className="max-w-2xl mx-auto py-6 md:py-10 pb-8 mb-8">
+        <SectionWrapper className="max-w-2xl mx-auto max-md:px-1 py-6 md:py-10 pb-8 mb-8">
           {/* Action Button */}
-          <div className="flex justify-start mb-6 mr-2">
+          <div className="flex gap-3 justify-start mb-6 mr-2">
             <SimpleButton
+              onClick={handleUpdateStatus}
+              className="flex items-center rounded-md p-2 ml-auto w-[200px] gap-2"
+              loading={updating}
+              disabled={updating}
               variant="outline"
-              size="md"
-              onClick={() => router.back()}
-              className="flex items-center gap-2"
             >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              Back to Transactions
+              <RotateCcw className="w-4 h-4" />
+              {updating ? 'Refreshing...' : 'Refresh Status'}
             </SimpleButton>
           </div>
-          <div className="space-y-10">
+          <div className="space-y-10 px-2">
             {/* Transaction Summary */}
             <section className="space-y-4">
               <h2 className="text-lg font-medium text-gray-800 mb-2">

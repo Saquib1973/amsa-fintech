@@ -79,7 +79,7 @@ const DashboardSidebar = () => {
       <motion.div
         className={`fixed lg:sticky top-0 left-0 h-screen w-full lg:h-[calc(100vh-0px)] bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ease-in-out z-50 ${
           isCollapsed ? 'w-[90px]' : 'max-w-full xl:w-[250px]'
-        } ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        } ${isOpen ? 'translate-x-0 duration-500' : '-translate-x-full lg:translate-x-0 duration-500'}`}
       >
         <div className="flex flex-col h-full">
           <DesktopHeader

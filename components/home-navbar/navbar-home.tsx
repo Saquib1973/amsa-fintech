@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { menuItems } from '@/lib/data'
 import Image from 'next/image'
+import SearchModalButton from '../ui/search-component'
 
 const NavbarHome = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
@@ -125,11 +126,13 @@ const NavbarHome = () => {
           </motion.div>
         </div>
 
-        <div className="hidden xl:block">
+        <div className="max-xl:hidden flex items-center gap-4">
+          <SearchModalButton />
           <NavbarHomeCta />
         </div>
 
         <div className="xl:hidden flex items-center">
+          <SearchModalButton />
           <NavbarHomeCta />
           <MobileNavbar />
         </div>

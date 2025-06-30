@@ -27,7 +27,7 @@ export const menuItems: MenuItem[] = [
       { title: 'About us', href: '/about-us' },
       { title: 'Blog', href: '/blog' },
       { title: 'Privacy Policy', href: '/privacy-policy' },
-      { title: 'Terms of Service', href: '/terms-of-service' },
+      { title: 'Terms of Service', href: '/tnc' },
     ],
   },
   {

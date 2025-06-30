@@ -1,10 +1,11 @@
 import React from 'react';
-
+import Loader from '../loader-component';
 interface SimpleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger'  | 'outline';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
   className?: string;
+  loading?: boolean;
 }
 
 const base = 'cursor-pointer inline-flex items-center justify-center rounded-md font-normal transition-colors bg-transparent';
@@ -23,7 +24,7 @@ const variants = {
 };
 
 export const SimpleButton = React.forwardRef<HTMLButtonElement, SimpleButtonProps>(
-  ({ variant = 'primary', size = 'md', children, className = '', ...rest }, ref) => (
+  ({ variant = 'primary', size = 'md', children, className = '',loading, ...rest }, ref) => (
     <button
       ref={ref}
       className={[
@@ -34,7 +35,7 @@ export const SimpleButton = React.forwardRef<HTMLButtonElement, SimpleButtonProp
       ].join(' ')}
       {...rest}
     >
-      {children}
+      {loading ? <Loader size="sm" className="text-white flex-row justify-center gap-2" /> : children}
     </button>
   )
 );

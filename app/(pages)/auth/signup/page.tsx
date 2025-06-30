@@ -15,12 +15,13 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const isFormDisabled = status === 'loading' || status === 'success'
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+    setStatus('loading')
     try {
       await toast.promise(
         fetch('/api/auth/signup', {
@@ -29,9 +30,11 @@ export default function SignUpPage() {
           body: JSON.stringify({ name, email, password }),
         }).then((res) => {
           if (res.ok) {
+            setStatus('success')
             router.push(`/auth/verify-email?email=${email}`)
             return res
           } else {
+            setStatus('error')
             throw new Error('Failed to sign up')
           }
         }),
@@ -42,9 +45,8 @@ export default function SignUpPage() {
         }
       )
     } catch (error) {
+      setStatus('error')
       console.error('Signup error:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -71,7 +73,7 @@ export default function SignUpPage() {
               placeholder="Enter your name"
               className="input-field w-full"
               required
-              disabled={isLoading}
+              disabled={isFormDisabled}
             />
           </div>
 
@@ -90,7 +92,7 @@ export default function SignUpPage() {
               placeholder="Enter your email"
               className="input-field w-full"
               required
-              disabled={isLoading}
+              disabled={isFormDisabled}
             />
           </div>
 
@@ -109,21 +111,25 @@ export default function SignUpPage() {
               placeholder="Enter your password"
               className="input-field w-full"
               required
-              disabled={isLoading}
+              disabled={isFormDisabled}
             />
           </div>
 
           <PrimaryButton
             type="submit"
             className="w-full text-center h-12 flex items-center justify-center mt-6"
-            disabled={isLoading}
+            disabled={isFormDisabled}
           >
-            {isLoading ? (
+            {status === 'loading' ? (
               <Loader
                 size="sm"
                 message="Registering..."
                 className="text-white flex-row justify-center gap-2"
               />
+            ) : status === 'success' ? (
+              <div className="flex items-center gap-2">
+                <svg className="text-green-700" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2l4 -4" /></svg> Registered
+              </div>
             ) : (
               'Sign Up'
             )}
@@ -138,7 +144,7 @@ export default function SignUpPage() {
 
         <SecondaryButton
           onClick={() => signIn('google')}
-          disabled={isLoading}
+          disabled={isFormDisabled}
           className="flex items-center justify-center w-full gap-2"
         >
           <Image src="/images/google-logo.webp" className='p-1 rounded-full' alt="Google" width={30} height={30} />
