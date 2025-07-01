@@ -1,7 +1,7 @@
 import React from 'react';
 import Loader from '../loader-component';
 interface SimpleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger'  | 'outline';
+  variant?: 'primary' | 'secondary' | 'danger'  | 'outline' | 'secondary-outlined' | 'primary-outlined';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
   className?: string;
@@ -18,9 +18,12 @@ const sizes = {
 
 const variants = {
   primary: 'text-blue-800 hover:bg-blue-50',
-  secondary: 'text-gray-800 hover:bg-gray-50',
+  secondary: 'text-gray-800 border border-gray-200 bg-gray-100 hover:bg-gray-100',
   danger: 'text-red-700 hover:bg-red-50',
   outline: 'text-gray-800 border border-gray-200 hover:bg-gray-50',
+  "primary-outlined": 'text-blue-800 border border-blue-200 hover:bg-blue-50',
+  "secondary-outlined": "text-gray-800 border border-gray-200 hover:bg-gray-50",
+
 };
 
 export const SimpleButton = React.forwardRef<HTMLButtonElement, SimpleButtonProps>(

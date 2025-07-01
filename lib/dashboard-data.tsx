@@ -10,6 +10,7 @@ import {
   Home,
   Lock,
   Megaphone,
+  Bell,
   RefreshCw,
   Settings,
   User,
@@ -56,6 +57,13 @@ export const dashboardSidebarItems: NavSection[] = [
         icon: <ChartBar className="w-5 h-5" />,
         roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
         order: 5,
+      },
+      {
+        name: 'Notifications',
+        href: '/notifications',
+        icon: <Bell className="w-5 h-5" />,
+        roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
+        order: 6,
       },
       {
         name: 'Profile',

@@ -39,6 +39,19 @@ body{
   scroll-behavior: smooth;
 }
 
+/* Hide number input arrows */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 @theme{
   --color-off-white: #F8F8F5;
   --exclude-header-height: 86px;
@@ -195,4 +208,3 @@ body{
   }
 
 }
-

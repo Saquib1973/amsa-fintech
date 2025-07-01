@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Copy, Check, Clock, Wallet, Network, Coins,RotateCcw } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Copy, Check, Clock, Wallet, Network, Coins, RotateCw } from 'lucide-react'
 import { format } from 'date-fns'
 import PrimaryButton from '@/components/button/primary-button'
 import SecondaryButton from '@/components/button/secondary-button'
@@ -337,11 +337,11 @@ const TransactionDetailPage = () => {
             <SimpleButton
               onClick={handleUpdateStatus}
               className="flex items-center rounded-md p-2 ml-auto w-[200px] gap-2"
-              loading={updating}
               disabled={updating}
               variant="outline"
             >
-              <RotateCcw className="w-4 h-4" />
+              {updating && <RotateCw
+                className="animate-spin w-4 h-4" />}
               {updating ? 'Refreshing...' : 'Refresh Status'}
             </SimpleButton>
           </div>
@@ -395,7 +395,10 @@ const TransactionDetailPage = () => {
                   <div className="flex justify-between items-center text-sm py-1">
                     <span className="text-gray-500">Amount Paid</span>
                     <span className="text-gray-900">
-                      {formatCurrency(transaction.amountPaid, transaction.fiatCurrency)}
+                      {formatCurrency(
+                        transaction.amountPaid,
+                        transaction.fiatCurrency
+                      )}
                     </span>
                   </div>
                 )}
@@ -403,7 +406,10 @@ const TransactionDetailPage = () => {
                   <div className="flex justify-between items-center text-sm py-1">
                     <span className="text-gray-500">Total Fee</span>
                     <span className="text-gray-900">
-                      {formatCurrency(transaction.totalFeeInFiat, transaction.fiatCurrency)}
+                      {formatCurrency(
+                        transaction.totalFeeInFiat,
+                        transaction.fiatCurrency
+                      )}
                     </span>
                   </div>
                 )}
@@ -543,17 +549,30 @@ const TransactionDetailPage = () => {
                         (history: StatusHistory, index: number) => {
                           // Parse the message to extract structured data
                           const message = history.message || ''
-                          const isLast = index === transaction.statusHistories!.length - 1
+                          const isLast =
+                            index === transaction.statusHistories!.length - 1
 
                           // Extract key information from the message
                           const extractOrderInfo = (msg: string) => {
-                            const orderIdMatch = msg.match(/\*Order Id:\* ([a-f0-9-]+)/)
+                            const orderIdMatch = msg.match(
+                              /\*Order Id:\* ([a-f0-9-]+)/
+                            )
                             const emailMatch = msg.match(/\*Email:\* ([^\s*]+)/)
-                            const cryptoAmountMatch = msg.match(/\*Crypto Amount:\* ([0-9.]+ [A-Z]+)/)
-                            const fiatAmountMatch = msg.match(/\*Fiat Amount:\* ([0-9]+ [A-Z]+)/)
-                            const paymentMethodMatch = msg.match(/\*Payment Method:\* ([^\s*]+)/)
-                            const walletAddressMatch = msg.match(/\*Wallet Address:\* ([a-fA-F0-9x]+)/)
-                            const liquidityProviderMatch = msg.match(/\*Liquidity Provider\* ([^\s*]+)/)
+                            const cryptoAmountMatch = msg.match(
+                              /\*Crypto Amount:\* ([0-9.]+ [A-Z]+)/
+                            )
+                            const fiatAmountMatch = msg.match(
+                              /\*Fiat Amount:\* ([0-9]+ [A-Z]+)/
+                            )
+                            const paymentMethodMatch = msg.match(
+                              /\*Payment Method:\* ([^\s*]+)/
+                            )
+                            const walletAddressMatch = msg.match(
+                              /\*Wallet Address:\* ([a-fA-F0-9x]+)/
+                            )
+                            const liquidityProviderMatch = msg.match(
+                              /\*Liquidity Provider\* ([^\s*]+)/
+                            )
 
                             return {
                               orderId: orderIdMatch?.[1],
@@ -562,22 +581,32 @@ const TransactionDetailPage = () => {
                               fiatAmount: fiatAmountMatch?.[1],
                               paymentMethod: paymentMethodMatch?.[1],
                               walletAddress: walletAddressMatch?.[1],
-                              liquidityProvider: liquidityProviderMatch?.[1]
+                              liquidityProvider: liquidityProviderMatch?.[1],
                             }
                           }
 
                           const orderInfo = extractOrderInfo(message)
-                          const hasStructuredData = orderInfo.orderId || orderInfo.cryptoAmount || orderInfo.fiatAmount
+                          const hasStructuredData =
+                            orderInfo.orderId ||
+                            orderInfo.cryptoAmount ||
+                            orderInfo.fiatAmount
 
                           return (
-                            <div key={index} className="relative flex items-start gap-4">
+                            <div
+                              key={index}
+                              className="relative flex items-start gap-4"
+                            >
                               {/* Status dot */}
-                              <div className={`relative z-10 w-8 h-8 rounded-full border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0 ${
-                                isLast ? 'bg-blue-500' : 'bg-gray-300'
-                              }`}>
-                                <div className={`w-2 h-2 rounded-full ${
-                                  isLast ? 'bg-white' : 'bg-gray-600'
-                                }`}></div>
+                              <div
+                                className={`relative z-10 w-8 h-8 rounded-full border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0 ${
+                                  isLast ? 'bg-blue-500' : 'bg-gray-300'
+                                }`}
+                              >
+                                <div
+                                  className={`w-2 h-2 rounded-full ${
+                                    isLast ? 'bg-white' : 'bg-gray-600'
+                                  }`}
+                                ></div>
                               </div>
 
                               {/* Content */}
@@ -606,51 +635,84 @@ const TransactionDetailPage = () => {
                                       <div className="space-y-3">
                                         {/* Clean message without structured data */}
                                         <p className="text-sm text-gray-700 leading-relaxed">
-                                          {message.replace(/\*[^*]+\*/g, '').trim()}
+                                          {message
+                                            .replace(/\*[^*]+\*/g, '')
+                                            .trim()}
                                         </p>
 
                                         {/* Structured data grid */}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-gray-200">
                                           {orderInfo.orderId && (
                                             <div className="flex flex-col">
-                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Order ID</span>
-                                              <span className="text-sm text-gray-900 font-mono">{orderInfo.orderId}</span>
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Order ID
+                                              </span>
+                                              <span className="text-sm text-gray-900 font-mono">
+                                                {orderInfo.orderId}
+                                              </span>
                                             </div>
                                           )}
                                           {orderInfo.email && (
                                             <div className="flex flex-col">
-                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</span>
-                                              <span className="text-sm text-gray-900">{orderInfo.email}</span>
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Email
+                                              </span>
+                                              <span className="text-sm text-gray-900">
+                                                {orderInfo.email}
+                                              </span>
                                             </div>
                                           )}
                                           {orderInfo.cryptoAmount && (
                                             <div className="flex flex-col">
-                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Crypto Amount</span>
-                                              <span className="text-sm text-gray-900 font-semibold">{orderInfo.cryptoAmount}</span>
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Crypto Amount
+                                              </span>
+                                              <span className="text-sm text-gray-900 font-semibold">
+                                                {orderInfo.cryptoAmount}
+                                              </span>
                                             </div>
                                           )}
                                           {orderInfo.fiatAmount && (
                                             <div className="flex flex-col">
-                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fiat Amount</span>
-                                              <span className="text-sm text-gray-900 font-semibold">{orderInfo.fiatAmount}</span>
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Fiat Amount
+                                              </span>
+                                              <span className="text-sm text-gray-900 font-semibold">
+                                                {orderInfo.fiatAmount}
+                                              </span>
                                             </div>
                                           )}
                                           {orderInfo.paymentMethod && (
                                             <div className="flex flex-col">
-                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Payment Method</span>
-                                              <span className="text-sm text-gray-900 capitalize">{orderInfo.paymentMethod.replace(/_/g, ' ')}</span>
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Payment Method
+                                              </span>
+                                              <span className="text-sm text-gray-900 capitalize">
+                                                {orderInfo.paymentMethod.replace(
+                                                  /_/g,
+                                                  ' '
+                                                )}
+                                              </span>
                                             </div>
                                           )}
                                           {orderInfo.liquidityProvider && (
                                             <div className="flex flex-col">
-                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Provider</span>
-                                              <span className="text-sm text-gray-900">{orderInfo.liquidityProvider}</span>
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Provider
+                                              </span>
+                                              <span className="text-sm text-gray-900">
+                                                {orderInfo.liquidityProvider}
+                                              </span>
                                             </div>
                                           )}
                                           {orderInfo.walletAddress && (
                                             <div className="flex flex-col sm:col-span-2">
-                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wallet Address</span>
-                                              <span className="text-sm text-gray-900 font-mono break-all">{orderInfo.walletAddress}</span>
+                                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                                Wallet Address
+                                              </span>
+                                              <span className="text-sm text-gray-900 font-mono break-all">
+                                                {orderInfo.walletAddress}
+                                              </span>
                                             </div>
                                           )}
                                         </div>

@@ -25,11 +25,10 @@ interface MenuItemProps {
   item: MenuItem
   onLinkClick: () => void
   isActive: boolean
-  isFirstItem?: boolean
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive, isFirstItem = false }) => {
-  const [isOpen, setIsOpen] = useState(isFirstItem)
+const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive }) => {
+  const [isOpen, setIsOpen] = useState(false)
 
   if (item.href) {
     return (
@@ -37,7 +36,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive, isFirs
         href={item.href}
         target={item.target}
         onClick={onLinkClick}
-        className={`ml-2 flex text-lg items-center font-light transition-colors w-full px-8 py-2.5 gap-4 ${
+        className={`ml-2 flex text-lg items-center font-light transition-colors w-full px-8 py-1 gap-4 ${
           isActive
             ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
@@ -54,7 +53,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onLinkClick, isActive, isFirs
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-8 py-2.5 text-lg font-light text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100 transition-colors"
+        className="flex w-full text-2xl items-center justify-between px-8 py-1.5 font-light text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100 transition-colors"
       >
         {item.title}
         <svg
@@ -182,13 +181,12 @@ const MobileNavbar = () => {
                   item={item}
                   onLinkClick={handleNavItemClick}
                   isActive={isItemActive(item.href)}
-                  isFirstItem={index === 0}
                 />
               ))}
               <Link
                 href="/support"
                 onClick={handleNavItemClick}
-                className={`flex text-lg items-center font-light transition-colors w-full px-8 py-2.5 gap-4 ${
+                className={`flex text-2xl items-center font-light transition-colors w-full px-8 py-2.5 gap-4 ${
                   isItemActive('/support')
                     ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'

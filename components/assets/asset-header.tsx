@@ -3,7 +3,7 @@ import { CoinData } from '@/types/coingecko-types'
 import { formatLargeNumber } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import Breadcrumb from '../bread-crumb'
 interface AssetHeaderProps {
   coinData: CoinData
@@ -36,6 +36,26 @@ const AssetHeader = ({
 
   const overviewRef = useRef<HTMLButtonElement>(null)
   const chartRef = useRef<HTMLButtonElement>(null)
+
+  const [underline, setUnderline] = useState({ left: 0, width: 0 })
+
+  useLayoutEffect(() => {
+    const updateUnderline = () => {
+      const ref =
+        activeTab === 'overview' || activeTab === ''
+          ? overviewRef.current
+          : chartRef.current
+      if (ref) {
+        setUnderline({
+          left: ref.offsetLeft,
+          width: ref.offsetWidth,
+        })
+      }
+    }
+    updateUnderline()
+    window.addEventListener('resize', updateUnderline)
+    return () => window.removeEventListener('resize', updateUnderline)
+  }, [activeTab])
 
   useLayoutEffect(() => {
     handleTabChange(activeTab)
@@ -129,16 +149,8 @@ const AssetHeader = ({
       <div className=" w-full mt-2 flex border-b relative border-gray-200">
         <motion.div
           className="h-1 absolute bottom-0 bg-primary-main"
-          animate={{
-            left:
-              activeTab === 'overview' || activeTab === ''
-                ? overviewRef.current?.offsetLeft
-                : chartRef.current?.offsetLeft,
-            width:
-              activeTab === 'overview' || activeTab === ''
-                ? overviewRef.current?.offsetWidth
-                : chartRef.current?.offsetWidth,
-          }}
+          animate={underline}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         />
         <button
           ref={overviewRef}

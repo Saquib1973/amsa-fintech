@@ -12,6 +12,7 @@ import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SimpleButton } from '@/components/ui/simple-button'
+import { useRouter } from 'next/navigation'
 
 interface TransactionData {
   id: string
@@ -67,7 +68,7 @@ const TransactionReceipt = ({
     }
     return String(value)
   }
-
+  const router = useRouter()
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleString('en-US', {
@@ -283,12 +284,27 @@ const TransactionReceipt = ({
             <SimpleButton variant="secondary" onClick={onClose}>
               Close
             </SimpleButton>
+            <div className="flex gap-2 justify-between">
+
             <SimpleButton
-              variant="primary"
-              onClick={() => (window.location.href = '/transactions')}
+              variant="secondary"
+              onClick={() => {
+                if (orderData.id && orderData.id !== 'N/A' && orderData.id !== 'ERROR') {
+                  router.push(`/transactions/${orderData.id}`)
+                } else {
+                  toast.error('Transaction ID not available!')
+                }
+              }}
             >
-              View All Transactions
+              Details
             </SimpleButton>
+            <SimpleButton
+              variant="primary-outlined"
+              onClick={() => router.push('/transactions')}
+              >
+              All Transactions
+            </SimpleButton>
+              </div>
           </div>
         </div>
       </div>
@@ -347,6 +363,7 @@ const AssetCalculator = ({
   const [showReceipt, setShowReceipt] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [orderData, setOrderData] = useState<TransactionData | null>(null)
+  const [lastTransakOrderData, setLastTransakOrderData] = useState<TransactionData | null>(null)
   const { data: session,status:userSessionStatus} = useSession()
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -442,6 +459,8 @@ const AssetCalculator = ({
 
     console.log('Final transaction data:', transactionData)
     setOrderData(transactionData)
+    setLastTransakOrderData(transactionData)
+    console.log('lastTransakOrderData set:', transactionData)
 
     // Show receipt and confetti for both PROCESSING and COMPLETED statuses
     if (
@@ -476,6 +495,14 @@ const AssetCalculator = ({
 
   const handleTransakClose = () => {
     console.log('Transak closed')
+    console.log('lastTransakOrderData at close:', lastTransakOrderData)
+    if (lastTransakOrderData) {
+      setOrderData(lastTransakOrderData)
+      setShowReceipt(true)
+      console.log('Showing receipt modal on close')
+    } else {
+      console.log('No transaction data to show on close')
+    }
   }
 
   const handleCloseReceipt = () => {
@@ -528,6 +555,11 @@ const AssetCalculator = ({
       selectedCurrency as keyof typeof coinData.market_data.current_price
     ] || 0
 
+  // Debug log for receipt modal rendering
+  if (showReceipt && orderData) {
+    console.log('Rendering TransactionReceipt modal', orderData)
+  }
+
   return (
     <div className="w-full xl:w-[50%] md:border-l border-b border-gray-200">
       {showConfetti && <Confetti />}
@@ -542,17 +574,17 @@ const AssetCalculator = ({
       <div className="m-auto w-full py-6 md:py-12 p-1 md:p-6">
         <Breadcrumb className="xl:hidden my-2" />
         <div className="w-full flex flex-col gap-3">
-          <div className="flex-1">
-            <div className="bg-white rounded-md p-6 border border-gray-100">
+          <div className="flex-col">
+            <div className="p-2 md:p-6">
               <h2 className="text-xl font-medium mb-4">
                 Calculate Your Purchase
               </h2>
 
-              <div className="space-y-4">
+              <div className="space-y-4 w-full">
                 <div className="flex xl:flex-col gap-3">
                   <div className="relative w-full">
                     <input
-                      type="text"
+                      type="number"
                       name="dollars"
                       className="input-field text-right w-full p-3 md:p-4 border rounded-lg"
                       placeholder="Enter amount"
