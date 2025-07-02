@@ -224,6 +224,14 @@ const TransakPaymentComponent = ({
           console.error('Error updating transaction status:', updateError)
         }
 
+        // Always call onSuccess with the latest transaction data and status
+        if (onSuccess) {
+          onSuccess({
+            eventName: 'TRANSACTION_STATUS_UPDATE',
+            status: data.data,
+          })
+        }
+
         // Check if transaction is in a final state using mapped status
         console.log('Checking if status is final:', mappedStatus, 'Final states:', ["COMPLETED", "FAILED", "CANCELLED", "EXPIRED"]);
         if (["COMPLETED", "FAILED", "CANCELLED", "EXPIRED"].includes(mappedStatus)) {

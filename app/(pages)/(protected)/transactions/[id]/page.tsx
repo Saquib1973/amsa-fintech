@@ -334,16 +334,18 @@ const TransactionDetailPage = () => {
         <SectionWrapper className="max-w-2xl mx-auto max-md:px-1 py-6 md:py-10 pb-8 mb-8">
           {/* Action Button */}
           <div className="flex gap-3 justify-start mb-6 mr-2">
-            <SimpleButton
-              onClick={handleUpdateStatus}
-              className="flex items-center rounded-md p-2 ml-auto w-[200px] gap-2"
-              disabled={updating}
-              variant="outline"
-            >
-              {updating && <RotateCw
-                className="animate-spin w-4 h-4" />}
-              {updating ? 'Refreshing...' : 'Refresh Status'}
-            </SimpleButton>
+            {transaction.status !== 'COMPLETED' && (
+              <SimpleButton
+                onClick={handleUpdateStatus}
+                className="flex items-center rounded-md p-2 ml-auto w-[200px] gap-2"
+                disabled={updating}
+                variant="outline"
+              >
+                {updating && <RotateCw
+                  className="animate-spin w-4 h-4" />}
+                {updating ? 'Refreshing...' : 'Refresh Status'}
+              </SimpleButton>
+            )}
           </div>
           <div className="space-y-10 px-2">
             {/* Transaction Summary */}
