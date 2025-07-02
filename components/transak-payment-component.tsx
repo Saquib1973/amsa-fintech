@@ -72,6 +72,7 @@ const TransakPaymentComponent = ({
   const [isProcessing, setIsProcessing] = useState(false)
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
   const pollingAttemptsRef = useRef(0)
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null)
 
   const getStatusMessage = (status: string) => {
     switch (status) {
@@ -338,7 +339,10 @@ const TransakPaymentComponent = ({
       console.log(data)
     })
 
-    Transak.on(Transak.EVENTS.TRANSAK_WIDGET_CLOSE, () => {
+    Transak.on(Transak.EVENTS.TRANSAK_WIDGET_CLOSE, async () => {
+      if (lastOrderId) {
+        await checkTransactionStatus(lastOrderId)
+      }
       newTransak.close()
       setTransak(null)
       setIsLoading(false)
@@ -351,6 +355,7 @@ const TransakPaymentComponent = ({
       console.log('Order created:', orderData);
       if (orderData.status?.id) {
         console.log('Starting polling for order ID:', orderData.status.id);
+        setLastOrderId(orderData.status.id)
         await saveTransaction(orderData)
         startPolling(orderData.status.id)
         // Set initial status

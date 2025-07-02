@@ -45,7 +45,7 @@ interface TransactionData {
   statusHistories?: Array<{
     status: TransactionStatus
     createdAt: string
-    message: string
+    message?: string
   }>
 }
 
@@ -423,7 +423,7 @@ const AssetCalculator = ({
           : undefined,
         statusHistories: status.statusHistories
           ? status.statusHistories.map((h) => ({
-              status: (h.status as TransactionStatus),
+              status: h.status,
               createdAt: h.createdAt,
               message: h.message,
             }))
