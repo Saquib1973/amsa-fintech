@@ -1,14 +1,14 @@
 'use client'
 import { CoinData } from '@/types/coingecko-types'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import TransakPaymentComponent from '../transak-payment-component'
 import { useSession } from 'next-auth/react'
 import PrimaryButton from '../button/primary-button'
 import Confetti from '../confetti'
 import toast from 'react-hot-toast'
 import Breadcrumb from '../bread-crumb'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Loader2, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SimpleButton } from '@/components/ui/simple-button'
@@ -58,6 +58,51 @@ const TransactionReceipt = ({
   orderData,
   onClose,
 }: TransactionReceiptProps) => {
+  const [liveOrderData, setLiveOrderData] = useState(orderData)
+  const [isPolling, setIsPolling] = useState(false)
+  const [isFinal, setIsFinal] = useState(false)
+  const pollingRef = useRef<NodeJS.Timeout | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    setLiveOrderData(orderData)
+    setIsFinal(
+      [
+        'COMPLETED',
+        'FAILED',
+        'CANCELLED',
+        'EXPIRED',
+      ].includes(orderData.status)
+    )
+    if (!isFinal && orderData.id && orderData.id !== 'N/A') {
+      setIsPolling(true)
+      pollingRef.current = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/transaction/status?orderId=${orderData.id}`)
+          const data = await res.json()
+          if (data?.data) {
+            setLiveOrderData((prev) => ({ ...prev, ...data.data }))
+            if ([
+              'COMPLETED',
+              'FAILED',
+              'CANCELLED',
+              'EXPIRED',
+            ].includes(data.data.status)) {
+              setIsFinal(true)
+              setIsPolling(false)
+              if (pollingRef.current) clearInterval(pollingRef.current)
+            }
+          }
+        } catch {
+          // Optionally handle error
+        }
+      }, 5000)
+    }
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current)
+    }
+  }, [orderData])
+
   const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) return 'N/A'
     if (typeof value === 'object') {
@@ -69,7 +114,6 @@ const TransactionReceipt = ({
     }
     return String(value)
   }
-  const router = useRouter()
   const formatDate = (dateString: string) => {
     try {
       return new Date(dateString).toLocaleString('en-US', {
@@ -96,15 +140,8 @@ const TransactionReceipt = ({
       <div className="bg-white w-screen h-screen overflow-y-auto">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-gray-100">
-            <div>
-              <h2 className="text-xl font-medium text-gray-900">
-                Transaction Receipt
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Order ID: {formatValue(orderData.id)}
-              </p>
-            </div>
+          <div className="flex items-center justify-between p-6 pb-0">
+            <h2 className="text-xl font-medium text-gray-900">Transaction Receipt</h2>
             <SimpleButton
               variant="outline"
               size="sm"
@@ -126,6 +163,18 @@ const TransactionReceipt = ({
               </svg>
             </SimpleButton>
           </div>
+          {/* Live Status Indicator - simple and subtle, now under the heading */}
+          <div className="flex items-center gap-2 mb-4 ml-6 text-xs text-gray-500">
+            {isPolling ? (
+              <Loader2 className="animate-spin text-blue-400" size={14} />
+            ) : isFinal ? (
+              <CheckCircle2 className="text-green-400" size={14} />
+            ) : null}
+            <span>
+              {isPolling ? 'Live status update' : isFinal ? 'Status up to date' : ''}
+            </span>
+          </div>
+          <div className="border-b border-gray-100" />
 
           <div className="p-6 space-y-8">
             {/* Transaction Summary */}
@@ -137,29 +186,29 @@ const TransactionReceipt = ({
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Status</span>
                   <span
-                    className={`font-medium ${orderData.status === 'COMPLETED' ? 'text-green-600' : 'text-yellow-600'}`}
+                    className={`font-medium ${liveOrderData.status === 'COMPLETED' ? 'text-green-600' : 'text-yellow-600'}`}
                   >
-                    {formatValue(orderData.status)}
+                    {formatValue(liveOrderData.status)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Amount</span>
                   <span className="font-medium">
-                    {formatValue(orderData.fiatAmount)}{' '}
-                    {formatValue(orderData.fiatCurrency)}
+                    {formatValue(liveOrderData.fiatAmount)}{' '}
+                    {formatValue(liveOrderData.fiatCurrency)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Crypto Amount</span>
                   <span className="font-medium">
-                    {formatValue(orderData.cryptoAmount)}{' '}
-                    {formatValue(orderData.cryptoCurrency)}
+                    {formatValue(liveOrderData.cryptoAmount)}{' '}
+                    {formatValue(liveOrderData.cryptoCurrency)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Payment Method</span>
                   <span className="font-medium">
-                    {formatValue(orderData.paymentOptionId)
+                    {formatValue(liveOrderData.paymentOptionId)
                       .replace(/_/g, ' ')
                       .toUpperCase()}
                   </span>
@@ -167,13 +216,13 @@ const TransactionReceipt = ({
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Network</span>
                   <span className="font-medium">
-                    {formatValue(orderData.network)}
+                    {formatValue(liveOrderData.network)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Amount in USD</span>
                   <span className="font-medium">
-                    ${formatValue(orderData.fiatAmountInUsd)}
+                    ${formatValue(liveOrderData.fiatAmountInUsd)}
                   </span>
                 </div>
               </div>
@@ -186,11 +235,11 @@ const TransactionReceipt = ({
               </h3>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
                 <code className="flex-1 text-sm font-mono break-all">
-                  {formatValue(orderData.walletAddress)}
+                  {formatValue(liveOrderData.walletAddress)}
                 </code>
-                {orderData.walletLink && (
+                {liveOrderData.walletLink && (
                   <Link
-                    href={orderData.walletLink}
+                    href={liveOrderData.walletLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex gap-1 items-center text-blue-600 hover:text-blue-800 text-sm"
@@ -210,16 +259,16 @@ const TransactionReceipt = ({
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Total Fees</span>
                   <span className="font-medium">
-                    {formatValue(orderData.totalFeeInFiat)}{' '}
-                    {formatValue(orderData.fiatCurrency)}
+                    {formatValue(liveOrderData.totalFeeInFiat)}{' '}
+                    {formatValue(liveOrderData.fiatCurrency)}
                   </span>
                 </div>
-                {orderData.transakFeeAmount && (
+                {liveOrderData.transakFeeAmount && (
                   <div className="flex justify-between items-center text-sm py-1">
                     <span className="text-gray-500">Transak Fee</span>
                     <span className="font-medium">
-                      {formatValue(orderData.transakFeeAmount)}{' '}
-                      {formatValue(orderData.fiatCurrency)}
+                      {formatValue(liveOrderData.transakFeeAmount)}{' '}
+                      {formatValue(liveOrderData.fiatCurrency)}
                     </span>
                   </div>
                 )}
@@ -235,46 +284,99 @@ const TransactionReceipt = ({
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Created</span>
                   <span className="font-medium">
-                    {formatDate(orderData.createdAt)}
+                    {formatDate(liveOrderData.createdAt)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Updated</span>
                   <span className="font-medium">
-                    {formatDate(orderData.updatedAt)}
+                    {formatDate(liveOrderData.updatedAt)}
                   </span>
                 </div>
               </div>
             </section>
 
             {/* Status History */}
-            {orderData.statusHistories &&
-              orderData.statusHistories.length > 0 && (
+            {liveOrderData.statusHistories &&
+              liveOrderData.statusHistories.length > 0 && (
                 <section className="space-y-2">
                   <h3 className="text-base font-medium text-gray-800">
                     Status History
                   </h3>
-                  <div className="space-y-4">
-                    {orderData.statusHistories.map((history, index) => (
-                      <div key={index} className="flex items-start gap-4">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                            <span className="font-medium">
-                              {formatValue(history.status)}
-                            </span>
-                            <span className="text-gray-500 text-sm">
-                              {formatDate(history.createdAt)}
-                            </span>
+                  <div className="space-y-2">
+                    {liveOrderData.statusHistories?.map((history, index) => {
+                      const message = history.message || ''
+                      // Extract structured data from message
+                      const extractOrderInfo = (msg: string) => {
+                        const orderIdMatch = msg.match(/\*Order Id:\* ([a-f0-9-]+)/)
+                        const emailMatch = msg.match(/\*Email:\* ([^\s*]+)/)
+                        const cryptoAmountMatch = msg.match(/\*Crypto Amount:\* ([0-9.]+ [A-Z]+)/)
+                        const fiatAmountMatch = msg.match(/\*Fiat Amount:\* ([0-9]+ [A-Z]+)/)
+                        const paymentMethodMatch = msg.match(/\*Payment Method:\* ([^\s*]+)/)
+                        const walletAddressMatch = msg.match(/\*Wallet Address:\* ([a-fA-F0-9x]+)/)
+                        const liquidityProviderMatch = msg.match(/\*Liquidity Provider\* ([^\s*]+)/)
+                        return {
+                          orderId: orderIdMatch?.[1],
+                          email: emailMatch?.[1],
+                          cryptoAmount: cryptoAmountMatch?.[1],
+                          fiatAmount: fiatAmountMatch?.[1],
+                          paymentMethod: paymentMethodMatch?.[1],
+                          walletAddress: walletAddressMatch?.[1],
+                          liquidityProvider: liquidityProviderMatch?.[1],
+                        }
+                      }
+                      const orderInfo = extractOrderInfo(message)
+                      const hasStructuredData =
+                        orderInfo.orderId ||
+                        orderInfo.cryptoAmount ||
+                        orderInfo.fiatAmount
+                      return (
+                        <div key={index} className="flex items-start gap-2 text-sm">
+                          {/* Timeline dot */}
+                          <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ background: index === liveOrderData.statusHistories!.length - 1 ? '#2563eb' : '#a3a3a3' }} />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-900">{formatValue(history.status)}</span>
+                              <span className="text-gray-400 text-xs">{formatDate(history.createdAt)}</span>
+                            </div>
+                            {message && (
+                              <div className="mt-1">
+                                {hasStructuredData ? (
+                                  <>
+                                    <span className="text-gray-700">{message.replace(/\*[^*]+\*/g, '').trim()}</span>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1">
+                                      {orderInfo.orderId && (
+                                        <div><span className="text-xs text-gray-500">Order ID:</span> <span className="font-mono">{orderInfo.orderId}</span></div>
+                                      )}
+                                      {orderInfo.email && (
+                                        <div><span className="text-xs text-gray-500">Email:</span> {orderInfo.email}</div>
+                                      )}
+                                      {orderInfo.cryptoAmount && (
+                                        <div><span className="text-xs text-gray-500">Crypto:</span> <span className="font-semibold">{orderInfo.cryptoAmount}</span></div>
+                                      )}
+                                      {orderInfo.fiatAmount && (
+                                        <div><span className="text-xs text-gray-500">Fiat:</span> <span className="font-semibold">{orderInfo.fiatAmount}</span></div>
+                                      )}
+                                      {orderInfo.paymentMethod && (
+                                        <div><span className="text-xs text-gray-500">Payment:</span> <span className="capitalize">{orderInfo.paymentMethod.replace(/_/g, ' ')}</span></div>
+                                      )}
+                                      {orderInfo.liquidityProvider && (
+                                        <div><span className="text-xs text-gray-500">Provider:</span> {orderInfo.liquidityProvider}</div>
+                                      )}
+                                      {orderInfo.walletAddress && (
+                                        <div className="col-span-2"><span className="text-xs text-gray-500">Wallet:</span> <span className="font-mono break-all">{orderInfo.walletAddress}</span></div>
+                                      )}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <span className="text-gray-700">{message}</span>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          {history.message && (
-                            <p className="text-gray-600 text-sm mt-1">
-                              {formatValue(history.message)}
-                            </p>
-                          )}
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </section>
               )}
@@ -290,8 +392,8 @@ const TransactionReceipt = ({
             <SimpleButton
               variant="secondary"
               onClick={() => {
-                if (orderData.id && orderData.id !== 'N/A' && orderData.id !== 'ERROR') {
-                  router.push(`/transactions/${orderData.id}`)
+                if (liveOrderData.id && liveOrderData.id !== 'N/A' && liveOrderData.id !== 'ERROR') {
+                  router.push(`/transactions/${liveOrderData.id}`)
                 } else {
                   toast.error('Transaction ID not available!')
                 }
