@@ -3,6 +3,7 @@ import { Transak, TransakConfig } from '@transak/transak-sdk'
 import { useState, useEffect, useRef } from 'react'
 import PrimaryButton from './button/primary-button'
 import Loader from './loader-component'
+import type { TransakOrderData } from '@/types/transaction-types'
 
 // Map Transak statuses to our database enum values
 const mapTransakStatusToDbStatus = (transakStatus: string): string => {
@@ -30,43 +31,6 @@ const mapTransakStatusToDbStatus = (transakStatus: string): string => {
   }
 
   return statusMap[transakStatus] || 'PENDING'
-}
-
-interface TransakOrderData {
-  eventName: string
-  status: {
-    id: string
-    userId: string
-    isBuyOrSell: string
-    fiatCurrency: string
-    cryptoCurrency: string
-    fiatAmount: number
-    status: string
-    amountPaid: number
-    paymentOptionId: string
-    walletAddress: string
-    walletLink: string
-    network: string
-    cryptoAmount: number
-    totalFeeInFiat: number
-    fiatAmountInUsd: string | null
-    countryCode: string
-    stateCode: string
-    createdAt: string
-    updatedAt: string
-    statusReason?: string
-    transakFeeAmount?: number
-    cardPaymentData?: {
-      status: string
-      statusReason?: string
-      processedOn?: string
-    }
-    statusHistories?: Array<{
-      status: string
-      createdAt: string
-      message: string
-    }>
-  }
 }
 
 interface TransakPaymentProps {

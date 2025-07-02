@@ -26,10 +26,10 @@ export type TransactionStatus =
   | 'EXPIRED'
   | 'PENDING_DELIVERY_FROM_TRANSAK'
   | 'PAYMENT_DONE_MARKED_BY_USER'
-  | 'TIMEOUT'
+  | 'TIMEOUT';
 
 export interface StatusHistory {
-  status: TransactionStatus
+  status: string
   createdAt: string
   message?: string
 }
@@ -52,34 +52,38 @@ export type Transaction = {
 }
 
 export interface TransakOrderData {
-  eventName: string
+  eventName: string;
   status: {
-    id: string
-    userId: string
-    isBuyOrSell: string
-    fiatCurrency: string
-    cryptoCurrency: string
-    fiatAmount: number
-    status: TransactionStatus
-    amountPaid: number
-    paymentOptionId: string
-    walletAddress: string
-    walletLink: string
-    network: string
-    cryptoAmount: number
-    totalFeeInFiat: number
-    fiatAmountInUsd: string | null
-    countryCode: string
-    stateCode: string
-    createdAt: string
-    updatedAt: string
-    statusReason?: string
-    transakFeeAmount?: number
+    id: string;
+    userId: string;
+    isBuyOrSell: string;
+    fiatCurrency: string;
+    cryptoCurrency: string;
+    fiatAmount: number;
+    status: TransactionStatus;
+    amountPaid: number;
+    paymentOptionId: string;
+    walletAddress: string;
+    walletLink: string;
+    network: string;
+    cryptoAmount: number;
+    totalFeeInFiat: number;
+    fiatAmountInUsd: string | null;
+    countryCode: string;
+    stateCode: string;
+    createdAt: string;
+    updatedAt: string;
+    statusReason?: string;
+    transakFeeAmount?: number;
     cardPaymentData?: {
-      status: TransactionStatus
-      statusReason?: string
-      processedOn?: string
-    }
-    statusHistories?: StatusHistory[]
-  }
+      status: TransactionStatus;
+      statusReason?: string;
+      processedOn?: string;
+    };
+    statusHistories?: Array<{
+      status: TransactionStatus;
+      createdAt: string;
+      message: string;
+    }>;
+  };
 }

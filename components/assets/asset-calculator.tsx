@@ -8,7 +8,7 @@ import PrimaryButton from '../button/primary-button'
 import Confetti from '../confetti'
 import toast from 'react-hot-toast'
 import Breadcrumb from '../bread-crumb'
-import { ExternalLink, RotateCw } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SimpleButton } from '@/components/ui/simple-button'
@@ -45,22 +45,18 @@ interface TransactionData {
   statusHistories?: Array<{
     status: TransactionStatus
     createdAt: string
-    message?: string
+    message: string
   }>
 }
 
 interface TransactionReceiptProps {
   orderData: TransactionData
   onClose: () => void
-  updateStatus: (orderId: string) => void
-  updating: boolean
 }
 
 const TransactionReceipt = ({
   orderData,
   onClose,
-  updateStatus,
-  updating,
 }: TransactionReceiptProps) => {
   const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) return 'N/A'
@@ -109,44 +105,26 @@ const TransactionReceipt = ({
                 Order ID: {formatValue(orderData.id)}
               </p>
             </div>
-            <div className="flex gap-2 items-center">
-              {orderData.status !== 'COMPLETED' && (
-                <SimpleButton
-                  variant="outline"
-                  size="sm"
-                  onClick={() => updateStatus(orderData.id)}
-                  disabled={updating}
-                  className="!p-2"
-                  title="Reload Status"
-                >
-                  {updating ? (
-                    <RotateCw className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <RotateCw className="w-5 h-5" />
-                  )}
-                </SimpleButton>
-              )}
-              <SimpleButton
-                variant="outline"
-                size="sm"
-                onClick={onClose}
-                className="!p-2"
+            <SimpleButton
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="!p-2"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </SimpleButton>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </SimpleButton>
           </div>
 
           <div className="p-6 space-y-8">
@@ -308,25 +286,26 @@ const TransactionReceipt = ({
               Close
             </SimpleButton>
             <div className="flex gap-2 justify-between">
-              <SimpleButton
-                variant="secondary"
-                onClick={() => {
-                  if (orderData.id && orderData.id !== 'N/A' && orderData.id !== 'ERROR') {
-                    router.push(`/transactions/${orderData.id}`)
-                  } else {
-                    toast.error('Transaction ID not available!')
-                  }
-                }}
+
+            <SimpleButton
+              variant="secondary"
+              onClick={() => {
+                if (orderData.id && orderData.id !== 'N/A' && orderData.id !== 'ERROR') {
+                  router.push(`/transactions/${orderData.id}`)
+                } else {
+                  toast.error('Transaction ID not available!')
+                }
+              }}
+            >
+              Details
+            </SimpleButton>
+            <SimpleButton
+              variant="primary-outlined"
+              onClick={() => router.push('/transactions')}
               >
-                Details
-              </SimpleButton>
-              <SimpleButton
-                variant="primary-outlined"
-                onClick={() => router.push('/transactions')}
-              >
-                All Transactions
-              </SimpleButton>
-            </div>
+              All Transactions
+            </SimpleButton>
+              </div>
           </div>
         </div>
       </div>
@@ -350,7 +329,6 @@ const AssetCalculator = ({
   const [orderData, setOrderData] = useState<TransactionData | null>(null)
   const [lastTransakOrderData, setLastTransakOrderData] = useState<TransactionData | null>(null)
   const { data: session,status:userSessionStatus} = useSession()
-  const [updating, setUpdating] = useState(false)
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -378,28 +356,8 @@ const AssetCalculator = ({
     }
   }
 
-  // Utility to deeply cast all status fields in TransakOrderData to TransactionStatus
-  function castTransakOrderDataStatuses(orderData: unknown): TransakOrderData {
-    const s = (orderData as TransakOrderData).status;
-    return {
-      ...(orderData as TransakOrderData),
-      status: {
-        ...s,
-        status: s.status as TransactionStatus,
-        cardPaymentData: s.cardPaymentData
-          ? { ...s.cardPaymentData, status: s.cardPaymentData.status as TransactionStatus }
-          : undefined,
-        statusHistories: s.statusHistories
-          ? s.statusHistories.map(h => ({ ...h, status: h.status as TransactionStatus }))
-          : [],
-      }
-    };
-  }
-
-  const handleTransakSuccess = (orderData: unknown) => {
-    // Deep-cast all status fields to TransactionStatus
-    const safeOrderData = castTransakOrderDataStatuses(orderData) as TransakOrderData;
-    console.log('handleTransakSuccess called with:', safeOrderData);
+  const handleTransakSuccess = (orderData: TransakOrderData) => {
+    console.log('handleTransakSuccess called with:', orderData)
 
     const defaultTransactionData: TransactionData = {
       id: 'ERROR',
@@ -422,17 +380,17 @@ const AssetCalculator = ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       statusHistories: [],
-    };
+    }
 
-    let transactionData: TransactionData = defaultTransactionData;
+    let transactionData: TransactionData = defaultTransactionData
 
     try {
-      if (!safeOrderData.status) {
-        throw new Error('No status data received');
+      if (!orderData.status) {
+        throw new Error('No status data received')
       }
 
-      const status = safeOrderData.status;
-      console.log('Processing transaction status:', status);
+      const status = orderData.status
+      console.log('Processing transaction status:', status)
 
       transactionData = {
         id: status.id || 'N/A',
@@ -441,7 +399,7 @@ const AssetCalculator = ({
         fiatCurrency: status.fiatCurrency || 'AUD',
         cryptoCurrency: status.cryptoCurrency || 'BTC',
         fiatAmount: status.fiatAmount || 0,
-        status: status.status,
+        status: (status.status as TransactionStatus) || 'PROCESSING',
         amountPaid: status.amountPaid || 0,
         paymentOptionId: status.paymentOptionId || 'credit_debit_card',
         walletAddress: status.walletAddress || 'N/A',
@@ -456,33 +414,46 @@ const AssetCalculator = ({
         updatedAt: status.updatedAt || new Date().toISOString(),
         statusReason: status.statusReason,
         transakFeeAmount: status.transakFeeAmount,
-        cardPaymentData: status.cardPaymentData,
-        statusHistories: status.statusHistories || [],
-      };
-    } catch (err) {
-      console.error('Error parsing transaction data:', err);
+        cardPaymentData: status.cardPaymentData
+          ? {
+              status: (status.cardPaymentData.status as TransactionStatus),
+              statusReason: status.cardPaymentData.statusReason,
+              processedOn: status.cardPaymentData.processedOn,
+            }
+          : undefined,
+        statusHistories: status.statusHistories
+          ? status.statusHistories.map((h) => ({
+              status: (h.status as TransactionStatus),
+              createdAt: h.createdAt,
+              message: h.message,
+            }))
+          : [],
+      }
+    } catch (error) {
+      console.error('Error parsing transaction data:', error)
     }
 
-    setOrderData(transactionData);
-    setLastTransakOrderData(transactionData);
-    setShowReceipt(true);
+    console.log('Final transaction data:', transactionData)
+    setOrderData(transactionData)
+    setLastTransakOrderData(transactionData)
+    setShowReceipt(true)
 
     if (
       transactionData.status === 'COMPLETED' ||
       transactionData.status === 'PROCESSING'
     ) {
-      setShowConfetti(true);
+      setShowConfetti(true)
       toast.success(
         `Transaction ${transactionData.status.toLowerCase()}! Amount: ${transactionData.fiatAmount} ${transactionData.fiatCurrency}`,
         {
           duration: 5000,
           position: 'top-center',
         }
-      );
+      )
       setTimeout(() => {
-        setShowConfetti(false);
-        toast.dismiss();
-      }, 5000);
+        setShowConfetti(false)
+        toast.dismiss()
+      }, 5000)
     } else {
       toast(
         `Transaction is ${transactionData.status.toLowerCase()}. Please check back later for updates.`,
@@ -490,9 +461,9 @@ const AssetCalculator = ({
           duration: 5000,
           position: 'top-center',
         }
-      );
+      )
     }
-  };
+  }
 
   const handleTransakClose = () => {
     console.log('Transak closed')
@@ -556,42 +527,6 @@ const AssetCalculator = ({
       selectedCurrency as keyof typeof coinData.market_data.current_price
     ] || 0
 
-  const updateStatus = async (orderId: string) => {
-    setUpdating(true)
-    try {
-      const response = await fetch(`/api/transaction/${orderId}`, {
-        method: 'PATCH',
-      })
-      if (response.ok) {
-        const updatedData = await response.json()
-        setOrderData({
-          ...updatedData,
-          status: (updatedData.status as TransactionStatus),
-          cardPaymentData: updatedData.cardPaymentData
-            ? {
-                ...updatedData.cardPaymentData,
-                status: (updatedData.cardPaymentData.status as TransactionStatus),
-              }
-            : undefined,
-          statusHistories: updatedData.statusHistories
-            ? (updatedData.statusHistories as Array<{ status: string; createdAt: string; message: string }>).map((h) => ({
-                ...h,
-                status: (h.status as TransactionStatus),
-              }))
-            : [],
-        })
-        toast.success('Transaction status updated successfully')
-      } else {
-        toast.error('Failed to update transaction status')
-      }
-    } catch (err) {
-      console.error('Error updating transaction status:', err)
-      toast.error('An error occurred')
-    } finally {
-      setUpdating(false)
-    }
-  }
-
   // Debug log for receipt modal rendering
   if (showReceipt && orderData) {
     console.log('Rendering TransactionReceipt modal', orderData)
@@ -605,8 +540,6 @@ const AssetCalculator = ({
           <TransactionReceipt
             orderData={orderData}
             onClose={handleCloseReceipt}
-            updateStatus={updateStatus}
-            updating={updating}
           />
         )}
       </AnimatePresence>
