@@ -123,8 +123,6 @@ const LineChart = ({ data, title }: { data: { date: string; count: number; amoun
   )
 }
 
-
-
 const Page = () => {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -269,18 +267,15 @@ const Page = () => {
 
             {loading ? (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="h-24 w-full" />
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Skeleton className="h-[300px] w-full" />
-                  <Skeleton className="h-[300px] w-full" />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Skeleton className="h-[300px] w-full" />
-                  <Skeleton className="h-[300px] w-full" />
+                {/* Simple Hero Stats Skeleton */}
+                <Skeleton className="h-24 w-full rounded-lg" />
+                {/* Simple Charts Row Skeletons */}
+                <Skeleton className="h-64 w-full rounded-lg" />
+                <Skeleton className="h-64 w-full rounded-lg" />
+                {/* Simple Insights Skeletons */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Skeleton className="h-32 w-full rounded-lg" />
+                  <Skeleton className="h-32 w-full rounded-lg" />
                 </div>
               </div>
             ) : error ? (
@@ -308,7 +303,7 @@ const Page = () => {
                       {/* Secondary Stats */}
                       <div className="flex flex-row sm:flex-col lg:flex-row gap-3 lg:gap-4 w-full lg:w-auto">
                         <div className="text-center flex-1 lg:flex-none">
-                          <div className="text-base sm:text-lg font-semibold text-gray-900">${analyticsData.averageTransaction.toLocaleString()}</div>
+                          <div className="text-base sm:text-lg font-semibold text-gray-900">{analyticsData.averageTransaction.toLocaleString()}</div>
                           <div className="text-xs text-gray-500">Average per transaction</div>
                         </div>
                         <div className="text-center flex-1 lg:flex-none">

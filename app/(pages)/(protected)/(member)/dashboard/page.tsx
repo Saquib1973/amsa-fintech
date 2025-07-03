@@ -87,7 +87,7 @@ const DashboardTransactionItem = ({ transaction }: { transaction: Transaction })
 
   return (
     <Link
-      href={`/transactions/${transaction.id}`}
+      href={`/transaction/${transaction.id}`}
       className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-2 py-3 group rounded-md"
     >
       <div className="flex items-center gap-2 min-w-[40px]">
