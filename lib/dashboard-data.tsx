@@ -4,7 +4,6 @@ import {
   ChartBar,
   Coins,
   CreditCard,
-  Database,
   Globe,
   History,
   Home,
@@ -78,8 +77,8 @@ export const dashboardSidebarItems: NavSection[] = [
     title: 'Admin Tools',
     items: [
       {
-        name: 'User',
-        href: '/users-management',
+        name: 'Users',
+        href: '/users',
         icon: <Users className="w-5 h-5" />,
         roles: ['ADMIN', 'SUPER_ADMIN'],
         order: 1,
@@ -92,9 +91,9 @@ export const dashboardSidebarItems: NavSection[] = [
         order: 2,
       },
       {
-        name: 'System Settings',
-        href: '/system',
-        icon: <Database className="w-5 h-5" />,
+        name: 'All Transactions',
+        href: '/admin/all-transactions',
+        icon: <CreditCard className="w-5 h-5" />,
         roles: ['SUPER_ADMIN'],
         order: 3,
       },
@@ -117,11 +116,11 @@ export const dashboardSidebarItems: NavSection[] = [
             order: 2,
           },
         ],
-        order: 1,
+        order: 4,
         roles: ['SUPER_ADMIN'],
       },
       {
-        order: 2,
+        order: 5,
         name: 'Broadcast',
         href: '/broadcast',
         icon: <Megaphone className="w-5 h-5" />,
@@ -129,41 +128,6 @@ export const dashboardSidebarItems: NavSection[] = [
       },
     ],
     roles: ['ADMIN', 'SUPER_ADMIN'],
-  },
-  {
-    title: 'Super Admin',
-    items: [
-      {
-        name: 'Transak',
-        href: '/transak',
-        icon: <Bitcoin className="w-5 h-5" />,
-        hasSubmenu: true,
-        submenuItems: [
-          {
-            order: 1,
-            name: 'Transak',
-            href: '/transak',
-            icon: <Wallet className="w-5 h-5" />,
-          },
-          {
-            order: 2,
-            name: 'Refresh Token',
-            href: '/transak/refresh-token',
-            icon: <RefreshCw className="w-5 h-5" />,
-          },
-        ],
-        order: 1,
-        roles: ['SUPER_ADMIN'],
-      },
-      {
-        order: 2,
-        name: 'Broadcast',
-        href: '/broadcast',
-        icon: <Megaphone className="w-5 h-5" />,
-        roles: ['SUPER_ADMIN'],
-      },
-    ],
-    roles: ['SUPER_ADMIN'],
   },
   {
     title: 'Settings',
