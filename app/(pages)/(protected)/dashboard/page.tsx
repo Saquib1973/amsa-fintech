@@ -1,4 +1,3 @@
-import { getSession } from '@/lib/auth'
 import {
   History,
   Settings,
@@ -15,12 +14,12 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
-import { prisma } from '@/lib/prisma'
 import type { Metadata } from 'next'
 import { format } from 'date-fns'
 import { Transaction } from '@/types/transaction-types'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import { getStatusColor } from '@/lib/utils'
+import { getTransactions, totalAmountOfTransactions } from '@/actions/transactions'
 
 export const metadata: Metadata = {
   title: 'Dashboard | AMSA Fintech and IT solutions',
@@ -104,15 +103,15 @@ const DashboardTransactionItem = ({ transaction }: { transaction: Transaction })
           </span>
         </div>
         <div className="text-xs text-gray-400 mt-0.5">
-          {format(transaction.createdAt, 'PP')}
+          {format(new Date(transaction.createdAt), 'PP')}
         </div>
       </div>
       <div className="flex flex-col items-end gap-1 min-w-[90px]">
         <span className="text-gray-800 text-sm">
           {new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: transaction.fiatCurrency,
-          }).format(transaction.fiatAmount)}
+            currency: transaction.fiatCurrency || 'USD',
+          }).format(Number(transaction.fiatAmount))}
         </span>
         <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
           <span
@@ -129,21 +128,13 @@ const DashboardTransactionItem = ({ transaction }: { transaction: Transaction })
 }
 
 const DashboardPage = async () => {
-  const session = await getSession();
-
-  const transactionArr = await prisma.transaction.findMany({
-    where: {
-      userId: session?.user?.id,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
+  const transactions = await getTransactions({ recent: true })
+  const transactionArr = transactions.data as unknown as Transaction[]
 
   const txArrLen = transactionArr.length;
 
-  const recentTransactions = transactionArr.slice(0, txArrLen>5?5:txArrLen)
-  const totalCost = txArrLen>0?transactionArr.reduce((acc, item) => acc + item.fiatAmount, 0):0
+  const recentTransactions = transactionArr.slice(0, txArrLen>8?8:txArrLen)
+  const totalCost = txArrLen>0?await totalAmountOfTransactions():0
 
   return (
     <AnimateWrapper>
@@ -264,7 +255,13 @@ const DashboardPage = async () => {
                           statusHistories:
                             transaction.statusHistories &&
                             typeof transaction.statusHistories === 'string'
-                              ? JSON.parse(transaction.statusHistories)
+                              ? (() => {
+                                  try {
+                                    return JSON.parse(transaction.statusHistories)
+                                  } catch {
+                                    return transaction.statusHistories
+                                  }
+                                })()
                               : transaction.statusHistories,
                         }
                         return (

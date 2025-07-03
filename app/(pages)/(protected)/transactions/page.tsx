@@ -1,11 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo } from 'react'
-import {
-  Search,
-  X,
-  ChevronRight,
-} from 'lucide-react'
+import { X, ChevronRight } from 'lucide-react'
 import { format, isToday, isYesterday } from 'date-fns'
 import Link from 'next/link'
 import {
@@ -19,8 +15,6 @@ import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-c
 import { AnimatePresence, motion } from 'framer-motion'
 import type { TransactionStatus } from '@/types/transaction-types'
 import { getStatusColor } from '@/lib/utils'
-
-
 
 type Transaction = {
   id: string
@@ -102,73 +96,84 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
 
 const TransactionItemSkeleton = () => {
   return (
-    <div className="flex items-center justify-between w-full border-b border-gray-100 px-2 py-3">
-      {/* Left: Icon */}
+    <div className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 px-2 py-3 group rounded-md">
+      {/* Left: Crypto icon */}
       <div className="flex items-center gap-2 min-w-[40px]">
-        <div className="w-8 h-8 rounded-full border border-gray-200 bg-gray-100" />
+        <div className="w-8 h-8 rounded-full border border-gray-200 bg-gray-100 animate-pulse" />
       </div>
       {/* Center: Info */}
       <div className="flex-1 min-w-0 px-2">
         <div className="flex items-center gap-2">
-          <div className="h-4 bg-gray-100 rounded w-20 mb-1" />
-          <div className="h-3 bg-gray-100 rounded w-10" />
+          <div className="h-4 bg-gray-100 rounded w-20 animate-pulse" />
+          <div className="ml-2 h-3 bg-gray-100 rounded w-10 animate-pulse" />
         </div>
-        <div className="h-3 bg-gray-100 rounded w-16 mt-1" />
+        <div className="h-3 bg-gray-100 rounded w-16 mt-0.5 animate-pulse" />
       </div>
       {/* Right: Amount, status, chevron */}
       <div className="flex flex-col items-end gap-1 min-w-[90px]">
-        <div className="h-4 bg-gray-100 rounded w-14 mb-1" />
-        <div className="h-3 bg-gray-100 rounded w-10" />
+        <div className="h-4 bg-gray-100 rounded w-14 animate-pulse" />
+        <div className="flex items-center gap-2 mt-0.5">
+          <div className="h-2 w-2 rounded-full bg-gray-100 animate-pulse" />
+          <div className="h-3 bg-gray-100 rounded w-10 animate-pulse" />
+        </div>
       </div>
-      <div className="flex items-center ml-2">
-        <div className="w-4 h-4 bg-gray-100 rounded" />
+      <div className="flex items-center ml-2" title="View transaction details">
+        <div className="w-4 h-4 bg-gray-100 rounded animate-pulse" />
       </div>
     </div>
   )
 }
 
 const TransactionHistory = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactions, setTransactions] = useState<{
+    data: Transaction[]
+    numberOfTransactions: number
+    length: number
+  }>({ data: [], numberOfTransactions: 0, length: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [totalPages, setTotalPages] = useState(0)
   const [activeStatusFilter, setActiveStatusFilter] = useState<string>('All')
+  const [page, setPage] = useState(1)
+
+  const pageChangeHandler = (type: 'inc' | 'dec') => {
+    switch (type) {
+      case 'inc':
+        setPage((prev) => prev + 1)
+        break
+      case 'dec':
+        setPage((prev) => prev - 1)
+        break
+    }
+  }
+
+  const fetchTransactions = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/transactions?page=${page}&rows=10`)
+      if (!response.ok) throw new Error('Failed to fetch transactions')
+      const data = await response.json()
+      setTransactions(data)
+      setTotalPages(Math.ceil(data.numberOfTransactions / 10))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true)
-      try {
-        // Simulating network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const response = await fetch('/api/transaction')
-        if (!response.ok) throw new Error('Failed to fetch transactions')
-        const data = await response.json()
-        setTransactions(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred')
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchTransactions()
-  }, [])
+  }, [page])
 
   const filteredTransactions = useMemo(() => {
-    return transactions.filter(tx => {
+    return transactions.data.filter((tx) => {
       if (activeStatusFilter !== 'All' && tx.status !== activeStatusFilter) {
-        return false
-      }
-      const searchLower = searchTerm.toLowerCase()
-      if (
-        searchLower &&
-        !tx.cryptoCurrency.toLowerCase().includes(searchLower) &&
-        !tx.network.toLowerCase().includes(searchLower)
-      ) {
         return false
       }
       return true
     })
-  }, [transactions, searchTerm, activeStatusFilter])
+  }, [transactions, activeStatusFilter])
 
   const groupedTransactions = useMemo(() => {
     return filteredTransactions.reduce(
@@ -187,44 +192,41 @@ const TransactionHistory = () => {
         acc[groupKey].push(tx)
         return acc
       },
-      {} as Record<string, Transaction[]>,
+      {} as Record<string, Transaction[]>
     )
   }, [filteredTransactions])
 
   const sortedGroupKeys = useMemo(() => {
     return Object.keys(groupedTransactions).sort((a, b) => {
-      const aDate = a === 'Today' ? new Date() : a === 'Yesterday' ? new Date(new Date().setDate(new Date().getDate() -1)) : new Date(a);
-      const bDate = b === 'Today' ? new Date() : b === 'Yesterday' ? new Date(new Date().setDate(new Date().getDate() -1)) : new Date(b);
-      return bDate.getTime() - aDate.getTime();
-    });
-  }, [groupedTransactions]);
+      const aDate =
+        a === 'Today'
+          ? new Date()
+          : a === 'Yesterday'
+            ? new Date(new Date().setDate(new Date().getDate() - 1))
+            : new Date(a)
+      const bDate =
+        b === 'Today'
+          ? new Date()
+          : b === 'Yesterday'
+            ? new Date(new Date().setDate(new Date().getDate() - 1))
+            : new Date(b)
+      return bDate.getTime() - aDate.getTime()
+    })
+  }, [groupedTransactions])
 
   return (
-    <>
+    <React.Fragment>
       <div className="flex flex-col sm:flex-row justify-end items-center mb-8 gap-4">
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative w-full sm:w-auto">
-            <Search
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full sm:w-48 border border-gray-300 rounded-md transition-colors"
-            />
-          </div>
           <Select
-            onValueChange={value => setActiveStatusFilter(value)}
+            onValueChange={(value) => setActiveStatusFilter(value)}
             defaultValue="All"
-            >
+          >
             <SelectTrigger className="w-[150px] outline-none">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              {statusFilters.map(status => (
+              {statusFilters.map((status) => (
                 <SelectItem key={status} value={status}>
                   {status}
                 </SelectItem>
@@ -270,29 +272,32 @@ const TransactionHistory = () => {
         </div>
       )}
 
-      {!loading &&
-        !error &&
-        filteredTransactions.length > 0 && (
+      {!loading && !error && filteredTransactions.length > 0 && (
         <div className="space-y-6">
           <AnimatePresence mode="popLayout">
-            {sortedGroupKeys.map((dateKey,index) => (
+            {sortedGroupKeys.map((dateKey, index) => (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.5 ,delay: 0.1 * (index + 1)%10 }}
-                key={dateKey}>
+                transition={{ duration: 0.5, delay: (0.1 * (index + 1)) % 10 }}
+                key={dateKey}
+              >
                 <h3 className="text-sm font-semibold text-gray-500 mb-3 px-1 tracking-wider uppercase">
                   {dateKey}
                 </h3>
                 <div className="">
-                  {groupedTransactions[dateKey].map((tx,txIndex) => (
+                  {groupedTransactions[dateKey].map((tx, txIndex) => (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.5 ,delay: 0.1 * (txIndex + 1)%10 }}
-                      key={tx.id}>
+                      transition={{
+                        duration: 0.5,
+                        delay: (0.1 * (txIndex + 1)) % 10,
+                      }}
+                      key={tx.id}
+                    >
                       <TransactionItem transaction={tx} />
                     </motion.div>
                   ))}
@@ -301,8 +306,43 @@ const TransactionHistory = () => {
             ))}
           </AnimatePresence>
         </div>
-        )}
-    </>
+      )}
+
+      {/* Pagination - Show even when no filtered results */}
+      {!loading && !error && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          <button
+            onClick={() => pageChangeHandler('dec')}
+            disabled={page === 1}
+            className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setPage(index + 1)}
+              className={`w-10 h-10 rounded-md flex cursor-pointer items-center justify-center text-sm transition-colors ${
+                page === index + 1
+                  ? 'bg-blue-600 text-white'
+                  : 'border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() => pageChangeHandler('inc')}
+            disabled={page === totalPages}
+            className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </React.Fragment>
   )
 }
 

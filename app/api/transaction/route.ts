@@ -31,53 +31,6 @@ const mapTransakStatusToDbStatus = (transakStatus: string): TransactionStatus =>
   return statusMap[transakStatus] || 'PENDING'
 }
 
-/**
- * @description Get all transactions for a user
- * @param req (SearchParams : page, rowsPerPage)
- * @returns
- */
-export async function GET(req: Request) {
-  const session = await getSession()
-  const id = session?.user.id
-  if (!id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const { searchParams } = new URL(req.url)
-  const pageParam = searchParams.get("page")
-  const rowsPerPageParam = searchParams.get("rowsPerPage")
-
-  let transactions
-
-  try {
-    if (pageParam && rowsPerPageParam) {
-      const page = parseInt(pageParam, 10)
-      const rowsPerPage = parseInt(rowsPerPageParam, 10)
-      const skip = (page - 1) * rowsPerPage
-      const take = rowsPerPage
-
-      transactions = await prisma.transaction.findMany({
-        where: { userId: id },
-        skip,
-        take,
-        orderBy: {
-          createdAt: 'desc'
-        }
-      })
-    } else {
-      transactions = await prisma.transaction.findMany({
-        where: { userId: id },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      })
-    }
-
-    return NextResponse.json(transactions)
-  } catch (err) {
-    return NextResponse.json({ error: err }, { status: 500 })
-  }
-}
-
 export async function POST(req: Request) {
   const session = await getSession()
   const user_id = session?.user.id

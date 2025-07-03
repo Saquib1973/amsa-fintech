@@ -8,9 +8,10 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { NotificationType } from "@prisma/client";
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
-import Loader from '@/components/loader-component'
+import NotificationSkeleton from '@/components/loader-skeletons/notification-skeleton'
 import { Bell, Check, AlertCircle, MessageSquare, CheckCircle } from 'lucide-react'
 import { useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Define Notification type
 type Notification = {
@@ -132,84 +133,118 @@ export default function NotificationsPage() {
             )}
           </div>
           <div className="bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-md overflow-hidden">
-            {loading ? (
-              <div className="py-16 flex justify-center items-center">
-                <Loader message="Loading notifications..." />
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="py-16 text-center text-gray-400 text-lg">
-                <Bell className="mx-auto mb-4 w-10 h-10 text-gray-300" />
-                <div>No notifications yet</div>
-                <div className="text-sm text-gray-300 mt-2">You&apos;re all caught up!</div>
-              </div>
-            ) : (
-              <div>
-                {groupOrder.map((group) =>
-                  grouped[group] && grouped[group].length > 0 ? (
-                    <div key={group}>
-                      <div className="px-4 pt-6 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        {group}
-                      </div>
-                      <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-                        {grouped[group].map((notification) => (
-                          <li
-                            key={notification.id}
-                            className={
-                              'flex items-start gap-3 px-3 py-2 group transition-colors bg-white dark:bg-gray-950 border-b md:border-b-0 md:border-r last:border-b-0 md:last:border-r-0 border-gray-100 dark:border-gray-800'
-                            }
-                            style={{ minHeight: '64px' }}
-                          >
-                            <div className="mt-2 shrink-0 w-2 flex justify-center">
-                              {!notification.read && (
-                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500" title="Unread" />
-                              )}
-                            </div>
-                            <div className="mt-1 shrink-0">
-                              <span className="inline-flex items-center justify-center w-5 h-5">
-                                {getNotificationIcon(notification.type)}
-                              </span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <span className={`capitalize ${!notification.read ? 'font-bold text-gray-900 dark:text-white' : 'font-normal text-gray-900 dark:text-white'} text-[15px]`}>
-                                  {notification.type.replace(/_/g, ' ').toLowerCase()}
-                                </span>
-                                <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">
-                                  {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+            <AnimatePresence mode="wait">
+              {loading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="py-8"
+                >
+                  <NotificationSkeleton count={5} />
+                </motion.div>
+              ) : notifications.length === 0 ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="py-16 text-center text-gray-400 text-lg"
+                >
+                  <Bell className="mx-auto mb-4 w-10 h-10 text-gray-300" />
+                  <div>No notifications yet</div>
+                  <div className="text-sm text-gray-300 mt-2">You&apos;re all caught up!</div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="notifications"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {groupOrder.map((group) =>
+                    grouped[group] && grouped[group].length > 0 ? (
+                      <motion.div
+                        key={group}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                      >
+                        <div className="px-4 pt-6 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          {group}
+                        </div>
+                        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                          {grouped[group].map((notification, index) => (
+                            <motion.li
+                              key={notification.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{
+                                duration: 0.3,
+                                delay: index * 0.05,
+                                ease: "easeOut"
+                              }}
+                              className={
+                                'flex items-start gap-3 px-3 py-2 group transition-colors bg-white dark:bg-gray-950 border-b md:border-b-0 md:border-r last:border-b-0 md:last:border-r-0 border-gray-100 dark:border-gray-800'
+                              }
+                              style={{ minHeight: '64px' }}
+                            >
+                              <div className="mt-2 shrink-0 w-2 flex justify-center">
+                                {!notification.read && (
+                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500" title="Unread" />
+                                )}
+                              </div>
+                              <div className="mt-1 shrink-0">
+                                <span className="inline-flex items-center justify-center w-5 h-5">
+                                  {getNotificationIcon(notification.type)}
                                 </span>
                               </div>
-                              <p className="mt-0.5 text-gray-700 dark:text-gray-300 text-sm line-clamp-2">
-                                {notification.message}
-                              </p>
-                              {notification.link && (
-                                <Link
-                                  href={notification.link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="mt-1 text-xs text-blue-600 hover:underline inline-block"
-                                  onClick={e => e.stopPropagation()}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <span className={`capitalize ${!notification.read ? 'font-bold text-gray-900 dark:text-white' : 'font-normal text-gray-900 dark:text-white'} text-[15px]`}>
+                                    {notification.type.replace(/_/g, ' ').toLowerCase()}
+                                  </span>
+                                  <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">
+                                    {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                  </span>
+                                </div>
+                                <p className="mt-0.5 text-gray-700 dark:text-gray-300 text-sm line-clamp-2">
+                                  {notification.message}
+                                </p>
+                                {notification.link && (
+                                  <Link
+                                    href={notification.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-1 text-xs text-blue-600 hover:underline inline-block"
+                                    onClick={e => e.stopPropagation()}
+                                  >
+                                    View Details →
+                                  </Link>
+                                )}
+                              </div>
+                              {!notification.read && (
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  title="Mark as read"
+                                  onClick={() => markAsRead(notification.id)}
+                                  className="ml-2 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-500"
                                 >
-                                  View Details →
-                                </Link>
+                                  <CheckCircle className="w-4 h-4" />
+                                </motion.button>
                               )}
-                            </div>
-                            {!notification.read && (
-                              <button
-                                title="Mark as read"
-                                onClick={() => markAsRead(notification.id)}
-                                className="ml-2 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-500"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </button>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null
-                )}
-              </div>
-            )}
+                            </motion.li>
+                          ))}
+                        </ul>
+                      </motion.div>
+                    ) : null
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </SectionWrapper>

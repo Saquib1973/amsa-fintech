@@ -26,7 +26,7 @@ const CryptoDonutChart = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetch('/api/transaction')
+        const response = await fetch('/api/transactions')
         if (!response.ok) throw new Error('Failed to fetch transactions')
         const data = await response.json()
         setUpNewDataStructure(data)
