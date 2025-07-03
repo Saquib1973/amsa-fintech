@@ -37,14 +37,12 @@ export const getTransactions = async (params: {
     const numberOfTransactions = await prisma.transaction.count({ where: { userId: id } })
 
     if (params.recent) {
-      // For recent transactions, get latest 10
       transactions = await prisma.transaction.findMany({
         where: { userId: id },
         orderBy: { createdAt: 'desc' },
         take: 10,
       })
     } else if(params.page) {
-      // For paginated or all transactions
       const page = params.page
       const rows = params.rows ?? 10
       const skip = (page - 1) * rows

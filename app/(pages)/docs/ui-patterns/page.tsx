@@ -1,11 +1,11 @@
 'use client'
-import { useState, useEffect } from 'react';
+import React from 'react';
 import AnimateWrapper from '@/components/wrapper/animate-wrapper';
 import type { UIComponent } from './types';
 import { uiComponents } from './data';
 
 const ComponentSection = ({ component }: { component: UIComponent }) => {
-  const [activeTab, setActiveTab] = useState<'example' | 'usage'>('example');
+  const [activeTab, setActiveTab] = React.useState<'example' | 'usage'>('example');
 
   return (
     <section
@@ -65,62 +65,19 @@ const ComponentSection = ({ component }: { component: UIComponent }) => {
 };
 
 export default function UIPatternsPage() {
-  const [activeSection, setActiveSection] = useState<string | null>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: '-20% 0px -80% 0px' }
-    );
-
-    document.querySelectorAll('section[id]').forEach((section) => {
-      observer.observe(section);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <AnimateWrapper>
-      <div className="md:max-w-[80%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="relative flex gap-8">
-          <div className="hidden lg:block w-40 flex-shrink-0">
-            <div className="fixed top-[88px] w-40 bg-white p-2 rounded-xl max-h-[calc(100vh-88px)] overflow-y-auto">
-              <nav className="">
-                {(uiComponents as unknown as UIComponent[]).map((component) => (
-                  <a
-                    key={component.id}
-                    href={`#${component.id}`}
-                    className={`block px-3 py-1 rounded-md text-sm transition-colors ${
-                      activeSection === component.id
-                        ? 'text-blue-600 underline'
-                        : 'text-gray-600'
-                    }`}
-                  >
-                    {component.title}
-                  </a>
-                ))}
-              </nav>
-            </div>
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex-1 space-y-16">
+          <div className="mb-12">
+            <h1 className="text-5xl font-light text-gray-900 mb-4">UI Patterns</h1>
+            <p className="text-gray-400">
+              A collection of reusable UI components and patterns for building consistent interfaces.
+            </p>
           </div>
-
-          <div className="flex-1 space-y-16">
-            <div className="mb-12">
-              <h1 className="text-5xl font-light text-gray-900 mb-4">UI Patterns</h1>
-              <p className="text-gray-400">
-                A collection of reusable UI components and patterns for building consistent interfaces.
-              </p>
-            </div>
-            {(uiComponents as unknown as UIComponent[]).map((component) => (
-              <ComponentSection key={component.id} component={component} />
-            ))}
-          </div>
+          {(uiComponents as unknown as UIComponent[]).map((component) => (
+            <ComponentSection key={component.id} component={component} />
+          ))}
         </div>
       </div>
     </AnimateWrapper>
