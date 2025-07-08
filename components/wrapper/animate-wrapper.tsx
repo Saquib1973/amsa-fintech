@@ -2,7 +2,7 @@
 import React from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-const AnimateWrapper = ({ children,animateVertical = false,duration = 0.7,delay = 0,className = '' }: { children: React.ReactNode,animateVertical?: boolean,duration?: number,delay?: number,className?: string }) => {
+const AnimateWrapper = ({ children,animateVertical = false,duration = 0.9,delay = 0,className = '' }: { children: React.ReactNode,animateVertical?: boolean,duration?: number,delay?: number,className?: string }) => {
   return (
     <AnimatePresence>
       <motion.div

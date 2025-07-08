@@ -20,7 +20,7 @@ const DashboardTransactionItem = ({
   return (
     <Link
       href={`/transaction/${transaction.id}`}
-      className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-2 py-3 group rounded-md"
+      className="flex items-center justify-between w-full border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer px-4 py-3 group"
     >
       <div className="flex items-center gap-2 min-w-[40px]">
         <SimpleCryptoIcon currency={transaction.cryptoCurrency} />
@@ -67,23 +67,14 @@ const RecentTransactionDashboard = ({
 }) => {
   return (
     <div className="bg-white rounded-md border border-gray-100">
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
-        <h2 className="text-lg font-medium text-gray-900">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-primary-main rounded-t-md text-white">
+        <h2 className="text-xl">
           Recent Transactions
         </h2>
-        {txArrLen > 0 && (
-          <Link
-            href="/transactions"
-            className="group inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            View all
-            <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
-          </Link>
-        )}
       </div>
-      <div className="p-4">
+      <div className="">
         {txArrLen > 0 ? (
-          <div className="space-y-2">
+          <div className="">
             {transactions.map((transaction) => {
               const transformedTransaction = {
                 ...transaction,
@@ -119,6 +110,17 @@ const RecentTransactionDashboard = ({
               Buy your first asset
             </Link>
           </div>
+        )}
+      </div>
+      <div className="pb-4 pt-4 flex items-center justify-center">
+        {txArrLen > 0 && (
+          <Link
+            href="/transactions"
+            className="group inline-flex items-center text-sm font-medium hover:text-primary-main transition-colors"
+          >
+            View all transactions
+            <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
+          </Link>
         )}
       </div>
     </div>
