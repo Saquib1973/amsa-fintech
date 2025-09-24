@@ -2,7 +2,7 @@
 import { prisma } from '@/lib/prisma'
 import React from 'react'
 import Link from 'next/link'
-import { getStatusColor } from '@/lib/utils'
+import { getStatusColor, trimWalletAddress } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ChevronRight } from 'lucide-react'
 import type { Transaction } from '@prisma/client'
@@ -64,9 +64,10 @@ const page = async ({ params }: { params: Promise<{ wallet: string }> }) => {
             </div>
           </div>
           <div className="flex items-center justify-start my-4 gap-2 text-3xl font-light">
-            <span className="text-gray-500 text-xs">Address:</span>
             <div className="font-mono text-sm text-gray-700 dark:text-gray-200 break-all">
-              {wallet.address}
+              <span title={wallet.address || ''}>
+                {trimWalletAddress(wallet.address || '')}
+              </span>
             </div>
           </div>
           <div className="flex md:justify-end items-center gap-2">

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { X, ChevronRight } from 'lucide-react'
 import { format, isToday, isYesterday } from 'date-fns'
 import Link from 'next/link'
@@ -147,7 +147,7 @@ const TransactionHistory = () => {
     }
   }
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch(`/api/transactions?page=${page}&rows=10`)
@@ -160,11 +160,11 @@ const TransactionHistory = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page])
 
   useEffect(() => {
     fetchTransactions()
-  }, [page])
+  }, [fetchTransactions])
 
   const filteredTransactions = useMemo(() => {
     return transactions.data.filter((tx) => {
@@ -197,25 +197,25 @@ const TransactionHistory = () => {
   }, [filteredTransactions])
 
   const sortedGroupKeys = useMemo(() => {
+    const toDateFromGroupKey = (key: string) => {
+      if (key === 'Today') return new Date()
+      if (key === 'Yesterday') {
+        const d = new Date()
+        d.setDate(d.getDate() - 1)
+        return d
+      }
+      return new Date(key)
+    }
     return Object.keys(groupedTransactions).sort((a, b) => {
-      const aDate =
-        a === 'Today'
-          ? new Date()
-          : a === 'Yesterday'
-            ? new Date(new Date().setDate(new Date().getDate() - 1))
-            : new Date(a)
-      const bDate =
-        b === 'Today'
-          ? new Date()
-          : b === 'Yesterday'
-            ? new Date(new Date().setDate(new Date().getDate() - 1))
-            : new Date(b)
+      const aDate = toDateFromGroupKey(a)
+      const bDate = toDateFromGroupKey(b)
       return bDate.getTime() - aDate.getTime()
     })
   }, [groupedTransactions])
 
   return (
     <React.Fragment>
+      {(() => { return null })()}
       <div className="flex flex-col sm:flex-row justify-end items-center mb-8 gap-4">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select
@@ -238,12 +238,12 @@ const TransactionHistory = () => {
 
       {loading && (
         <div className="space-y-6">
-          {[...Array(2)].map((_, i) => (
-            <div key={i}>
+          {['sk-1', 'sk-2'].map((skId) => (
+            <div key={skId}>
               <div className="h-4 bg-gray-200 rounded w-32 mb-4 animate-pulse"></div>
               <div className="space-y-3">
-                {[...Array(3)].map((_, j) => (
-                  <TransactionItemSkeleton key={j} />
+                {['sk-1', 'sk-2', 'sk-3'].map((innerId) => (
+                  <TransactionItemSkeleton key={innerId} />
                 ))}
               </div>
             </div>
@@ -319,17 +319,17 @@ const TransactionHistory = () => {
             Previous
           </button>
 
-          {[...Array(totalPages)].map((_, index) => (
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
             <button
-              key={index}
-              onClick={() => setPage(index + 1)}
+              key={pageNum}
+              onClick={() => setPage(pageNum)}
               className={`w-10 h-10 rounded-md flex cursor-pointer items-center justify-center text-sm transition-colors ${
-                page === index + 1
+                page === pageNum
                   ? 'bg-blue-600 text-white'
                   : 'border border-gray-300 hover:bg-gray-50'
               }`}
             >
-              {index + 1}
+              {pageNum}
             </button>
           ))}
 

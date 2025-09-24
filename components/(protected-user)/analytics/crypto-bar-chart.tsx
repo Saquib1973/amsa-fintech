@@ -24,7 +24,7 @@ const CryptoBarChart = () => {
   const [monthlyData, setMonthlyData] = useState<{
     [key: string]: { [key: string]: number }
   }>({})
-  const controller = new AbortController()
+  // Fetch-only effect; no need for an AbortController since we don't stream
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -41,9 +41,7 @@ const CryptoBarChart = () => {
 
     fetchTransactions()
 
-    return () => {
-      controller.abort()
-    }
+    return () => {}
   }, [])
 
   function processTransactionData(data: Transaction[]) {
@@ -75,7 +73,7 @@ const CryptoBarChart = () => {
       return
     }
     setError(null)
-    const months = Object.keys(monthlyData).sort()
+    const months = Object.keys(monthlyData).sort((a, b) => a.localeCompare(b))
     const cryptos = new Set<string>()
 
     months.forEach((month) => {

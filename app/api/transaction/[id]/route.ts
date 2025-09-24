@@ -136,30 +136,113 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         break
     }
 
-    // Prepare update data
-    const updateData: Record<string, unknown> = {
-      status: newStatus,
-      updatedAt: new Date(),
-    }
-    // Only update fields that exist in the Transaction model
-    if (data.statusReason) updateData.statusReason = data.statusReason
-    if (data.amountPaid) updateData.amountPaid = data.amountPaid
-    if (data.cryptoAmount) updateData.cryptoAmount = data.cryptoAmount
-    if (data.totalFeeInFiat) updateData.totalFeeInFiat = data.totalFeeInFiat
-    if (data.transakFeeAmount) updateData.transakFeeAmount = data.transakFeeAmount
-    if (data.fiatAmountInUsd) updateData.fiatAmountInUsd = String(data.fiatAmountInUsd)
-    if (data.countryCode) updateData.countryCode = data.countryCode
-    if (data.stateCode) updateData.stateCode = data.stateCode
-    if (data.cardPaymentData) updateData.cardPaymentData = data.cardPaymentData
-    if (data.statusHistories) updateData.statusHistories = data.statusHistories
-    if (data.walletLink) updateData.walletLink = data.walletLink
+    // Normalize numeric fields from Transak (can arrive as strings)
+    const toNumber = (v: unknown) => (v === undefined || v === null || v === '' ? undefined : Number(v))
 
-    const updated = await prisma.transaction.update({
-      where: { id: transaction.id },
-      data: updateData,
+    const finalFields = {
+      statusReason: data.statusReason,
+      amountPaid: toNumber(data.amountPaid),
+      cryptoAmount: toNumber(data.cryptoAmount),
+      totalFeeInFiat: toNumber(data.totalFeeInFiat),
+      transakFeeAmount: toNumber(data.transakFeeAmount),
+      fiatAmountInUsd: data.fiatAmountInUsd ? String(data.fiatAmountInUsd) : undefined,
+      countryCode: data.countryCode,
+      stateCode: data.stateCode,
+      cardPaymentData: data.cardPaymentData,
+      statusHistories: data.statusHistories,
+      walletLink: data.walletLink,
+      // Also capture fiat/crypto currencies and fiatAmount if present
+      fiatCurrency: data.fiatCurrency ?? transaction.fiatCurrency,
+      cryptoCurrency: data.cryptoCurrency ?? transaction.cryptoCurrency,
+      fiatAmount: toNumber(data.fiatAmount) ?? transaction.fiatAmount,
+    }
+
+    const persisted = await prisma.$transaction(async (tx) => {
+      const existingTx = await tx.transaction.findFirst({
+        where: { id: transaction.id, userId: userId },
+      })
+      if (!existingTx) return null
+
+      const wasPreviouslyCompleted = existingTx.status === 'COMPLETED'
+
+      const updated = await tx.transaction.update({
+        where: { id: existingTx.id },
+        data: {
+          status: newStatus,
+          updatedAt: new Date(),
+          statusReason: finalFields.statusReason,
+          amountPaid: finalFields.amountPaid ?? existingTx.amountPaid,
+          cryptoAmount: finalFields.cryptoAmount ?? existingTx.cryptoAmount,
+          totalFeeInFiat: finalFields.totalFeeInFiat ?? existingTx.totalFeeInFiat,
+          transakFeeAmount: finalFields.transakFeeAmount ?? existingTx.transakFeeAmount,
+          fiatAmountInUsd: finalFields.fiatAmountInUsd ?? existingTx.fiatAmountInUsd,
+          countryCode: finalFields.countryCode ?? existingTx.countryCode,
+          stateCode: finalFields.stateCode ?? existingTx.stateCode,
+          cardPaymentData: finalFields.cardPaymentData ?? existingTx.cardPaymentData,
+          statusHistories: finalFields.statusHistories ?? existingTx.statusHistories,
+          walletLink: finalFields.walletLink ?? existingTx.walletLink,
+          fiatCurrency: finalFields.fiatCurrency,
+          cryptoCurrency: finalFields.cryptoCurrency,
+          fiatAmount: finalFields.fiatAmount,
+        },
+      })
+
+      if (newStatus === 'COMPLETED') {
+        // Use authoritative fields for holdings math
+        const finalCryptoAmount = Number(updated.cryptoAmount ?? 0)
+        const finalFiatAmount = Number(updated.amountPaid ?? updated.fiatAmount ?? 0)
+        const symbol = updated.cryptoCurrency || ''
+        const currency = updated.fiatCurrency || 'USD'
+
+        const existingHolding = await tx.holding.findUnique({
+          where: {
+            userId_symbol_fiatCurrency: {
+              userId: userId,
+              symbol,
+              fiatCurrency: currency,
+            },
+          },
+        })
+
+        // If first completion, increment; if previously completed but holding missing, create now
+        if ((!wasPreviouslyCompleted || !existingHolding) && symbol && finalCryptoAmount > 0 && finalFiatAmount > 0) {
+          if (existingHolding && !wasPreviouslyCompleted) {
+            const newQuantity = existingHolding.quantity + finalCryptoAmount
+            const newTotalInvested = existingHolding.totalInvested + finalFiatAmount
+            const newAvgPrice = newTotalInvested / newQuantity
+            await tx.holding.update({
+              where: {
+                userId_symbol_fiatCurrency: {
+                  userId: userId,
+                  symbol,
+                  fiatCurrency: currency,
+                },
+              },
+              data: {
+                quantity: newQuantity,
+                totalInvested: newTotalInvested,
+                avgBuyPrice: newAvgPrice,
+              },
+            })
+          } else if (!existingHolding) {
+            await tx.holding.create({
+              data: {
+                userId: userId,
+                symbol,
+                fiatCurrency: currency,
+                quantity: finalCryptoAmount,
+                totalInvested: finalFiatAmount,
+                avgBuyPrice: finalFiatAmount / finalCryptoAmount,
+              },
+            })
+          }
+        }
+      }
+
+      return updated
     })
 
-    return NextResponse.json(updated)
+    return NextResponse.json(persisted)
   } catch (err) {
     console.error('Error updating transaction:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

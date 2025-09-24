@@ -7,10 +7,10 @@ import {
   getTransactions,
   totalAmountOfTransactions,
 } from '@/actions/transactions'
-import PopularAssetsSettingsDashboard from '@/components/(protected-user)/dashboard/popular-assets-settings-dashboard'
+import AssetsQuickActionsSidebar from '@/components/(protected-user)/dashboard/assets-quick-actions-sidebar'
 import RecentTransactionDashboard from '@/components/(protected-user)/dashboard/recent-transaction-dashboard'
-import QuickActionsDashboard from '@/components/(protected-user)/dashboard/quick-actions-dashboard'
 import Image from 'next/image'
+import HoldingsSection from '@/components/(protected-user)/dashboard/holdings-section'
 
 export const metadata: Metadata = {
   title: 'Dashboard | AMSA Fintech and IT solutions',
@@ -30,6 +30,8 @@ const DashboardPage = async () => {
   )
   const totalCost = txArrLen > 0 ? await totalAmountOfTransactions() : 0
 
+  // Holdings section is rendered via a dedicated component
+
   return (
     <AnimateWrapper>
       <div className="bg-gradient-to-b from-white to-blue-50 min-h-screen font-sans">
@@ -43,7 +45,13 @@ const DashboardPage = async () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="p-4 flex items-center gap-2">
               <div className="flex items-center gap-2">
-                  <Image src="/gif/money-gif.gif" className='rounded-full aspect-square' alt="Total Amount" width={45} height={45} />
+                <Image
+                  src="/gif/money-gif.gif"
+                  className="rounded-full aspect-square"
+                  alt="Total Amount"
+                  width={45}
+                  height={45}
+                />
               </div>
               <div className="flex flex-col font-light items-start justify-center gap-1">
                 <p className="text-3xl">${totalCost.toFixed(2)}</p>
@@ -78,13 +86,13 @@ const DashboardPage = async () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-              <QuickActionsDashboard />
+              <HoldingsSection />
               <RecentTransactionDashboard
                 transactions={recentTransactions}
                 txArrLen={txArrLen}
               />
             </div>
-            <PopularAssetsSettingsDashboard />
+            <AssetsQuickActionsSidebar />
           </div>
         </main>
       </div>

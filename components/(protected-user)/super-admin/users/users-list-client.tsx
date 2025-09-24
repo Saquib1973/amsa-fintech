@@ -91,7 +91,6 @@ const UsersListClient = () => {
 
   useEffect(() => {
     fetchUsers(page, search)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search])
 
   const handleSearch = (q: string) => {

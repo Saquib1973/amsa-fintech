@@ -41,7 +41,7 @@ export const NavigationContent = ({
       setIsTransitioning(true)
     }
     setActiveSubmenu(newSubmenu)
-  }, [pathname, navSections])
+  }, [pathname, navSections, activeSubmenu])
 
   const handleSubmenuChange = (item: NavItem | null) => {
     setIsTransitioning(true)

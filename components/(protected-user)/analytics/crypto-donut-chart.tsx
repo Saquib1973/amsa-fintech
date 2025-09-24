@@ -21,7 +21,7 @@ const CryptoDonutChart = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [map, setMap] = useState<{ [key: string]: number[] }>({})
-  const controller = new AbortController()
+  // Simple fetch; no AbortController needed here
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -39,9 +39,7 @@ const CryptoDonutChart = () => {
 
     fetchTransactions()
 
-    return () => {
-      controller.abort()
-    }
+    return () => {}
   }, [])
 
   function setUpNewDataStructure(data: Transaction[]) {
@@ -87,7 +85,7 @@ const CryptoDonutChart = () => {
       }
 
       chartInstanceRef.current = new Chart(
-        chartRef.current as HTMLCanvasElement,
+        chartRef.current,
         {
           type: 'doughnut',
           data: data,

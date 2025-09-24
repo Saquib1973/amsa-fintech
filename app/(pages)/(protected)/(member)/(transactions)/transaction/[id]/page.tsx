@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Copy, Check, Clock, Wallet, Network, Coins, RotateCw } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Clock, Wallet, Network, Coins, RotateCw } from 'lucide-react'
 import { format } from 'date-fns'
 import PrimaryButton from '@/components/button/primary-button'
 import SecondaryButton from '@/components/button/secondary-button'
@@ -10,7 +10,7 @@ import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-c
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import { SimpleButton } from '@/components/ui/simple-button'
-import { getStatusColor } from '@/lib/utils'
+import { getStatusColor, trimWalletAddress } from '@/lib/utils'
 import type { TransactionStatus } from '@/types/transaction-types'
 import { useToast } from '@/components/ui/use-toast'
 
@@ -199,7 +199,7 @@ const TransactionDetailPage = () => {
   const [transaction, setTransaction] = useState<Transaction | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
+
   const toast = useToast()
   const [updating, setUpdating] = useState(false)
 
@@ -231,17 +231,7 @@ const TransactionDetailPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionId])
 
-  const handleCopyAddress = async () => {
-    if (!transaction?.walletAddress) return
 
-    try {
-      await navigator.clipboard.writeText(transaction.walletAddress)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error('Failed to copy address:', err)
-    }
-  }
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -253,6 +243,8 @@ const TransactionDetailPage = () => {
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'PPP p')
   }
+
+
 
   const handleUpdateStatus = async () => {
     setUpdating(true)
@@ -485,21 +477,8 @@ const TransactionDetailPage = () => {
               </h2>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
                 <code className="flex-1 text-sm font-mono break-all">
-                  {transaction.walletAddress}
+                  {trimWalletAddress(transaction.walletAddress, 6, 4)}
                 </code>
-                <SimpleButton
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyAddress}
-                  className="!px-2"
-                  title="Copy address"
-                >
-                  {copied ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-gray-600" />
-                  )}
-                </SimpleButton>
               </div>
               {transaction.walletLink && (
                 <div className="mt-1">
@@ -711,7 +690,7 @@ const TransactionDetailPage = () => {
                                                 Wallet Address
                                               </span>
                                               <span className="text-sm text-gray-900 font-mono break-all">
-                                                {orderInfo.walletAddress}
+                                                {trimWalletAddress(orderInfo.walletAddress || '', 6, 4)}
                                               </span>
                                             </div>
                                           )}

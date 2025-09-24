@@ -1,32 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AMSA Fintech
 
-## Getting Started
+A modern fintech platform built with Next.js, offering secure transactions, wallet management, analytics, and more. Easily manage your assets, view transaction history, and enjoy a seamless user experience.
 
-### Running with Docker (Recommended)
+## Run Locally / Installation
 
-1. Make sure you have Docker and Docker Compose installed on your system
-2. Clone the repository
-3. Run the following command to start all services:
-   ```bash
-   docker-compose up -d
-   ```
-4. The application will be available at [http://localhost:3000](http://localhost:3000)
-5. The PostgreSQL database will be available on port 5431
+You can either clone the repository and run it locally, or deploy it to AWS for production use.
+
+### Clone the Project
+
+```bash
+git clone https://github.com/your-username/amsa-fintech.git
+```
+
+Go to the project directory:
+
+```bash
+cd amsa-fintech
+```
+
+Install all dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
 
 ### Running Locally (Development)
 
-First, run the development server:
+Start the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+## Features
+
+- Secure user authentication and authorization
+- Wallet management and transaction history
+- Real-time analytics and notifications
+- Admin dashboard for super users
+- Responsive and user-friendly UI
+
+## Access Variables
+
+If you need test credentials, please contact the author or refer to the `.env.example` file for required environment variables.
+
+## Tech Stack
+
+**Client:** Next.js, React, TailwindCSS, Framer Motion
+**Server:** Node.js, Express, Prisma, PostgreSQL, Docker
+
+## 🔗 Links
+
+[Deployed Website](https://amsa-fintech.vercel.app/)

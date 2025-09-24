@@ -60,3 +60,12 @@ export const getStatusColor = (status: TransactionStatus) => {
       return 'bg-gray-500'
   }
 }
+
+
+export const trimWalletAddress = (value: string, keepStart: number = 8, keepEnd: number = 8): string => {
+  if (!value) return ''
+  const stringValue = String(value)
+  const minimumLengthForTrimming = keepStart + keepEnd + 3
+  if (stringValue.length <= minimumLengthForTrimming) return stringValue
+  return `${stringValue.slice(0, keepStart)}…${stringValue.slice(-keepEnd)}`
+}

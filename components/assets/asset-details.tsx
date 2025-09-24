@@ -9,7 +9,7 @@ import AssetCalculator from './asset-calculator'
 import AssetChart from './asset-chart'
 import AssetHeader from './asset-header'
 import AssetOverview from './asset-overview'
-import TrendingCoins from './trending-coins'
+import TransakPopularClient from '@/components/assets/transak-popular-client'
 import { HelpCircle } from 'lucide-react'
 
 interface AssetDetailsProps {
@@ -28,6 +28,9 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
   useEffect(() => {
     fetchCoinById(id)
   }, [id])
+
+
+  console.log("COIN DATA",coinData)
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab)
@@ -112,7 +115,9 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
               />
             )}
           </div>
-          <TrendingCoins />
+          <div className="w-full lg:w-1/3">
+            <TransakPopularClient />
+          </div>
         </SectionWrapper>
       </AnimateWrapper>
     )

@@ -184,13 +184,13 @@ export default function ConnectWallet() {
   ))
 
   return (
-    <div className="flex flex-col items-start w-full gap-4">
+    <div className="flex flex-col items-center my-10 w-full gap-4">
       <PrimaryButton
         onClick={connectWallet}
         disabled={isConnecting}
         className="md:w-[300px]"
       >
-        {isConnecting ? 'Connecting...' : 'Connect Web3 Wallet'}
+        {isConnecting ? 'Connecting...' : 'Connect Wallet'}
       </PrimaryButton>
 
       {showAccountModal && (

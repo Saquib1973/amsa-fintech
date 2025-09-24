@@ -8,6 +8,8 @@ const nextConfig = {
       'static.coingecko.com',
       'lh3.googleusercontent.com',
       'randomuser.me',
+      'assets-stg.transak.com',
+      'assets-dev.transak.com',
     ],
   },
 }

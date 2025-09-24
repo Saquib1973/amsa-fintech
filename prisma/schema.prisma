@@ -8,15 +8,15 @@ datasource db {
 }
 
 model Wallet {
-  id String @id @default(cuid())
-  balance Int @default(0)
-  address String?
+  id        String   @id @default(cuid())
+  balance   Int      @default(0)
+  address   String?
   publicKey String?
-  type String @default("fiat")
+  type      String   @default("fiat")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId String?
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -24,13 +24,13 @@ model Notification {
   userId      String
   type        NotificationType
   message     String
-  read        Boolean         @default(false)
+  read        Boolean          @default(false)
   link        String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   createdById String?
-  user        User            @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  createdBy   User?           @relation("CreatedNotifications", fields: [createdById], references: [id])
+  user        User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy   User?            @relation("CreatedNotifications", fields: [createdById], references: [id])
 
   @@index([userId])
   @@index([createdById])
@@ -61,20 +61,21 @@ enum USER_TYPE {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  isVerified    Boolean   @default(false)
-  image         String?
-  wallets       Wallet[]
-  accounts      Account[]
-  sessions      Session[]
-  transactions  Transaction[]
-  notifications Notification[] @relation("UserNotifications")
-  type          USER_TYPE @default(USER)
-  otp           VerificationToken?
-  addresses     Address?
-  createdNotifications Notification[] @relation("CreatedNotifications")
+  id                   String             @id @default(cuid())
+  name                 String?
+  email                String?            @unique
+  isVerified           Boolean            @default(false)
+  image                String?
+  wallets              Wallet[]
+  accounts             Account[]
+  sessions             Session[]
+  transactions         Transaction[]
+  notifications        Notification[]     @relation("UserNotifications")
+  type                 USER_TYPE          @default(USER)
+  otp                  VerificationToken?
+  addresses            Address?
+  createdNotifications Notification[]     @relation("CreatedNotifications")
+  holdings             Holding[]
 }
 
 model Account {
@@ -96,45 +97,62 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-enum TransactionMethod{
+enum TransactionMethod {
   BUY
   SELL
 }
-model Transaction{
-  id String @id @default(cuid())
-  isBuyOrSell TransactionMethod @default(BUY)
-  fiatAmount Int
-  fiatCurrency String
-  cryptoCurrency String
-  walletLink String
-  walletAddress String
-  network String
-  status TransactionStatus @default(PENDING)
-  paymentOptionId String?
-  fiatAmountInUsd String?
-  statusHistories Json?
-  amountPaid Int?
-  cryptoAmount Float?
-  totalFeeInFiat Float?
-  countryCode String?
-  stateCode String?
-  statusReason String?
+
+model Transaction {
+  id               String            @id @default(cuid())
+  isBuyOrSell      TransactionMethod @default(BUY)
+  fiatAmount       Int
+  fiatCurrency     String
+  cryptoCurrency   String
+  walletLink       String
+  walletAddress    String
+  network          String
+  status           TransactionStatus @default(PENDING)
+  paymentOptionId  String?
+  fiatAmountInUsd  String?
+  statusHistories  Json?
+  amountPaid       Int?
+  cryptoAmount     Float?
+  totalFeeInFiat   Float?
+  countryCode      String?
+  stateCode        String?
+  statusReason     String?
   transakFeeAmount Float?
-  cardPaymentData Json?
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  cardPaymentData  Json?
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 }
+
 model Address {
-  id String @id @default(cuid())
+  id      String @id @default(cuid())
   address String
-  city String
-  state String
-  zip String
+  city    String
+  state   String
+  zip     String
   country String
-  userId String @unique
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String @unique
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Holding {
+  id            String   @id @default(cuid())
+  userId        String
+  symbol        String
+  quantity      Float    @default(0)
+  avgBuyPrice   Float    @default(0)
+  fiatCurrency  String   @default("USD")
+  totalInvested Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol, fiatCurrency])
 }
 
 model Session {
@@ -157,12 +175,12 @@ model VerificationToken {
 }
 
 model Config {
-  id String @id @default(cuid())
-  key String
-  value String
-  type SettingType
-  updatedAt DateTime @updatedAt
-  createdAt DateTime@default(now())
+  id        String      @id @default(cuid())
+  key       String
+  value     String
+  type      SettingType
+  updatedAt DateTime    @updatedAt
+  createdAt DateTime    @default(now())
 }
 
 enum SettingType {

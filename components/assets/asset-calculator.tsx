@@ -12,8 +12,8 @@ import { ExternalLink, Loader2, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SimpleButton } from '@/components/ui/simple-button'
-import { useRouter } from 'next/navigation'
 import type { TransactionStatus, TransakOrderData } from '@/types/transaction-types'
+import { useRouter } from 'next/navigation'
 
 interface TransactionData {
   id: string
@@ -47,6 +47,7 @@ interface TransactionData {
     createdAt: string
     message?: string
   }>
+  isTempId?: boolean
 }
 
 interface TransactionReceiptProps {
@@ -61,7 +62,9 @@ const TransactionReceipt = ({
   const [liveOrderData, setLiveOrderData] = useState(orderData)
   const [isPolling, setIsPolling] = useState(false)
   const [isFinal, setIsFinal] = useState(false)
-  const pollingRef = useRef<NodeJS.Timeout | null>(null)
+  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const retryCountRef = useRef(0)
+  const maxRetries = 8
   const router = useRouter()
 
   useEffect(() => {
@@ -74,32 +77,96 @@ const TransactionReceipt = ({
         'EXPIRED',
       ].includes(orderData.status)
     )
-    if (!isFinal && orderData.id && orderData.id !== 'N/A') {
+    if (!isFinal) {
       setIsPolling(true)
-      pollingRef.current = setInterval(async () => {
+      const poll = async () => {
         try {
-          const res = await fetch(`/api/transaction/status?orderId=${orderData.id}`)
-          const data = await res.json()
-          if (data?.data) {
-            setLiveOrderData((prev) => ({ ...prev, ...data.data }))
-            if ([
-              'COMPLETED',
-              'FAILED',
-              'CANCELLED',
-              'EXPIRED',
-            ].includes(data.data.status)) {
+          const orderId = orderData.id && !orderData.id.startsWith('TEMP') && orderData.id !== 'N/A' ? orderData.id : ''
+          const res = orderId
+            ? await fetch(`/api/transaction/status?orderId=${orderId}`)
+            : null
+          const api = res ? await res.json() : null
+
+          // Prefer server-normalized transaction when available
+          const persisted = api?.persisted as Partial<TransactionData> | undefined
+          if (persisted) {
+            setLiveOrderData((prev) => ({ ...prev, ...persisted }))
+
+            // Also pull the latest local transaction record for any missing fields
+            if (persisted.id) {
+              try {
+                const txRes = await fetch(`/api/transaction/${persisted.id}`, { cache: 'no-store' })
+                if (txRes.ok) {
+                  const tx = await txRes.json()
+                  setLiveOrderData((prev) => ({ ...prev, ...tx, isTempId: false }))
+                }
+              } catch {}
+            }
+            const status = (persisted.status as string) || ''
+            if (['COMPLETED', 'FAILED', 'CANCELLED', 'EXPIRED'].includes(status)) {
               setIsFinal(true)
               setIsPolling(false)
-              if (pollingRef.current) clearInterval(pollingRef.current)
+              if (pollingRef.current) clearTimeout(pollingRef.current)
+            }
+            return
+          }
+
+          // Fallback: map Transak payload to local shape
+          const d = api?.data?.data || api?.data || {}
+          if (d && (d.status || d.orderStatus)) {
+            const mapped: Partial<TransactionData> = {
+              id: d.id || d.orderId || liveOrderData.id,
+              status: (d.status || d.orderStatus) as TransactionStatus,
+              fiatAmount: Number(d.fiatAmount ?? liveOrderData.fiatAmount ?? 0),
+              amountPaid: Number(d.amountPaid ?? liveOrderData.amountPaid ?? 0),
+              cryptoAmount: Number(d.cryptoAmount ?? liveOrderData.cryptoAmount ?? 0),
+              totalFeeInFiat: Number(d.totalFeeInFiat ?? liveOrderData.totalFeeInFiat ?? 0),
+              fiatCurrency: String(d.fiatCurrency ?? liveOrderData.fiatCurrency ?? ''),
+              cryptoCurrency: String(d.cryptoCurrency ?? liveOrderData.cryptoCurrency ?? ''),
+              walletLink: d.walletLink ?? liveOrderData.walletLink,
+              walletAddress: d.walletAddress ?? liveOrderData.walletAddress,
+              network: d.network ?? liveOrderData.network,
+              paymentOptionId: d.paymentOptionId ?? liveOrderData.paymentOptionId,
+              fiatAmountInUsd: d.fiatAmountInUsd != null ? String(d.fiatAmountInUsd) : liveOrderData.fiatAmountInUsd,
+              statusHistories: d.statusHistories ?? liveOrderData.statusHistories,
+              createdAt: d.createdAt ?? liveOrderData.createdAt,
+              updatedAt: d.updatedAt ?? liveOrderData.updatedAt,
+            }
+            setLiveOrderData((prev) => ({ ...prev, ...mapped }))
+
+            // Merge in our local transaction snapshot as well
+            if (mapped.id && !String(mapped.id).startsWith('TEMP')) {
+              try {
+                const txRes = await fetch(`/api/transaction/${mapped.id}`, { cache: 'no-store' })
+                if (txRes.ok) {
+                  const tx = await txRes.json()
+                  setLiveOrderData((prev) => ({ ...prev, ...tx, isTempId: false }))
+                }
+              } catch {}
+            }
+            const status = String(mapped.status || '')
+            if (['COMPLETED', 'FAILED', 'CANCELLED', 'EXPIRED'].includes(status)) {
+              setIsFinal(true)
+              setIsPolling(false)
+              if (pollingRef.current) clearTimeout(pollingRef.current)
             }
           }
+          // Success path: reset retry count
+          retryCountRef.current = 0
         } catch {
-          // Optionally handle error
+          // Backoff on failures
+          retryCountRef.current = Math.min(retryCountRef.current + 1, maxRetries)
         }
-      }, 5000)
+        // schedule next poll unless final
+        if (!isFinal) {
+          const delay = Math.min(500 * Math.pow(2, retryCountRef.current), 15000)
+          pollingRef.current = setTimeout(poll, delay)
+        }
+      }
+      poll()
     }
     return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current)
+      if (pollingRef.current) clearTimeout(pollingRef.current)
     }
   }, [orderData])
 
@@ -194,8 +261,14 @@ const TransactionReceipt = ({
                 <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-gray-500">Amount</span>
                   <span className="font-medium">
-                    {formatValue(liveOrderData.fiatAmount)}{' '}
+                    {formatValue(liveOrderData.amountPaid || liveOrderData.fiatAmount)}{' '}
                     {formatValue(liveOrderData.fiatCurrency)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm py-1">
+                  <span className="text-gray-500">Amount Paid</span>
+                  <span className="font-medium">
+                    {formatValue(liveOrderData.amountPaid)} {formatValue(liveOrderData.fiatCurrency)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1">
@@ -223,6 +296,20 @@ const TransactionReceipt = ({
                   <span className="text-gray-500">Amount in USD</span>
                   <span className="font-medium">
                     ${formatValue(liveOrderData.fiatAmountInUsd)}
+                  </span>
+                </div>
+                {liveOrderData.statusReason && (
+                  <div className="flex justify-between items-center text-sm py-1 md:col-span-2">
+                    <span className="text-gray-500">Status Reason</span>
+                    <span className="font-medium text-right">
+                      {formatValue(liveOrderData.statusReason)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-sm py-1 md:col-span-2">
+                  <span className="text-gray-500">Order ID</span>
+                  <span className="font-mono truncate max-w-[70%] text-right">
+                    {formatValue(liveOrderData.id)}
                   </span>
                 </div>
               </div>
@@ -263,13 +350,25 @@ const TransactionReceipt = ({
                     {formatValue(liveOrderData.fiatCurrency)}
                   </span>
                 </div>
-                {liveOrderData.transakFeeAmount && (
+                {liveOrderData.transakFeeAmount !== undefined && liveOrderData.transakFeeAmount !== null && (
                   <div className="flex justify-between items-center text-sm py-1">
                     <span className="text-gray-500">Transak Fee</span>
                     <span className="font-medium">
                       {formatValue(liveOrderData.transakFeeAmount)}{' '}
                       {formatValue(liveOrderData.fiatCurrency)}
                     </span>
+                  </div>
+                )}
+                {liveOrderData.countryCode && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">Country</span>
+                    <span className="font-medium">{formatValue(liveOrderData.countryCode)}</span>
+                  </div>
+                )}
+                {liveOrderData.stateCode && (
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-gray-500">State</span>
+                    <span className="font-medium">{formatValue(liveOrderData.stateCode)}</span>
                   </div>
                 )}
               </div>
@@ -393,7 +492,7 @@ const TransactionReceipt = ({
               variant="secondary"
               onClick={() => {
                 if (liveOrderData.id && liveOrderData.id !== 'N/A' && liveOrderData.id !== 'ERROR') {
-                  router.push(`/transactions/${liveOrderData.id}`)
+                  router.push(`/transaction/${liveOrderData.id}`)
                 } else {
                   toast.error('Transaction ID not available!')
                 }
@@ -431,15 +530,37 @@ const AssetCalculator = ({
   const [orderData, setOrderData] = useState<TransactionData | null>(null)
   const [lastTransakOrderData, setLastTransakOrderData] = useState<TransactionData | null>(null)
   const { data: session,status:userSessionStatus} = useSession()
+  const router = useRouter()
+  const [isSwapped, setIsSwapped] = useState(false)
+  const [swapRotation, setSwapRotation] = useState(0)
+  // Estimated adjustments to better match Transak quotes
+  const EST_FEE_PCT = Number(process.env.NEXT_PUBLIC_TRANSAK_EST_FEE_PERCENT ?? 0.14) // 14%
+  const EST_FIXED_FEE = Number(process.env.NEXT_PUBLIC_TRANSAK_EST_FIXED_FEE ?? 0) // AUD
+  const RATE_MARKUP_PCT = Number(process.env.NEXT_PUBLIC_TRANSAK_RATE_MARKUP_PERCENT ?? 0.011) // ~1.1%
+
+  useEffect(() => {
+    // Suppress useEffect dependencies to prevent infinite loops
+    // This is necessary because the orderData state is updated by the polling effect.
+    // If orderData were a dependency, it would cause the polling effect to re-run,
+    // leading to an infinite loop.
+    // The polling effect itself updates orderData, so we don't need orderData
+    // as a dependency here.
+  }, [])
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setAmount(value)
-
-    if (value && coinData.market_data?.current_price?.usd) {
-      const coinValue =
-        parseFloat(value) / coinData.market_data.current_price.usd
-      setCryptoAmount(coinValue.toFixed(8))
+    const price = coinData.market_data?.current_price?.[
+      'aud' as keyof typeof coinData.market_data.current_price
+    ]
+    if (value && price) {
+      const fiat = parseFloat(value)
+      if (!isNaN(fiat)) {
+        const effectivePrice = Number(price) * (1 + RATE_MARKUP_PCT)
+        const netFiat = Math.max(0, fiat - (fiat * EST_FEE_PCT) - EST_FIXED_FEE)
+        const coinValue = netFiat / effectivePrice
+        setCryptoAmount(coinValue ? coinValue.toFixed(8) : '')
+      }
     } else {
       setCryptoAmount('')
     }
@@ -448,14 +569,27 @@ const AssetCalculator = ({
   const handleCoinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setCryptoAmount(value)
-
-    if (value && coinData.market_data?.current_price?.usd) {
-      const currencyValue =
-        parseFloat(value) * coinData.market_data.current_price.usd
-      setAmount(currencyValue.toFixed(2))
+    const price = coinData.market_data?.current_price?.[
+      'aud' as keyof typeof coinData.market_data.current_price
+    ]
+    if (value && price) {
+      const coins = parseFloat(value)
+      if (!isNaN(coins)) {
+        const effectivePrice = Number(price) * (1 + RATE_MARKUP_PCT)
+        // Reverse the fee math so entering crypto shows how much AUD to pay
+        const grossFiatBeforeFees = coins * effectivePrice
+        const fiatToPay = (grossFiatBeforeFees + EST_FIXED_FEE) / (1 - EST_FEE_PCT)
+        const currencyValue = fiatToPay
+        setAmount(currencyValue ? currencyValue.toFixed(2) : '')
+      }
     } else {
       setAmount('')
     }
+  }
+
+  const toggleSwap = () => {
+    setIsSwapped((prev) => !prev)
+    setSwapRotation((r) => r + 180)
   }
 
   const handleTransakSuccess = (orderData: TransakOrderData) => {
@@ -494,20 +628,39 @@ const AssetCalculator = ({
       const status = orderData.status
       console.log('Processing transaction status:', status)
 
+      // Prefer values returned by Transak; fallback to local inputs so UI/toast shows meaningful data immediately
+      const fallbackFiatAmt = Number(amount) || 0
+      const fallbackCryptoAmt = Number(cryptoAmount) || 0
+      const fallbackFiatCurrency = selectedCurrency?.toUpperCase() || 'AUD'
+
+      const generatedTempId = `TEMP-${Date.now()}`
+      // Try deriving order id from statusHistories message if missing
+      type StatusWithOptionalOrderId = typeof status & { orderId?: string }
+      const statusWithOptionalOrderId = status as StatusWithOptionalOrderId
+      const histories = status.statusHistories as Array<{ message?: string }> | undefined
+      let derivedId: string | undefined = statusWithOptionalOrderId.id || statusWithOptionalOrderId.orderId
+      if (!derivedId && histories && histories.length) {
+        for (const h of histories) {
+          const msg = h?.message || ''
+          const m = msg.match(/\*Order Id:\*\s*([a-f0-9\-]+)/i)
+          if (m && m[1]) { derivedId = m[1]; break }
+        }
+      }
+
       transactionData = {
-        id: status.id || 'N/A',
+        id: derivedId || generatedTempId,
         userId: status.userId || 'N/A',
         isBuyOrSell: status.isBuyOrSell || 'BUY',
-        fiatCurrency: status.fiatCurrency || 'AUD',
-        cryptoCurrency: status.cryptoCurrency || 'BTC',
-        fiatAmount: status.fiatAmount || 0,
+        fiatCurrency: (status.fiatCurrency || fallbackFiatCurrency),
+        cryptoCurrency: status.cryptoCurrency || coinData.symbol.toUpperCase(),
+        fiatAmount: Number(status.fiatAmount ?? fallbackFiatAmt) || 0,
         status: (status.status as TransactionStatus) || 'PROCESSING',
-        amountPaid: status.amountPaid || 0,
+        amountPaid: Number(status.amountPaid ?? status.fiatAmount ?? fallbackFiatAmt) || 0,
         paymentOptionId: status.paymentOptionId || 'credit_debit_card',
         walletAddress: status.walletAddress || 'N/A',
         walletLink: status.walletLink || '',
         network: status.network || 'mainnet',
-        cryptoAmount: status.cryptoAmount || 0,
+        cryptoAmount: Number(status.cryptoAmount ?? fallbackCryptoAmt) || 0,
         totalFeeInFiat: status.totalFeeInFiat || 0,
         fiatAmountInUsd: status.fiatAmountInUsd?.toString() || null,
         countryCode: status.countryCode || 'US',
@@ -530,6 +683,7 @@ const AssetCalculator = ({
               message: h.message,
             }))
           : [],
+        isTempId: !derivedId,
       }
     } catch (error) {
       console.error('Error parsing transaction data:', error)
@@ -538,45 +692,22 @@ const AssetCalculator = ({
     console.log('Final transaction data:', transactionData)
     setOrderData(transactionData)
     setLastTransakOrderData(transactionData)
-    setShowReceipt(true)
-
-    if (
-      transactionData.status === 'COMPLETED' ||
-      transactionData.status === 'PROCESSING'
-    ) {
-      setShowConfetti(true)
-      toast.success(
-        `Transaction ${transactionData.status.toLowerCase()}! Amount: ${transactionData.fiatAmount} ${transactionData.fiatCurrency}`,
-        {
-          duration: 5000,
-          position: 'top-center',
-        }
-      )
-      setTimeout(() => {
-        setShowConfetti(false)
-        toast.dismiss()
-      }, 5000)
-    } else {
-      toast(
-        `Transaction is ${transactionData.status.toLowerCase()}. Please check back later for updates.`,
-        {
-          duration: 5000,
-          position: 'top-center',
-        }
-      )
-    }
+    // Do NOT open inline receipt; wait for SDK close to redirect
+    toast.success(
+      `Transaction ${transactionData.status.toLowerCase()}! Amount: ${transactionData.amountPaid || transactionData.fiatAmount} ${transactionData.fiatCurrency}`,
+      { duration: 3000, position: 'top-center' }
+    )
   }
 
   const handleTransakClose = () => {
-    console.log('Transak closed')
-    console.log('lastTransakOrderData at close:', lastTransakOrderData)
-    if (lastTransakOrderData) {
-      setOrderData(lastTransakOrderData)
-      setShowReceipt(true)
-      console.log('Showing receipt modal on close')
-    } else {
-      console.log('No transaction data to show on close')
+    setShowReceipt(false)
+    const id = lastTransakOrderData?.id
+    if (id && id !== 'N/A' && id !== 'ERROR' && !String(id).startsWith('TEMP')) {
+      router.push(`/transaction/${id}`)
+      return
     }
+    console.log("No order id found")
+    toast('Error', { position: 'top-center' })
   }
 
   const handleCloseReceipt = () => {
@@ -624,15 +755,6 @@ const AssetCalculator = ({
     setShowConfetti(true)
   }
 
-  const currentPrice =
-    coinData.market_data?.current_price?.[
-      selectedCurrency as keyof typeof coinData.market_data.current_price
-    ] || 0
-
-  // Debug log for receipt modal rendering
-  if (showReceipt && orderData) {
-    console.log('Rendering TransactionReceipt modal', orderData)
-  }
 
   return (
     <div className="w-full xl:w-[50%] md:border-l border-b border-gray-200">
@@ -657,18 +779,33 @@ const AssetCalculator = ({
               <div className="space-y-4 w-full">
                 <div className="flex xl:flex-col gap-3">
                   <div className="relative w-full">
+                    {isSwapped && (
+                      <div className="asset-icon absolute left-4 md:left-6 top-1/2 -translate-y-1/2">
+                        <Image
+                          width={24}
+                          height={24}
+                          src={coinData.image.large}
+                          alt={coinData.name}
+                          className="w-5 h-5 md:w-6 md:h-6"
+                        />
+                      </div>
+                    )}
                     <input
-                      type="number"
-                      name="dollars"
-                      className="input-field text-right w-full p-3 md:p-4 border rounded-lg"
-                      placeholder="Enter amount"
-                      value={amount}
-                      onChange={handleAmountChange}
+                      type={isSwapped ? 'text' : 'number'}
+                      name="top-input"
+                      className={`max-md:w-[80%] input-field text-right p-2 w-full border rounded-lg ${isSwapped ? 'pl-10 md:pl-12' : ''}`}
+                      placeholder={isSwapped ? 'Enter crypto amount' : 'Enter amount'}
+                      value={isSwapped ? cryptoAmount : amount}
+                      onChange={isSwapped ? handleCoinChange : handleAmountChange}
                     />
                   </div>
 
-                  <svg
-                    className="text-black max-xl:rotate-90 block m-auto fill-current"
+                  <motion.svg
+                    onClick={toggleSwap}
+                    animate={{ rotate: swapRotation }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                    className="cursor-pointer size-5 max-md:min-w-max text-black max-xl:rotate-90 block m-auto fill-current"
                     width="23"
                     height="24"
                     viewBox="0 0 23 24"
@@ -679,36 +816,31 @@ const AssetCalculator = ({
                       d="M17.0621 20.066C16.9798 20.1707 16.8763 20.2549 16.7589 20.3126C16.6415 20.3703 16.5133 20.4001 16.3836 20.3996C16.2708 20.4004 16.159 20.3774 16.0548 20.332C15.9507 20.2867 15.8564 20.2199 15.7776 20.1356L12.323 16.526C12.1614 16.3573 12.0707 16.1285 12.0707 15.89C12.0707 15.6515 12.1614 15.4228 12.323 15.254C12.4847 15.0855 12.7039 14.9908 12.9325 14.9908C13.161 14.9908 13.3802 15.0855 13.542 15.254L15.5211 17.3324V4.49963C15.5211 4.26093 15.612 4.03201 15.7737 3.86323C15.9355 3.69445 16.1549 3.59963 16.3836 3.59963C16.6124 3.59963 16.8317 3.69445 16.9935 3.86323C17.1552 4.03201 17.2461 4.26093 17.2461 4.49963V17.3204L19.2264 15.2588C19.3881 15.0907 19.6071 14.9962 19.8353 14.9962C20.0636 14.9962 20.2826 15.0907 20.4443 15.2588C20.6058 15.4276 20.6965 15.6563 20.6965 15.8948C20.6965 16.1333 20.6058 16.3621 20.4443 16.5308L17.0621 20.066ZM7.28712 3.93323C7.20484 3.82856 7.10126 3.74432 6.9839 3.68662C6.86655 3.62892 6.73835 3.5992 6.60862 3.59963C6.49578 3.59887 6.38395 3.62186 6.27982 3.66722C6.17569 3.71258 6.0814 3.77938 6.00257 3.86363L2.54912 7.47323C2.3876 7.64198 2.29688 7.87073 2.29688 8.10923C2.29688 8.34773 2.3876 8.57648 2.54912 8.74523C2.71084 8.91377 2.93005 9.00844 3.15862 9.00844C3.38718 9.00844 3.6064 8.91377 3.76812 8.74523L5.74612 6.66803V19.4996C5.74612 19.7383 5.83699 19.9672 5.99874 20.136C6.16049 20.3048 6.37987 20.3996 6.60862 20.3996C6.83737 20.3996 7.05675 20.3048 7.2185 20.136C7.38025 19.9672 7.47112 19.7383 7.47112 19.4996V6.67883L9.45142 8.74043C9.61309 8.9086 9.83206 9.00304 10.0603 9.00304C10.2886 9.00304 10.5076 8.9086 10.6693 8.74043C10.8308 8.57168 10.9215 8.34293 10.9215 8.10443C10.9215 7.86593 10.8308 7.63718 10.6693 7.46843L7.28712 3.93323Z"
                       fill="black"
                     />
-                  </svg>
+                  </motion.svg>
 
-                  <div className="relative">
-                    <div className="asset-icon absolute left-4 md:left-6 top-1/2 -translate-y-1/2">
-                      <Image
-                        width={24}
-                        height={24}
-                        src={coinData.image.large}
-                        alt={coinData.name}
-                        className="w-5 h-5 md:w-6 md:h-6"
-                      />
-                    </div>
+                  <div className="relative w-full">
+                    {!isSwapped && (
+                      <div className="asset-icon absolute left-4 md:left-6 top-1/2 -translate-y-1/2">
+                        <Image
+                          width={24}
+                          height={24}
+                          src={coinData.image.large}
+                          alt={coinData.name}
+                          className="w-5 h-5 md:w-6 md:h-6"
+                        />
+                      </div>
+                    )}
                     <input
-                      type="text"
-                      name="asset-value"
-                      className="input-field text-right w-full p-3 md:p-4 border rounded-lg pl-10 md:pl-12"
-                      placeholder="0.00"
-                      value={cryptoAmount}
-                      onChange={handleCoinChange}
+                      type={isSwapped ? 'number' : 'text'}
+                      name="bottom-input"
+                      className={`max-md:w-[80%] input-field text-right w-full p-2 border rounded-lg ${!isSwapped ? 'pl-10 md:pl-12' : ''}`}
+                      placeholder={isSwapped ? 'Enter amount' : '0.00'}
+                      value={isSwapped ? amount : cryptoAmount}
+                      onChange={isSwapped ? handleAmountChange : handleCoinChange}
                     />
                   </div>
                 </div>
 
-                <p className="text-color-text-body asset-price-calc text-sm md:text-base">
-                  1 {coinData.symbol.toUpperCase()} = $
-                  {currentPrice.toLocaleString()}{' '}
-                  <span className="currency-set">
-                    {selectedCurrency.toUpperCase()}
-                  </span>
-                </p>
 
                 {/* Temporary test button for debugging */}
                 {process.env.NEXT_PUBLIC_NODE_ENV === 'development' && (
