@@ -1,6 +1,7 @@
 'use client'
 import { Transak, TransakConfig } from '@transak/transak-sdk'
 import { useState, useEffect, useRef } from 'react'
+import { useSession } from 'next-auth/react'
 import PrimaryButton from './button/primary-button'
 import Loader from './loader-component'
 import type { TransakOrderData } from '@/types/transaction-types'
@@ -39,6 +40,7 @@ interface TransakPaymentProps {
   fiatCurrency?: string
   cryptoCurrency?: string
   cryptoAmount?: number
+  network?: string
   onSuccess?: (orderData: TransakOrderData) => void
   onClose?: () => void
   buttonText?: {
@@ -66,13 +68,16 @@ const TransakPaymentComponent = ({
   },
   className = '',
 }: TransakPaymentProps) => {
+  const { data: session } = useSession()
   const [transak, setTransak] = useState<Transak | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [transactionStatus, setTransactionStatus] = useState<string>('')
   const [isProcessing, setIsProcessing] = useState(false)
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
   const pollingAttemptsRef = useRef(0)
-  const [lastOrderId, setLastOrderId] = useState<string | null>(null)
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
+  const custodialWallet = process.env.NEXT_PUBLIC_CUSTODIAL_WALLET;
+  console.log('Custodial wallet from env:', custodialWallet)
 
   const getStatusMessage = (status: string) => {
     switch (status) {
@@ -181,7 +186,7 @@ const TransakPaymentComponent = ({
               fiatCurrency: data.data.fiatCurrency,
               cryptoCurrency: data.data.cryptoCurrency,
               walletLink: data.data.walletLink,
-              walletAddress: data.data.walletAddress,
+              walletAddress: data.data.walletAddress || custodialWallet,
               network: data.data.network,
               paymentOptionId: data.data.paymentOptionId,
               fiatAmountInUsd: data.data.fiatAmountInUsd?.toString() || null,
@@ -247,7 +252,7 @@ const TransakPaymentComponent = ({
       fiatCurrency: statusData.fiatCurrency ?? 'AUD',
       cryptoCurrency: statusData.cryptoCurrency ?? 'BTC',
       walletLink: statusData.walletLink ?? '',
-      walletAddress: statusData.walletAddress ?? '',
+      walletAddress: statusData.walletAddress ?? custodialWallet,
       network: statusData.network ?? '',
       status: mapTransakStatusToDbStatus(statusData.status ?? 'PENDING'), // Use actual status from Transak
       paymentOptionId: statusData.paymentOptionId ?? '',
@@ -306,7 +311,7 @@ const TransakPaymentComponent = ({
               fiatAmount: 0,
               amountPaid: 0,
               paymentOptionId: '',
-              walletAddress: '',
+              walletAddress: custodialWallet || '',
               walletLink: '',
               network: '',
               cryptoAmount: 0,
@@ -341,6 +346,40 @@ const TransakPaymentComponent = ({
   const initializeTransak = () => {
     setIsLoading(true)
     const apiKey = process.env.NEXT_PUBLIC_TRANSAK_API || ''
+    const email = session?.user?.email || undefined
+    const partnerCustomerId = (session?.user as unknown as { id?: string })?.id || undefined
+    const isStaging = true // this component currently uses staging env
+    const stagingEmail = "saquibali353@gmail.com"
+    const stagingUserData = ({
+      firstName: 'Jane',
+      lastName: 'Doe',
+      dob: '1998-01-01',
+      address: {
+        addressLine1: '170 Rue du Faubourg Saint-Denis',
+        city: 'Paris',
+        state: 'Île-de-France',
+        countryCode: 'FR',
+        postCode: '75010',
+      },
+      nationality: 'FR',
+      dialCode: '+33',
+      phoneNumber: '791112345',
+      email: stagingEmail,
+      mobileNumber: '791112345',
+    }) as unknown as TransakConfig['userData']
+    const effectiveEmail = isStaging ?  stagingEmail : email
+    const effectivePartnerCustomerId = isStaging
+      ? (partnerCustomerId || process.env.NEXT_PUBLIC_TRANSAK_PARTNER_CUSTOMER_ID || 'staging-customer-001')
+      : partnerCustomerId
+    // Debug: show identifiers we will pass into Transak
+    console.log('[Transak Buy] identifiers', {
+      email: effectiveEmail,
+      partnerCustomerId: effectivePartnerCustomerId,
+      environment: 'STAGING',
+    })
+    if (isStaging) {
+      console.log('[Transak Buy] staging userData', stagingUserData)
+    }
     const transakConfig: TransakConfig = {
       apiKey: apiKey,
       themeColor: '#0099ff',
@@ -353,9 +392,22 @@ const TransakPaymentComponent = ({
       isFeeCalculationHidden: true,
       exchangeScreenTitle: exchangeScreenTitle,
       environment: Transak.ENVIRONMENTS.STAGING,
-      walletAddress: '0xcd8857bA99B602212F679E3802Da48D98B195052',
+      walletAddress: custodialWallet,
       disableWalletAddressForm: true,
+      // Add network property for Polygon to get TRNSK tokens
+      network: 'polygon',
+      // Ensure Transak can associate returning users to avoid repeated KYC
+      email: effectiveEmail,
+      partnerCustomerId: effectivePartnerCustomerId,
+      // In staging, prefill the official test KYC identity so KYC passes instantly
+      ...(isStaging
+        ? {
+            userData: stagingUserData,
+            isAutoFillUserData: true,
+          }
+        : {}),
     }
+      console.log("CONFIG",transakConfig);
 
     const newTransak = new Transak(transakConfig)
     setTransak(newTransak)

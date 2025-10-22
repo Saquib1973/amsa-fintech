@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { Transak, TransakConfig } from '@transak/transak-sdk'
 
 interface TransakSellComponentProps {
@@ -53,9 +54,11 @@ export default function TransakSellComponent({
   onClose,
   onError,
 }: TransakSellComponentProps) {
+  const { data: session } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [transactionStatus, setTransactionStatus] = useState<string>('PENDING')
+  const [isWidgetOpen, setIsWidgetOpen] = useState(false)
 
   const transakRef = useRef<Transak | null>(null)
   const pollingIntervalRef = useRef<number | null>(null)
@@ -117,7 +120,10 @@ export default function TransakSellComponent({
       const inferredId =
         d?.status?.orderId || d?.status?.id || d?.orderId || d?.id || lastOrderIdRef.current
 
-      await fetch('/api/transaction', {
+      console.log('Saving transaction with ID:', inferredId)
+      console.log('Order data:', d)
+
+      const response = await fetch('/api/transaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,7 +132,7 @@ export default function TransakSellComponent({
           fiatAmount: d.fiatAmount,
           fiatCurrency: d.fiatCurrency || fiatCurrency,
           cryptoCurrency: d.cryptoCurrency || cryptoCurrency,
-          walletLink: d.walletLink,
+          walletLink: d.walletLink || '',
           walletAddress: d.walletAddress || resolvedWalletAddress,
           network: d.network,
           status: d.status?.status,
@@ -142,8 +148,18 @@ export default function TransakSellComponent({
           transakFeeAmount: d.transakFeeAmount,
         }),
       })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Transaction API error:', response.status, errorText)
+        throw new Error(`Transaction API error: ${response.status} - ${errorText}`)
+      }
+
+      const result = await response.json()
+      console.log('Transaction saved successfully:', result)
     } catch (error) {
       console.error('Error saving transaction:', error)
+      // Don't throw the error, just log it to avoid breaking the flow
     }
   }
 
@@ -156,7 +172,12 @@ export default function TransakSellComponent({
     initializedRef.current = false
     setIsLoading(false)
     setIsProcessing(false)
+    setIsWidgetOpen(false)
+    // Reset transaction status to clear any processing state
+    setTransactionStatus('PENDING')
   }
+
+  console.log('TRANSACTION STATUS: ', transactionStatus);
 
   const checkTransactionStatus = async (orderId: string) => {
     try {
@@ -186,12 +207,45 @@ export default function TransakSellComponent({
 
   const initializeTransak = () => {
 console.log('COMPONENT RENDERED')
+console.log('Session data:', session)
 
     if (initializedRef.current) return
     initializedRef.current = true
     setIsLoading(true)
 
     const apiKey = process.env.NEXT_PUBLIC_TRANSAK_API || ''
+    const isStaging = resolvedEnv === Transak.ENVIRONMENTS.STAGING
+    const stagingEmail = process.env.NEXT_PUBLIC_TRANSAK_TEST_EMAIL || 'test.user+staging@example.com'
+    const email = (session?.user?.email || (isStaging ? stagingEmail : undefined))
+    const partnerCustomerId = (session?.user as unknown as { id?: string })?.id || (isStaging ? (process.env.NEXT_PUBLIC_TRANSAK_PARTNER_CUSTOMER_ID || 'staging-customer-001') : undefined)
+    const stagingUserData = ({
+      firstName: 'Jane',
+      lastName: 'Doe',
+      dob: '1998-01-01',
+      address: {
+        addressLine1: '170 Rue du Faubourg Saint-Denis',
+        city: 'Paris',
+        state: 'Île-de-France',
+        countryCode: 'FR',
+        postCode: '75010',
+      },
+      nationality: 'FR',
+      dialCode: '+33',
+      phoneNumber: '791112345',
+      email: stagingEmail,
+      mobileNumber: '791112345',
+    }) as unknown as TransakConfig['userData']
+    const staticPartnerOrderId = `sell-${Date.now()}`
+
+    // Debug: show identifiers we will pass into Transak
+    console.log('[Transak Sell] identifiers', {
+      email,
+      partnerCustomerId,
+      environment: isStaging ? 'STAGING' : 'PRODUCTION',
+    })
+    if (isStaging) {
+      console.log('[Transak Sell] staging userData', stagingUserData)
+    }
 
     const transakConfig: TransakConfig = {
       apiKey: apiKey,
@@ -205,9 +259,20 @@ console.log('COMPONENT RENDERED')
       environment: resolvedEnv,
       walletAddress: resolvedWalletAddress,
       disableWalletAddressForm: true,
-      // Keep users inside the Transak modal to see checkout screens
-      walletRedirection: false,
-      // redirectURL intentionally omitted to avoid early modal closure
+      email,
+      partnerCustomerId,
+      partnerOrderId: staticPartnerOrderId,
+      exchangeScreenTitle: 'Sell Crypto',
+      // Enable wallet redirection for sell flow
+      walletRedirection: true,
+      // Add redirect URL for sell flow - this is where users go after confirming payment
+      // redirectURL: `${window.location.origin}/sell/complete`,
+      ...(isStaging
+        ? {
+            userData: stagingUserData,
+            isAutoFillUserData: true,
+          }
+        : {}),
     }
 
     log('Init with config', {
@@ -221,6 +286,7 @@ console.log('COMPONENT RENDERED')
     const instance = new Transak(transakConfig)
     transakRef.current = instance
     instance.init()
+    setIsWidgetOpen(true)
     // Best-effort: drop the initializing overlay shortly after init
     window.setTimeout(() => setIsLoading(false), 500)
 
@@ -263,11 +329,57 @@ console.log('COMPONENT RENDERED')
         lastOrderIdRef.current = id
         try {
           await saveTransaction(data)
-        } catch {}
+        } catch (error) {
+          console.error('Error saving transaction in WALLET_REDIRECTION:', error)
+        }
         startPolling(id)
         const initialStatus = mapTransakStatusToDbStatus(d?.status?.status || 'PENDING')
         setTransactionStatus(initialStatus)
         setIsProcessing(true)
+        
+        // Validate data before redirecting
+        const finalCryptoAmount = d.cryptoAmount || cryptoAmount
+        const finalCryptoCurrency = d.cryptoCurrency || cryptoCurrency
+        const finalWalletAddress = d.walletAddress || resolvedWalletAddress
+        const finalNetwork = d.network || 'polygon'
+        
+        console.log('Wallet redirection data validation:', {
+          id,
+          finalCryptoAmount,
+          finalCryptoCurrency,
+          finalWalletAddress,
+          finalNetwork
+        })
+        
+        // Only redirect if we have valid data
+        if (finalCryptoAmount && finalCryptoCurrency && finalWalletAddress && finalNetwork) {
+          // Perform the redirect to complete the transfer
+          console.log('Wallet redirection event - redirecting to:', `${window.location.origin}/sell/complete`)
+          const redirectUrl = `${window.location.origin}/sell/complete?orderId=${id}&cryptoAmount=${finalCryptoAmount}&cryptoCurrency=${finalCryptoCurrency}&walletAddress=${finalWalletAddress}&network=${finalNetwork}`
+          console.log('Redirecting to:', redirectUrl)
+          
+          // Close the widget and redirect
+          try {
+            transakRef.current?.close()
+          } catch (error) {
+            console.error('Error closing Transak widget:', error)
+          }
+          teardown(true)
+          
+          // Perform the redirect with a small delay to ensure widget closes
+          setTimeout(() => {
+            console.log('Executing redirect to:', redirectUrl)
+            window.location.href = redirectUrl
+          }, 100)
+        } else {
+          console.error('Invalid data for redirect:', {
+            cryptoAmount: finalCryptoAmount,
+            cryptoCurrency: finalCryptoCurrency,
+            walletAddress: finalWalletAddress,
+            network: finalNetwork
+          })
+          onError?.(new Error('Invalid order data received from Transak'))
+        }
       }
     })
 
@@ -277,6 +389,50 @@ console.log('COMPONENT RENDERED')
       const id = d?.status?.id || d?.status?.orderId
       if (id) {
         await checkTransactionStatus(id)
+        
+        // Validate data before redirecting
+        const finalCryptoAmount = d.cryptoAmount || cryptoAmount
+        const finalCryptoCurrency = d.cryptoCurrency || cryptoCurrency
+        const finalWalletAddress = d.walletAddress || resolvedWalletAddress
+        const finalNetwork = d.network || 'polygon'
+        
+        console.log('Order successful data validation:', {
+          id,
+          finalCryptoAmount,
+          finalCryptoCurrency,
+          finalWalletAddress,
+          finalNetwork
+        })
+        
+        // Only redirect if we have valid data
+        if (finalCryptoAmount && finalCryptoCurrency && finalWalletAddress && finalNetwork) {
+          // Manual redirect as fallback if Transak doesn't redirect automatically
+          console.log('Order successful - attempting manual redirect')
+          const redirectUrl = `${window.location.origin}/sell/complete?orderId=${id}&cryptoAmount=${finalCryptoAmount}&cryptoCurrency=${finalCryptoCurrency}&walletAddress=${finalWalletAddress}&network=${finalNetwork}`
+          console.log('Redirecting to:', redirectUrl)
+          
+          // Close the widget and redirect
+          try {
+            transakRef.current?.close()
+          } catch (error) {
+            console.error('Error closing Transak widget:', error)
+          }
+          teardown(true)
+          
+          // Perform the redirect with a small delay to ensure widget closes
+          setTimeout(() => {
+            console.log('Executing redirect to:', redirectUrl)
+            window.location.href = redirectUrl
+          }, 100)
+        } else {
+          console.error('Invalid data for successful order redirect:', {
+            cryptoAmount: finalCryptoAmount,
+            cryptoCurrency: finalCryptoCurrency,
+            walletAddress: finalWalletAddress,
+            network: finalNetwork
+          })
+          onError?.(new Error('Invalid order data received from Transak'))
+        }
       }
     })
 
@@ -296,6 +452,29 @@ console.log('COMPONENT RENDERED')
         onError?.(new Error('Failed to open Transak widget. Please try again.'))
       }
     }, 8000)
+
+    // Fallback redirect after 30 seconds if user is still on processing screen
+    window.setTimeout(() => {
+      if (isProcessing && lastOrderIdRef.current) {
+        console.log('Fallback redirect triggered after 30 seconds')
+        const redirectUrl = `${window.location.origin}/sell/complete?orderId=${lastOrderIdRef.current}`
+        console.log('Fallback redirecting to:', redirectUrl)
+        
+        // Close the widget and redirect
+        try {
+          transakRef.current?.close()
+        } catch (error) {
+          console.error('Error closing Transak widget:', error)
+        }
+        teardown(true)
+        
+        // Perform the redirect with a small delay to ensure widget closes
+        setTimeout(() => {
+          console.log('Executing fallback redirect to:', redirectUrl)
+          window.location.href = redirectUrl
+        }, 100)
+      }
+    }, 30000)
   }
 
   // Backward compatibility: auto-open on mount when rendered, unless autoOpen=false
@@ -316,7 +495,16 @@ console.log('COMPONENT RENDERED')
 
   // Cleanup on unmount
   useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && (isLoading || isProcessing || isWidgetOpen)) {
+        try { transakRef.current?.close() } catch {}
+        teardown()
+        onClose?.()
+      }
+    }
+    window.addEventListener('keydown', handleEsc)
     return () => {
+      window.removeEventListener('keydown', handleEsc)
       teardown()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -337,7 +525,7 @@ console.log('COMPONENT RENDERED')
 
   return (
     <div className="space-y-3">
-      {(isLoading || isProcessing) && (
+      {(isLoading || isProcessing || isWidgetOpen) && (
         <div className="flex items-center justify-between p-3 rounded-md bg-gray-50">
           <div className="flex items-center gap-2">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>

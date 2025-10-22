@@ -15,6 +15,7 @@ import {
   User,
   Users,
   Wallet,
+  WalletCards as Holdings
 } from 'lucide-react'
 
 
@@ -36,12 +37,20 @@ export const dashboardSidebarItems: NavSection[] = [
         roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
         order: 2,
       },
+      // {
+      //   name: 'Wallets',
+      //   href: '/wallets',
+      //   icon: <Wallet className="w-5 h-5" />,
+      //   roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
+      //   order: 3,
+      // },
       {
-        name: 'Wallets',
-        href: '/wallets',
-        icon: <Wallet className="w-5 h-5" />,
-        roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
-        order: 3,
+          name: 'Holdings',
+          href: '/holdings',
+          icon: <Holdings className="w-5 h-5" />,
+          roles: ['USER', 'ADMIN', 'SUPER_ADMIN'],
+          order: 3,
+
       },
       {
         name: 'Transactions',

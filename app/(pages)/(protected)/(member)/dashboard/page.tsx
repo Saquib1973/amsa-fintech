@@ -1,4 +1,4 @@
-import { TrendingUp, PieChart } from 'lucide-react'
+import { TrendingUp, PieChart, TrendingDown } from 'lucide-react'
 import OffWhiteHeadingContainer from '@/components/containers/offwhite-heading-container'
 import type { Metadata } from 'next'
 import { Transaction } from '@/types/transaction-types'
@@ -6,6 +6,7 @@ import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import {
   getTransactions,
   totalAmountOfTransactions,
+  getNetProfitLoss,
 } from '@/actions/transactions'
 import AssetsQuickActionsSidebar from '@/components/(protected-user)/dashboard/assets-quick-actions-sidebar'
 import RecentTransactionDashboard from '@/components/(protected-user)/dashboard/recent-transaction-dashboard'
@@ -29,6 +30,9 @@ const DashboardPage = async () => {
     txArrLen > 8 ? 8 : txArrLen
   )
   const totalCost = txArrLen > 0 ? await totalAmountOfTransactions() : 0
+  
+  // Get dynamic profit/loss and active assets data
+  const { netPLAUD, activeAssetsCount } = await getNetProfitLoss()
 
   // Holdings section is rendered via a dedicated component
 
@@ -62,11 +66,17 @@ const DashboardPage = async () => {
             <div className="p-4">
               <div className="flex font-light items-center gap-1">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="size-8 text-green-600" />
+                  {netPLAUD >= 0 ? (
+                    <TrendingUp className="size-8 text-green-600" />
+                  ) : (
+                    <TrendingDown className="size-8 text-red-600" />
+                  )}
                 </div>
                 <div className="font-light">
-                  <p className="text-3xl">+$1,234.56</p>
-                  <p className="text-sm text-gray-500">24h Change</p>
+                  <p className={`text-3xl ${netPLAUD >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {netPLAUD >= 0 ? '+' : ''}${netPLAUD.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-500">Net Profit/Loss</p>
                 </div>
               </div>
             </div>
@@ -77,7 +87,7 @@ const DashboardPage = async () => {
                   <PieChart className="size-8 text-purple-600" />
                 </div>
                 <div className="font-light">
-                  <p className="text-3xl">12</p>
+                  <p className="text-3xl">{activeAssetsCount}</p>
                   <p className="text-sm text-gray-500">Active Assets</p>
                 </div>
               </div>

@@ -40,18 +40,21 @@ export async function POST(req: Request) {
   if (!user_id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  
+  let id: string | undefined, isBuyOrSell: string | undefined, fiatAmount: number | undefined, fiatCurrency: string | undefined, cryptoCurrency: string | undefined, status: string | undefined
+  
   try {
     const body = await req.json()
     const {
-      id,
-      isBuyOrSell, // This should be 'SELL' for off-ramp
-      fiatAmount,
-      fiatCurrency,
-      cryptoCurrency,
+      id: orderId,
+      isBuyOrSell: buyOrSell, // This should be 'SELL' for off-ramp
+      fiatAmount: fiatAmt,
+      fiatCurrency: fiatCurr,
+      cryptoCurrency: cryptoCurr,
       walletLink,
       walletAddress,
       network,
-      status,
+      status: orderStatus,
       paymentOptionId,
       fiatAmountInUsd,
       statusHistories,
@@ -63,8 +66,28 @@ export async function POST(req: Request) {
       statusReason,
       transakFeeAmount,
     } = body ?? {}
+    
+    // Assign to outer scope variables
+    id = orderId
+    isBuyOrSell = buyOrSell
+    fiatAmount = fiatAmt
+    fiatCurrency = fiatCurr
+    cryptoCurrency = cryptoCurr
+    status = orderStatus
 
     console.log('Saving transaction with status:', status, 'Type:', isBuyOrSell)
+    console.log('Transaction data being saved:', {
+      id,
+      isBuyOrSell,
+      fiatAmount,
+      fiatCurrency,
+      cryptoCurrency,
+      walletLink,
+      walletAddress,
+      network,
+      status,
+      userId: user_id
+    })
 
     // Map the Transak status to our database enum
     const mappedStatus = mapTransakStatusToDbStatus(status || 'PENDING')
@@ -95,40 +118,83 @@ export async function POST(req: Request) {
       cryptoCurrency: toString(cryptoCurrency || ''),
     }
 
-    const transaction = await prisma.$transaction(async (tx) => {
-      // Create the transaction record
-      const created = await tx.transaction.create({
-        data: {
-          ...(id ? { id: toString(id) } : {}),
-          userId: user_id,
-          isBuyOrSell: (toString(isBuyOrSell || 'SELL') === 'SELL'
-            ? 'SELL'
-            : 'BUY') as TransactionMethod,
-          fiatAmount: finalFields.fiatAmount,
-          fiatCurrency: finalFields.fiatCurrency,
-          cryptoCurrency: finalFields.cryptoCurrency,
-          walletLink: toString(walletLink),
-          walletAddress: toString(walletAddress),
-          network: toString(network),
-          status: mappedStatus,
-          paymentOptionId: paymentOptionId ? toString(paymentOptionId) : null,
-          fiatAmountInUsd:
-            fiatAmountInUsd === undefined || fiatAmountInUsd === null
-              ? null
-              : toString(fiatAmountInUsd),
-          statusHistories: statusHistories ?? null,
-          amountPaid: finalFields.amountPaid,
-          cryptoAmount: finalFields.cryptoAmount,
-          totalFeeInFiat: finalFields.totalFeeInFiat,
-          countryCode: countryCode ? toString(countryCode) : null,
-          stateCode: stateCode ? toString(stateCode) : null,
-          statusReason: statusReason ? toString(statusReason) : null,
-          transakFeeAmount:
-            transakFeeAmount === undefined || transakFeeAmount === null
-              ? null
-              : toFloat(transakFeeAmount),
-        },
-      })
+    let transaction
+    try {
+      transaction = await prisma.$transaction(async (tx) => {
+        // Check if transaction already exists
+        const existingTransaction = id ? await tx.transaction.findUnique({
+          where: { id: toString(id) }
+        }) : null
+
+        let created
+        if (existingTransaction) {
+        // Update existing transaction
+        created = await tx.transaction.update({
+          where: { id: toString(id) },
+          data: {
+            isBuyOrSell: (toString(isBuyOrSell || 'SELL') === 'SELL'
+              ? 'SELL'
+              : 'BUY') as TransactionMethod,
+            fiatAmount: finalFields.fiatAmount,
+            fiatCurrency: finalFields.fiatCurrency,
+            cryptoCurrency: finalFields.cryptoCurrency,
+            walletLink: toString(walletLink) || '',
+            walletAddress: toString(walletAddress),
+            network: toString(network),
+            status: mappedStatus,
+            paymentOptionId: paymentOptionId ? toString(paymentOptionId) : null,
+            fiatAmountInUsd:
+              fiatAmountInUsd === undefined || fiatAmountInUsd === null
+                ? null
+                : toString(fiatAmountInUsd),
+            statusHistories: statusHistories ?? null,
+            amountPaid: finalFields.amountPaid,
+            cryptoAmount: finalFields.cryptoAmount,
+            totalFeeInFiat: finalFields.totalFeeInFiat,
+            countryCode: countryCode ? toString(countryCode) : null,
+            stateCode: stateCode ? toString(stateCode) : null,
+            statusReason: statusReason ? toString(statusReason) : null,
+            transakFeeAmount:
+              transakFeeAmount === undefined || transakFeeAmount === null
+                ? null
+                : toFloat(transakFeeAmount),
+          },
+        })
+      } else {
+        // Create new transaction record
+        created = await tx.transaction.create({
+          data: {
+            ...(id ? { id: toString(id) } : {}),
+            userId: user_id,
+            isBuyOrSell: (toString(isBuyOrSell || 'SELL') === 'SELL'
+              ? 'SELL'
+              : 'BUY') as TransactionMethod,
+            fiatAmount: finalFields.fiatAmount,
+            fiatCurrency: finalFields.fiatCurrency,
+            cryptoCurrency: finalFields.cryptoCurrency,
+            walletLink: toString(walletLink) || '',
+            walletAddress: toString(walletAddress),
+            network: toString(network),
+            status: mappedStatus,
+            paymentOptionId: paymentOptionId ? toString(paymentOptionId) : null,
+            fiatAmountInUsd:
+              fiatAmountInUsd === undefined || fiatAmountInUsd === null
+                ? null
+                : toString(fiatAmountInUsd),
+            statusHistories: statusHistories ?? null,
+            amountPaid: finalFields.amountPaid,
+            cryptoAmount: finalFields.cryptoAmount,
+            totalFeeInFiat: finalFields.totalFeeInFiat,
+            countryCode: countryCode ? toString(countryCode) : null,
+            stateCode: stateCode ? toString(stateCode) : null,
+            statusReason: statusReason ? toString(statusReason) : null,
+            transakFeeAmount:
+              transakFeeAmount === undefined || transakFeeAmount === null
+                ? null
+                : toFloat(transakFeeAmount),
+          },
+        })
+      }
 
       // If the transaction is completed, adjust the corresponding holding atomically
       if (mappedStatus === 'COMPLETED') {
@@ -248,12 +314,30 @@ export async function POST(req: Request) {
         }
       }
 
-      return created
-    })
+        return created
+      })
+    } catch (dbError) {
+      console.error('Database transaction error:', dbError)
+      throw new Error(`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`)
+    }
 
     return NextResponse.json(transaction)
   } catch (error) {
-    return NextResponse.json({ error: error }, { status: 500 })
+    console.error('Error saving transaction:', error)
+    console.error('Transaction data:', {
+      id: id || 'unknown',
+      isBuyOrSell: isBuyOrSell || 'unknown',
+      fiatAmount: fiatAmount || 0,
+      fiatCurrency: fiatCurrency || 'unknown',
+      cryptoCurrency: cryptoCurrency || 'unknown',
+      status: status || 'unknown',
+      userId: user_id
+    })
+    return NextResponse.json({ 
+      error: 'Failed to save transaction', 
+      details: error instanceof Error ? error.message : 'Unknown error',
+      transactionId: id || 'unknown'
+    }, { status: 500 })
   }
 }
 
