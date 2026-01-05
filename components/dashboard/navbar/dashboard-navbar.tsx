@@ -1,7 +1,6 @@
 import UserOptions from './user-options'
 import AnimateWrapper from '../../wrapper/animate-wrapper'
 import SearchBar from './search-bar'
-import NotificationBell from './notifications/notification-bell'
 
 const DashboardNavbar = () => {
   return (
@@ -10,7 +9,6 @@ const DashboardNavbar = () => {
         <div className="flex justify-between w-full items-center">
           <SearchBar />
           <div className="flex justify-end items-center pl-2 gap-4">
-            <NotificationBell />
             <UserOptions />
           </div>
         </div>

@@ -517,11 +517,13 @@ const TransactionReceipt = ({
 interface AssetCalculatorProps {
   coinData: CoinData
   selectedCurrency: string
+  network?: string | null
 }
 
 const AssetCalculator = ({
   coinData,
   selectedCurrency,
+  network,
 }: AssetCalculatorProps) => {
   const [amount, setAmount] = useState('')
   const [cryptoAmount, setCryptoAmount] = useState('')
@@ -858,6 +860,7 @@ const AssetCalculator = ({
                         fiatAmount={Number(amount)}
                         cryptoCurrency={coinData.symbol.toUpperCase()}
                         cryptoAmount={Number(cryptoAmount)}
+                        network={network || undefined}
                         onSuccess={handleTransakSuccess}
                         onClose={handleTransakClose}
                       />

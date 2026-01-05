@@ -31,6 +31,6 @@ export const getUserById = async (id: string): Promise<User> => {
 }
 
 export const isSuperAdmin = async (id: string): Promise<boolean> => {
-  const user = await getUserById(id);
-  return user.type === 'SUPER_ADMIN';
+  const user = await getUserById(id)
+  return user.type === 'SUPER_ADMIN'
 }

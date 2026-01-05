@@ -23,11 +23,14 @@ export async function generateMetadata({
 
 const AssetsByIdPage = async ({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string; network?: string }>
 }) => {
   const { id } = await params
-  return <AssetDetails id={id} />
+  const { network } = await searchParams
+  return <AssetDetails id={id} network={network} />
 }
 
 export default AssetsByIdPage

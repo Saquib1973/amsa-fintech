@@ -4,11 +4,6 @@ import { useEffect, useState } from 'react'
 import TransakCoinList from '@/components/assets/transak-coin-list'
 import type { TransakCryptoCurrenciesResponse, TransakCryptoCurrency } from '@/types/transak'
 
-const TRANSAK_CRYPTOCOVERAGE_BASE_URL =
-  process.env.NEXT_PUBLIC_TRANSAK_ENV === 'PROD'
-    ? 'https://api.transak.com/cryptocoverage/api/v1/public'
-    : 'https://api-stg.transak.com/cryptocoverage/api/v1/public'
-
 export default function TransakPopularClient() {
   const [coins, setCoins] = useState<TransakCryptoCurrency[] | null>(null)
   const [loading, setLoading] = useState(true)
@@ -21,10 +16,9 @@ export default function TransakPopularClient() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(
-          `${TRANSAK_CRYPTOCOVERAGE_BASE_URL}/crypto-currencies`,
-          { cache: 'no-store' }
-        )
+        const res = await fetch('/api/transak/crypto-currencies', {
+          cache: 'no-store',
+        })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const json = (await res.json()) as TransakCryptoCurrenciesResponse
         const all = Array.isArray(json.response) ? json.response : []

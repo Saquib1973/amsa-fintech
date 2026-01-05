@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { User } from '@/types/user'
 
 
-export const getUsers = async (page: number, rows: number): Promise<{ users: User[]; total: number }> => {
+export const getUsers = async (page: number, rows: number): Promise<{ users: any[]; total: number }> => {
   const session = await getSession()
   if(!(await isSuperAdmin(session?.user.id ?? ''))) {
     throw new Error('Unauthorized')
@@ -14,15 +14,48 @@ export const getUsers = async (page: number, rows: number): Promise<{ users: Use
     prisma.user.findMany({
       skip: (page - 1) * rows,
       take: rows,
+      include: {
+        _count: {
+          select: { transactions: true }
+        }
+      }
     }),
     prisma.user.count(),
   ])
 
-  return { users, total }
+  // Calculate total spent and received for each user
+  const usersWithMetrics = await Promise.all(
+    users.map(async (user) => {
+      const transactions = await prisma.transaction.findMany({
+        where: { userId: user.id },
+        select: { 
+          isBuyOrSell: true, 
+          cryptoAmount: true,
+          fiatAmount: true 
+        }
+      })
+      
+      const totalSpent = transactions
+        .filter(t => t.isBuyOrSell === 'BUY')
+        .reduce((sum, t) => sum + (t.fiatAmount || 0), 0)
+      
+      const totalReceived = transactions
+        .filter(t => t.isBuyOrSell === 'SELL')
+        .reduce((sum, t) => sum + (t.fiatAmount || 0), 0)
+      
+      return {
+        ...user,
+        totalSpent,
+        totalReceived
+      }
+    })
+  )
+
+  return { users: usersWithMetrics, total }
 }
 
 
-export const searchUser = async (query: string, page: number, rows: number): Promise<{ users: User[]; total: number }> => {
+export const searchUser = async (query: string, page: number, rows: number): Promise<{ users: any[]; total: number }> => {
   const session = await getSession()
   if (!(await isSuperAdmin(session?.user.id ?? ''))) {
     throw new Error('Unauthorized')
@@ -38,6 +71,11 @@ export const searchUser = async (query: string, page: number, rows: number): Pro
       },
       skip: (page - 1) * rows,
       take: rows,
+      include: {
+        _count: {
+          select: { transactions: true }
+        }
+      }
     }),
     prisma.user.count({
       where: {
@@ -49,9 +87,34 @@ export const searchUser = async (query: string, page: number, rows: number): Pro
     }),
   ])
 
-  return { users, total }
+  // Calculate total spent and received for each user
+  const usersWithMetrics = await Promise.all(
+    users.map(async (user) => {
+      const transactions = await prisma.transaction.findMany({
+        where: { userId: user.id },
+        select: { 
+          isBuyOrSell: true, 
+          cryptoAmount: true,
+          fiatAmount: true 
+        }
+      })
+      
+      const totalSpent = transactions
+        .filter(t => t.isBuyOrSell === 'BUY')
+        .reduce((sum, t) => sum + (t.fiatAmount || 0), 0)
+      
+      const totalReceived = transactions
+        .filter(t => t.isBuyOrSell === 'SELL')
+        .reduce((sum, t) => sum + (t.fiatAmount || 0), 0)
+      
+      return {
+        ...user,
+        totalSpent,
+        totalReceived
+      }
+    })
+  )
+
+  return { users: usersWithMetrics, total }
 }
-
-
-
 

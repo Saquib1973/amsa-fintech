@@ -10,26 +10,18 @@ export interface AvailableAssetItem {
   name: string
   symbol: string
   img?: string
-  networksCount: number
-  networks: string[]
-  chains?: {
-    name: string
-    allowed: boolean
-    min: number | null
-    max: number | null
-  }[]
-  allowedCount?: number
+  network: string
+  networkDisplayName: string
+  allowed: boolean
+  min: number | null
+  max: number | null
 }
 
 interface Props {
   items?: AvailableAssetItem[]
 }
 
-// Client-safe base URL (avoid importing from server-only modules)
-const TRANSAK_CRYPTOCOVERAGE_BASE_URL =
-  process.env.NEXT_PUBLIC_TRANSAK_ENV === 'PROD'
-    ? 'https://api.transak.com/cryptocoverage/api/v1/public'
-    : 'https://api-stg.transak.com/cryptocoverage/api/v1/public'
+// Use API route to avoid CORS issues
 
 // Minimal shape from Transak we care about for grouping
 interface TransakImageSizes {
@@ -51,61 +43,36 @@ interface TransakCryptoCurrency {
   maxAmountForPayIn?: number | null
 }
 
-function getGroupKey(symbol?: string, coinId?: string) {
-  const base = (coinId || symbol || '').trim().toLowerCase()
-  return base
-}
-
 function groupAssets(all: TransakCryptoCurrency[]): AvailableAssetItem[] {
-  const groups = new Map<string, TransakCryptoCurrency[]>()
+  // Create separate entries for each network
+  const items: AvailableAssetItem[] = []
+  
   for (const currency of all) {
-    const key = getGroupKey(currency.symbol, currency.coinId)
-    if (!key) continue
-    const list = groups.get(key) || []
-    list.push(currency)
-    groups.set(key, list)
+    const networkName = (currency.network?.name || '').trim() || 'Unknown'
+    const idForRoute = (currency.coinId || currency.symbol || '').toLowerCase()
+    const symbol = (currency.symbol || '').toUpperCase()
+    
+    if (!idForRoute || !symbol) continue
+    
+    items.push({
+      idForRoute,
+      name: currency.name,
+      symbol,
+      img: currency.image?.small || currency.image?.thumb || currency.image?.large,
+      network: networkName.toLowerCase().replace(/\s+/g, '-'),
+      networkDisplayName: networkName,
+      allowed: !!currency.isPayInAllowed,
+      min: currency.minAmountForPayIn ?? null,
+      max: currency.maxAmountForPayIn ?? null,
+    })
   }
 
-  return Array.from(groups.values())
-    .map((list) => {
-      const primary = list[0]
-      const idForRoute = (primary.coinId || primary.symbol || '').toLowerCase()
-      const name = primary.name
-      const symbol = (primary.symbol || '').toUpperCase()
-      const img =
-        primary.image?.small || primary.image?.thumb || primary.image?.large
-
-      // Build unique chain list with simple allowed flag aggregation
-      const chainAllowedByName = new Map<string, boolean>()
-      for (const item of list) {
-        const chainName = (item.network?.name || '').trim() || '-'
-        const allowed = !!item.isPayInAllowed
-        chainAllowedByName.set(
-          chainName,
-          chainAllowedByName.get(chainName) || false || allowed
-        )
-      }
-      const chains = Array.from(chainAllowedByName.entries())
-        .map(([name, allowed]) => ({
-          name,
-          allowed,
-          min: null as number | null,
-          max: null as number | null,
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name))
-
-      return {
-        idForRoute,
-        name,
-        symbol,
-        img,
-        networksCount: chains.length,
-        networks: chains.map((c) => c.name),
-        chains,
-        allowedCount: chains.filter((c) => c.allowed).length,
-      }
-    })
-    .sort((a, b) => a.name.localeCompare(b.name))
+  // Sort by name, then by network
+  return items.sort((a, b) => {
+    const nameCompare = a.name.localeCompare(b.name)
+    if (nameCompare !== 0) return nameCompare
+    return a.networkDisplayName.localeCompare(b.networkDisplayName)
+  })
 }
 
 export default function AvailableAssetsClient({ items }: Props) {
@@ -130,14 +97,10 @@ export default function AvailableAssetsClient({ items }: Props) {
       try {
         setLoading(true)
         setError(null)
-        const res = await fetch(
-          `${TRANSAK_CRYPTOCOVERAGE_BASE_URL}/crypto-currencies`,
-          {
-            method: 'GET',
-            headers: { accept: 'application/json' },
-            cache: 'no-store',
-          }
-        )
+        const res = await fetch('/api/transak/crypto-currencies', {
+          method: 'GET',
+          cache: 'no-store',
+        })
         if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
         const json = await res.json()
         const all: TransakCryptoCurrency[] = json?.response || []
@@ -176,15 +139,15 @@ export default function AvailableAssetsClient({ items }: Props) {
       return (
         <div className="h-[80vh] overflow-y-auto">
           <div className="grid grid-cols-12 bg-gray-50 px-6 py-2 text-sm font-medium text-gray-700 sticky top-0 z-10">
-            <div className="col-span-6">Name</div>
+            <div className="col-span-5">Name</div>
             <div className="col-span-2">Symbol</div>
-            <div className="col-span-4">Networks</div>
+            <div className="col-span-5">Network</div>
           </div>
           <ul className="divide-y divide-gray-200">
             {Array.from({ length: 10 }).map((_, i) => (
               <li key={i} className="px-6 py-3">
                 <div className="grid grid-cols-12 items-center animate-pulse">
-                  <div className="col-span-6 flex items-center gap-3">
+                  <div className="col-span-5 flex items-center gap-3">
                     <div className="h-6 w-6 rounded-full bg-gray-200" />
                     <div className="space-y-2 w-1/2">
                       <div className="h-3 bg-gray-200 rounded" />
@@ -194,9 +157,8 @@ export default function AvailableAssetsClient({ items }: Props) {
                   <div className="col-span-2">
                     <div className="h-3 bg-gray-200 rounded w-16" />
                   </div>
-                  <div className="col-span-4 flex gap-2">
-                    <div className="h-5 bg-gray-100 rounded w-16" />
-                    <div className="h-5 bg-gray-100 rounded w-16" />
+                  <div className="col-span-5">
+                    <div className="h-5 bg-gray-100 rounded w-20" />
                   </div>
                 </div>
               </li>
@@ -217,38 +179,36 @@ export default function AvailableAssetsClient({ items }: Props) {
     return (
       <div className="overflow-y-auto h-[80vh]">
         <div className="grid grid-cols-12 border-t border-gray-200 bg-white px-6 py-2 font-medium text-gray-700 sticky top-0 z-10">
-          <div className="col-span-6">Name</div>
+          <div className="col-span-5">Name</div>
           <div className="col-span-2">Symbol</div>
-          <div className="col-span-4">Networks</div>
+          <div className="col-span-5">Network</div>
         </div>
         <motion.ul
           layout
           className="divide-y divide-gray-200 dark:divide-gray-800"
         >
           <AnimatePresence initial={false} mode="sync">
-            {filtered.map((g) => {
-              const chains = g.chains || []
-              const visible = chains.slice(0, 3)
-              const remaining = Math.max(0, chains.length - visible.length)
+            {filtered.map((item, index) => {
+              const uniqueKey = `${item.idForRoute}-${item.network}-${index}`
               return (
                 <motion.li
                   layout
-                  key={g.idForRoute}
+                  key={uniqueKey}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.18, ease: 'easeOut' }}
                 >
                   <Link
-                    href={`/assets/${g.idForRoute}?tab=overview`}
+                    href={`/assets/${item.idForRoute}?tab=overview&network=${encodeURIComponent(item.network)}`}
                     className="block px-6 py-3 hover:bg-gray-50 rounded-sm"
                   >
                     <div className="grid grid-cols-12 items-center">
-                      <div className="col-span-6 flex items-center gap-3 min-w-0">
-                        {g.img ? (
+                      <div className="col-span-5 flex items-center gap-3 min-w-0">
+                        {item.img ? (
                           <Image
-                            src={g.img}
-                            alt={g.name}
+                            src={item.img}
+                            alt={item.name}
                             width={24}
                             height={24}
                             className="rounded-full"
@@ -258,34 +218,26 @@ export default function AvailableAssetsClient({ items }: Props) {
                         )}
                         <div className="truncate">
                           <div className="text-gray-900 dark:text-gray-100 truncate">
-                            {g.name}
+                            {item.name}
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">
-                            {g.symbol}
+                            {item.symbol}
                           </div>
                         </div>
                       </div>
                       <div className="col-span-2 text-gray-700 dark:text-gray-300 uppercase text-sm">
-                        {g.symbol}
+                        {item.symbol}
                       </div>
-                      <div className="col-span-4">
-                        <div className="flex flex-wrap gap-2">
-                          {visible.map((c) => {
-                            const badgeClass = c.allowed
-                              ? 'inline-flex items-center gap-2 rounded bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 px-2 py-0.5 text-xs'
-                              : 'inline-flex items-center gap-2 rounded bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 px-2 py-0.5 text-xs'
-                            return (
-                              <span key={c.name} className={badgeClass}>
-                                <span className="font-medium">{c.name}</span>
-                              </span>
-                            )
-                          })}
-                          {remaining > 0 && (
-                            <span className="inline-flex items-center rounded bg-gray-100 text-gray-700 px-2 py-0.5 text-xs">
-                              +{remaining}
-                            </span>
-                          )}
-                        </div>
+                      <div className="col-span-5">
+                        <span
+                          className={`inline-flex items-center gap-2 rounded px-2 py-0.5 text-xs ${
+                            item.allowed
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
+                          }`}
+                        >
+                          <span className="font-medium">{item.networkDisplayName}</span>
+                        </span>
                       </div>
                     </div>
                   </Link>

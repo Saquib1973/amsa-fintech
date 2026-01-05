@@ -43,7 +43,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the a
 
 - Secure user authentication and authorization
 - Wallet management and transaction history
-- Real-time analytics and notifications
+- Real-time analytics
 - Admin dashboard for super users
 - Responsive and user-friendly UI
 

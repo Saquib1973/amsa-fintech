@@ -36,12 +36,17 @@ export const NavigationContent = ({
       }
       return null
     }
+    
     const newSubmenu = findSubmenu()
-    if (newSubmenu !== activeSubmenu) {
+    // Compare by name instead of object reference
+    const currentSubmenuName = activeSubmenu?.name
+    const newSubmenuName = newSubmenu?.name
+    
+    if (newSubmenuName !== currentSubmenuName) {
       setIsTransitioning(true)
+      setActiveSubmenu(newSubmenu)
     }
-    setActiveSubmenu(newSubmenu)
-  }, [pathname, navSections, activeSubmenu])
+  }, [pathname, navSections]) // Removed activeSubmenu from dependencies
 
   const handleSubmenuChange = (item: NavItem | null) => {
     setIsTransitioning(true)

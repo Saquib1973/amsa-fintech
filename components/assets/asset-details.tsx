@@ -4,7 +4,7 @@ import AnimateWrapper from '@/components/wrapper/animate-wrapper'
 import SectionWrapper from '@/components/wrapper/section-wrapper'
 import { useCoingecko } from '@/hooks/use-coingecko'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import AssetCalculator from './asset-calculator'
 import AssetChart from './asset-chart'
 import AssetHeader from './asset-header'
@@ -14,9 +14,10 @@ import { HelpCircle } from 'lucide-react'
 
 interface AssetDetailsProps {
   id: string
+  network?: string | null
 }
 
-const AssetDetails = ({ id }: AssetDetailsProps) => {
+const AssetDetails = ({ id, network: networkProp }: AssetDetailsProps) => {
   const { coinData, loadingCoinData, fetchCoinById, error } = useCoingecko()
   const [selectedCurrency, setSelectedCurrency] = useState('aud')
   const router = useRouter()
@@ -24,17 +25,27 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
   const [activeTab, setActiveTab] = useState(
     searchParams.get('tab') ?? 'overview'
   )
+  const network = networkProp || searchParams.get('network') || null
+  const previousIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    fetchCoinById(id)
-  }, [id])
+    // Only fetch if ID has changed
+    if (id && id !== previousIdRef.current) {
+      previousIdRef.current = id
+      fetchCoinById(id)
+    }
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
   console.log("COIN DATA",coinData)
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab)
-    const newUrl = tab ? `/assets/${id}?tab=${tab}` : `/assets/${id}`
+    const params = new URLSearchParams()
+    if (tab) params.set('tab', tab)
+    if (network) params.set('network', network)
+    const queryString = params.toString()
+    const newUrl = queryString ? `/assets/${id}?${queryString}` : `/assets/${id}`
     router.push(newUrl, { scroll: false })
   }
 
@@ -101,6 +112,7 @@ const AssetDetails = ({ id }: AssetDetailsProps) => {
             <AssetCalculator
               coinData={coinData}
               selectedCurrency={selectedCurrency}
+              network={network}
             />
           </div>
         </SectionWrapper>

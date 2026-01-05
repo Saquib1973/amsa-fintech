@@ -54,12 +54,58 @@ const DEFAULT_FIAT_AMOUNT = 30
 const POLLING_INTERVAL = 5000 // 5 seconds
 const MAX_POLLING_ATTEMPTS = 60 // 5 minutes maximum polling time
 
+// Map network display names to Transak network format
+const mapNetworkToTransakFormat = (network?: string): string | undefined => {
+  if (!network) return undefined
+  
+  const normalized = network.toLowerCase().trim()
+  
+  // Map common network names to Transak format
+  const networkMap: Record<string, string> = {
+    'polygon': 'polygon',
+    'ethereum': 'ethereum',
+    'mainnet': 'ethereum',
+    'bitcoin': 'bitcoin',
+    'binance-smart-chain': 'binance-smart-chain',
+    'bsc': 'binance-smart-chain',
+    'solana': 'solana',
+    'avalanche': 'avalanche',
+    'avax': 'avalanche',
+    'arbitrum': 'arbitrum',
+    'arb': 'arbitrum',
+    'optimism': 'optimism',
+    'op': 'optimism',
+    'tron': 'tron',
+    'trx': 'tron',
+    'dogecoin': 'dogecoin',
+    'doge': 'dogecoin',
+    'litecoin': 'litecoin',
+    'ltc': 'litecoin',
+  }
+  
+  // Check direct match
+  if (networkMap[normalized]) {
+    return networkMap[normalized]
+  }
+  
+  // Check if it contains any of the keys
+  for (const [key, value] of Object.entries(networkMap)) {
+    if (normalized.includes(key) || key.includes(normalized)) {
+      return value
+    }
+  }
+  
+  // Return as-is if no mapping found (Transak might accept it)
+  return normalized
+}
+
 const TransakPaymentComponent = ({
   exchangeScreenTitle = 'Buy Crypto To Your Wallet',
   fiatAmount = 0,
   fiatCurrency = 'AUD',
   cryptoCurrency = 'BTC',
   cryptoAmount = 0,
+  network,
   onSuccess,
   onClose,
   buttonText = {
@@ -394,8 +440,8 @@ const TransakPaymentComponent = ({
       environment: Transak.ENVIRONMENTS.STAGING,
       walletAddress: custodialWallet,
       disableWalletAddressForm: true,
-      // Add network property for Polygon to get TRNSK tokens
-      network: 'polygon',
+      // Use dynamic network if provided, otherwise fallback to polygon
+      network: mapNetworkToTransakFormat(network) || 'polygon',
       // Ensure Transak can associate returning users to avoid repeated KYC
       email: effectiveEmail,
       partnerCustomerId: effectivePartnerCustomerId,

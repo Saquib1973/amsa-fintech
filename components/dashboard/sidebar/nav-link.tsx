@@ -4,6 +4,13 @@ import Link from 'next/link'
 import { NavLinkProps } from './types'
 
 export const NavLink = ({ item, isActive, onClick, isCollapsed }: NavLinkProps) => {
+  const handleClick = (e: React.MouseEvent) => {
+    // If item has submenu and no href, prevent navigation
+    if (item.hasSubmenu && (!item.href || item.href === '#')) {
+      e.preventDefault()
+    }
+    onClick?.()
+  }
 
   if (isCollapsed) {
     return (
@@ -15,7 +22,7 @@ export const NavLink = ({ item, isActive, onClick, isCollapsed }: NavLinkProps) 
               ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
               : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
           }`}
-          onClick={onClick}
+          onClick={handleClick}
           title={item.name}
         >
           {item.icon}
@@ -33,7 +40,7 @@ export const NavLink = ({ item, isActive, onClick, isCollapsed }: NavLinkProps) 
             ? 'bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100'
             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100'
         }`}
-        onClick={onClick}
+        onClick={handleClick}
         title={item.name}
       >
         <span className="mr-2">{item.icon}</span>

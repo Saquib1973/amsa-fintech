@@ -6,7 +6,13 @@ declare module 'next-auth' {
       id: string
       name: string
       email: string
+      role?: string
       // Add any other properties you need
     }
+  }
+  
+  interface JWT {
+    id: string
+    role?: string
   }
 }

@@ -19,41 +19,6 @@ model Wallet {
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Notification {
-  id          String           @id @default(cuid())
-  userId      String
-  type        NotificationType
-  message     String
-  read        Boolean          @default(false)
-  link        String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  createdById String?
-  user        User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  createdBy   User?            @relation("CreatedNotifications", fields: [createdById], references: [id])
-
-  @@index([userId])
-  @@index([createdById])
-}
-
-enum NotificationType {
-  TRANSACTION_CREATED
-  TRANSACTION_SUCCESSFUL
-  TRANSACTION_FAILED
-  WALLET_CREDITED
-  WALLET_DEBITED
-  NEW_LOGIN_DETECTED
-  PASSWORD_CHANGED
-  KYC_VERIFIED
-  KYC_REJECTED
-  ACCOUNT_VERIFICATION
-  PRICE_ALERT
-  SYSTEM_MESSAGE
-  BROADCAST_MESSAGE
-  BROADCAST_ALERT
-  BROADCAST_UPDATE
-}
-
 enum USER_TYPE {
   SUPER_ADMIN
   ADMIN
@@ -61,21 +26,19 @@ enum USER_TYPE {
 }
 
 model User {
-  id                   String             @id @default(cuid())
-  name                 String?
-  email                String?            @unique
-  isVerified           Boolean            @default(false)
-  image                String?
-  wallets              Wallet[]
-  accounts             Account[]
-  sessions             Session[]
-  transactions         Transaction[]
-  notifications        Notification[]     @relation("UserNotifications")
-  type                 USER_TYPE          @default(USER)
-  otp                  VerificationToken?
-  addresses            Address?
-  createdNotifications Notification[]     @relation("CreatedNotifications")
-  holdings             Holding[]
+  id            String             @id @default(cuid())
+  name          String?
+  email         String?            @unique
+  isVerified    Boolean            @default(false)
+  image         String?
+  wallets       Wallet[]
+  accounts      Account[]
+  sessions      Session[]
+  transactions  Transaction[]
+  type          USER_TYPE          @default(USER)
+  otp           VerificationToken?
+  addresses     Address?
+  holdings      Holding[]
 }
 
 model Account {

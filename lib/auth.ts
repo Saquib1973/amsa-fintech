@@ -93,9 +93,16 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, account }) {
       if (account && user) {
+        // Fetch user role from database
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { type: true },
+        })
+        
         return {
           ...token,
           id: user.id,
+          role: dbUser?.type || 'USER',
         }
       }
       return token
@@ -103,6 +110,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token?.id && session.user) {
         session.user.id = token.id as string
+        session.user.role = token.role as string
       }
       return session
     },
@@ -140,16 +148,6 @@ export const authOptions: NextAuthOptions = {
           sessionToken: crypto.randomUUID(),
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
           location,
-        },
-      })
-
-      // Create login notification
-      await prisma.notification.create({
-        data: {
-          userId: user.id,
-          type: 'NEW_LOGIN_DETECTED',
-          message: `New login detected from ${location}. If this wasn't you, please check your account security.`,
-          link: '/settings/security',
         },
       })
     },

@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
-import { UserService } from '@/services/backend/user-service';
-const userService = new UserService();
+import { isSuperAdmin } from '@/actions/user';
 
 export async function GET(
   req: Request,
@@ -20,9 +19,9 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const isSuperAdmin = await userService.isSuperAdmin(session?.user?.id ?? '');
+    const isAdmin = await isSuperAdmin(session?.user?.id ?? '');
 
-    if (!session?.user || !isSuperAdmin) {
+    if (!session?.user || !isAdmin) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -55,9 +54,9 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const isSuperAdmin = await userService.isSuperAdmin(session?.user?.id ?? '');
+    const isAdmin = await isSuperAdmin(session?.user?.id ?? '');
 
-    if (!session?.user || !isSuperAdmin) {
+    if (!session?.user || !isAdmin) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 

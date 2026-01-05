@@ -65,6 +65,7 @@ export default function TransakSellComponent({
   const lastOrderIdRef = useRef<string | null>(null)
   const initializedRef = useRef<boolean>(false)
 
+
   const resolvedEnv = useMemo(() => {
     const env = environment || (process.env.NEXT_PUBLIC_TRANSAK_ENV as 'STAGING' | 'PRODUCTION') || 'STAGING'
     return env === 'PRODUCTION' ? Transak.ENVIRONMENTS.PRODUCTION : Transak.ENVIRONMENTS.STAGING
@@ -167,7 +168,7 @@ export default function TransakSellComponent({
     stopPolling()
     try {
       if (!skipClose) transakRef.current?.close()
-    } catch {}
+    } catch { }
     transakRef.current = null
     initializedRef.current = false
     setIsLoading(false)
@@ -193,7 +194,7 @@ export default function TransakSellComponent({
         stopPolling()
         try {
           transakRef.current?.close()
-        } catch {}
+        } catch { }
         onSuccess?.(d)
       } else if (mappedStatus === 'FAILED' || mappedStatus === 'CANCELLED') {
         setIsProcessing(false)
@@ -206,8 +207,8 @@ export default function TransakSellComponent({
   }
 
   const initializeTransak = () => {
-console.log('COMPONENT RENDERED')
-console.log('Session data:', session)
+    console.log('COMPONENT RENDERED')
+    console.log('Session data:', session)
 
     if (initializedRef.current) return
     initializedRef.current = true
@@ -261,6 +262,7 @@ console.log('Session data:', session)
       disableWalletAddressForm: true,
       email,
       partnerCustomerId,
+      isTransakStreamOffRamp:true,
       partnerOrderId: staticPartnerOrderId,
       exchangeScreenTitle: 'Sell Crypto',
       // Enable wallet redirection for sell flow
@@ -269,9 +271,9 @@ console.log('Session data:', session)
       // redirectURL: `${window.location.origin}/sell/complete`,
       ...(isStaging
         ? {
-            userData: stagingUserData,
-            isAutoFillUserData: true,
-          }
+          userData: stagingUserData,
+          isAutoFillUserData: true,
+        }
         : {}),
     }
 
@@ -309,7 +311,7 @@ console.log('Session data:', session)
 
       const orderData = data as TransakOrderLike
       const id = orderData?.status?.id || orderData?.status?.orderId || orderData?.orderId || orderData?.id
-      console.log("ORDER CREATED",orderData)
+      console.log("ORDER CREATED", orderData)
       log('ORDER_CREATED', orderData)
       if (id) {
         lastOrderIdRef.current = id
@@ -336,13 +338,13 @@ console.log('Session data:', session)
         const initialStatus = mapTransakStatusToDbStatus(d?.status?.status || 'PENDING')
         setTransactionStatus(initialStatus)
         setIsProcessing(true)
-        
+
         // Validate data before redirecting
         const finalCryptoAmount = d.cryptoAmount || cryptoAmount
         const finalCryptoCurrency = d.cryptoCurrency || cryptoCurrency
         const finalWalletAddress = d.walletAddress || resolvedWalletAddress
         const finalNetwork = d.network || 'polygon'
-        
+
         console.log('Wallet redirection data validation:', {
           id,
           finalCryptoAmount,
@@ -350,14 +352,14 @@ console.log('Session data:', session)
           finalWalletAddress,
           finalNetwork
         })
-        
+
         // Only redirect if we have valid data
         if (finalCryptoAmount && finalCryptoCurrency && finalWalletAddress && finalNetwork) {
           // Perform the redirect to complete the transfer
           console.log('Wallet redirection event - redirecting to:', `${window.location.origin}/sell/complete`)
           const redirectUrl = `${window.location.origin}/sell/complete?orderId=${id}&cryptoAmount=${finalCryptoAmount}&cryptoCurrency=${finalCryptoCurrency}&walletAddress=${finalWalletAddress}&network=${finalNetwork}`
           console.log('Redirecting to:', redirectUrl)
-          
+
           // Close the widget and redirect
           try {
             transakRef.current?.close()
@@ -365,7 +367,7 @@ console.log('Session data:', session)
             console.error('Error closing Transak widget:', error)
           }
           teardown(true)
-          
+
           // Perform the redirect with a small delay to ensure widget closes
           setTimeout(() => {
             console.log('Executing redirect to:', redirectUrl)
@@ -389,13 +391,13 @@ console.log('Session data:', session)
       const id = d?.status?.id || d?.status?.orderId
       if (id) {
         await checkTransactionStatus(id)
-        
+
         // Validate data before redirecting
         const finalCryptoAmount = d.cryptoAmount || cryptoAmount
         const finalCryptoCurrency = d.cryptoCurrency || cryptoCurrency
         const finalWalletAddress = d.walletAddress || resolvedWalletAddress
         const finalNetwork = d.network || 'polygon'
-        
+
         console.log('Order successful data validation:', {
           id,
           finalCryptoAmount,
@@ -403,14 +405,14 @@ console.log('Session data:', session)
           finalWalletAddress,
           finalNetwork
         })
-        
+
         // Only redirect if we have valid data
         if (finalCryptoAmount && finalCryptoCurrency && finalWalletAddress && finalNetwork) {
           // Manual redirect as fallback if Transak doesn't redirect automatically
           console.log('Order successful - attempting manual redirect')
           const redirectUrl = `${window.location.origin}/sell/complete?orderId=${id}&cryptoAmount=${finalCryptoAmount}&cryptoCurrency=${finalCryptoCurrency}&walletAddress=${finalWalletAddress}&network=${finalNetwork}`
           console.log('Redirecting to:', redirectUrl)
-          
+
           // Close the widget and redirect
           try {
             transakRef.current?.close()
@@ -418,7 +420,7 @@ console.log('Session data:', session)
             console.error('Error closing Transak widget:', error)
           }
           teardown(true)
-          
+
           // Perform the redirect with a small delay to ensure widget closes
           setTimeout(() => {
             console.log('Executing redirect to:', redirectUrl)
@@ -459,7 +461,7 @@ console.log('Session data:', session)
         console.log('Fallback redirect triggered after 30 seconds')
         const redirectUrl = `${window.location.origin}/sell/complete?orderId=${lastOrderIdRef.current}`
         console.log('Fallback redirecting to:', redirectUrl)
-        
+
         // Close the widget and redirect
         try {
           transakRef.current?.close()
@@ -467,7 +469,7 @@ console.log('Session data:', session)
           console.error('Error closing Transak widget:', error)
         }
         teardown(true)
-        
+
         // Perform the redirect with a small delay to ensure widget closes
         setTimeout(() => {
           console.log('Executing fallback redirect to:', redirectUrl)
@@ -497,7 +499,7 @@ console.log('Session data:', session)
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && (isLoading || isProcessing || isWidgetOpen)) {
-        try { transakRef.current?.close() } catch {}
+        try { transakRef.current?.close() } catch { }
         teardown()
         onClose?.()
       }
@@ -534,7 +536,7 @@ console.log('Session data:', session)
           <button
             type="button"
             onClick={() => {
-              try { transakRef.current?.close() } catch {}
+              try { transakRef.current?.close() } catch { }
               teardown()
               onClose?.()
             }}
